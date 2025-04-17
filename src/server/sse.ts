@@ -2,67 +2,16 @@ import 'dotenv/config';
 import express from "express";
 import type { Request, Response } from "express";
 import cors from 'cors';
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { z } from "zod";
-import Logger from './logger';
+import Logger from '@/utils/logger';
+import { startServer } from './base';
 
 const app = express();
+const server = startServer();
 app.use(cors());
-
-const server = new McpServer({
-  name: "BNBChain MCP Server (SSE)",
-  version: "1.0.0"
-});
 
 // Log the current log level on startup
 Logger.info(`Starting server with log level: ${Logger.getLevel()}`);
-
-// Echo tool
-server.tool(
-  "echo",
-  { message: z.string().describe("The message to echo back") },
-  async ({ message }) => {
-    Logger.debug('Echo tool called', { message });
-    return {
-      content: [{ type: "text", text: `Echo: ${message}` }]
-    };
-  }
-);
-
-// Time tool
-server.tool(
-  "getCurrentTime",
-  { format: z.enum(["short", "full"]).default("short").describe("Time format to return") },
-  async ({ format }) => {
-    Logger.debug('GetCurrentTime tool called', { format });
-    const now = new Date();
-    const text = format === "short" 
-      ? now.toLocaleTimeString()
-      : now.toISOString();
-    return {
-      content: [{ type: "text", text: `Current time: ${text}` }]
-    };
-  }
-);
-
-// Simple prompt example
-server.prompt(
-  "greet",
-  { name: z.string().describe("Name to greet") },
-  ({ name }) => {
-    Logger.debug('Greet prompt called', { name });
-    return {
-      messages: [{
-        role: "user",
-        content: {
-          type: "text",
-          text: `Please generate a friendly greeting for ${name}.`
-        }
-      }]
-    };
-  }
-);
 
 // to support multiple simultaneous connections we have a lookup object from
 // sessionId to transport

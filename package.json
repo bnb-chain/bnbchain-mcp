@@ -3,9 +3,11 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "bun --watch run src/server.ts",
-    "build": "bun build src/*.ts --outdir dist --target node",
+    "start": "node dist/server/stdio.js",
+    "start:sse": "node dist/server/sse.js",
+    "dev": "bun --watch run src/server/stdio.ts",
+    "dev:sse": "bun --watch run src/server/sse.ts",
+    "build": "bun build src/**/*.ts --outdir dist --target node",
     "test:client": "bun run test/client.ts"
   },
   "dependencies": {
@@ -13,8 +15,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.18.2",
-    "zod": "^3.22.4",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "viem": "^2.27.2",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

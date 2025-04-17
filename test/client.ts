@@ -15,32 +15,22 @@ async function main() {
     console.log("Connected to MCP server!");
 
     // Test echo tool
-    const echoResult = await client.callTool({
-      name: "echo",
+    const chainInfo = await client.callTool({
+      name: "get_chain_info",
       arguments: {
-        message: "Hello MCP over SSE!"
+        network: "bsc"
       }
     });
-    console.log("Echo result:", echoResult);
+    console.log("Echo chainInfo:", chainInfo);
 
-    // // Test time tool
-    // const timeResult = await client.callTool({
-    //   name: "getCurrentTime",
-    //   arguments: {
-    //     format: "full"
-    //   }
-    // });
-    // console.log("Time result:", timeResult);
-
-    // // Test prompt
-    // const prompt = await client.getPrompt({
-    //   name: "greet",
-    //   arguments: {
-    //     name: "Bob"
-    //   }
-    // });
-    // console.log("Prompt result:", prompt);
-
+    // Test prompt
+    const prompt = await client.getPrompt({
+      name: "explore_block",
+      arguments: {
+        network: "bsc"
+      }
+    });
+    console.log("Prompt result:", prompt);
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);
