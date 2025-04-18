@@ -1,7 +1,9 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import type { Address, Hash } from "viem";
-import * as services from "@/evm/services/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { Address, Hash } from "viem"
+import { z } from "zod"
+
+import * as services from "@/evm/services/index.js"
+import { defaultNetworkParam } from "../common/types"
 
 export function registerTransactionTools(server: McpServer) {
   // Get transaction by hash
@@ -12,25 +14,20 @@ export function registerTransactionTools(server: McpServer) {
       txHash: z
         .string()
         .describe("The transaction hash to look up (e.g., '0x1234...')"),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ txHash, network = "ethereum" }) => {
+    async ({ txHash, network }) => {
       try {
-        const tx = await services.getTransaction(txHash as Hash, network);
+        const tx = await services.getTransaction(txHash as Hash, network)
 
         return {
           content: [
             {
               type: "text",
-              text: services.helpers.formatJson(tx),
-            },
-          ],
-        };
+              text: services.helpers.formatJson(tx)
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -38,14 +35,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error fetching transaction ${txHash}: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Get transaction receipt
   server.tool(
@@ -53,26 +50,23 @@ export function registerTransactionTools(server: McpServer) {
     "Get a transaction receipt by its hash",
     {
       txHash: z.string().describe("The transaction hash to look up"),
-      network: z
-        .string()
-        .optional()
-        .describe("Network name or chain ID. Defaults to Ethereum mainnet."),
+      network: defaultNetworkParam
     },
-    async ({ txHash, network = "ethereum" }) => {
+    async ({ txHash, network }) => {
       try {
         const receipt = await services.getTransactionReceipt(
           txHash as Hash,
           network
-        );
+        )
 
         return {
           content: [
             {
               type: "text",
-              text: services.helpers.formatJson(receipt),
-            },
-          ],
-        };
+              text: services.helpers.formatJson(receipt)
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -80,14 +74,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error fetching transaction receipt ${txHash}: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Estimate gas
   server.tool(
@@ -103,24 +97,21 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .optional()
         .describe("The transaction data as a hex string"),
-      network: z
-        .string()
-        .optional()
-        .describe("Network name or chain ID. Defaults to Ethereum mainnet."),
+      network: defaultNetworkParam
     },
-    async ({ to, value, data, network = "ethereum" }) => {
+    async ({ to, value, data, network }) => {
       try {
-        const params: any = { to: to as Address };
+        const params: any = { to: to as Address }
 
         if (value) {
-          params.value = services.helpers.parseEther(value);
+          params.value = services.helpers.parseEther(value)
         }
 
         if (data) {
-          params.data = data as `0x${string}`;
+          params.data = data as `0x${string}`
         }
 
-        const gas = await services.estimateGas(params, network);
+        const gas = await services.estimateGas(params, network)
 
         return {
           content: [
@@ -129,14 +120,14 @@ export function registerTransactionTools(server: McpServer) {
               text: JSON.stringify(
                 {
                   network,
-                  estimatedGas: gas.toString(),
+                  estimatedGas: gas.toString()
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -144,14 +135,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error estimating gas: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // TRANSFER TOOLS
 
@@ -175,21 +166,16 @@ export function registerTransactionTools(server: McpServer) {
         .describe(
           "Amount to send in ETH (or the native token of the network), as a string (e.g., '0.1')"
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ privateKey, to, amount, network = "ethereum" }) => {
+    async ({ privateKey, to, amount, network }) => {
       try {
         const txHash = await services.transferETH(
           privateKey,
           to,
           amount,
           network
-        );
+        )
 
         return {
           content: [
@@ -201,14 +187,14 @@ export function registerTransactionTools(server: McpServer) {
                   txHash,
                   to,
                   amount,
-                  network,
+                  network
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -216,14 +202,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error transferring ETH: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Transfer ERC20
   server.tool(
@@ -244,25 +230,14 @@ export function registerTransactionTools(server: McpServer) {
         .describe(
           "The amount of tokens to send (in token units, e.g., '10' for 10 tokens)"
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({
-      privateKey,
-      tokenAddress,
-      toAddress,
-      amount,
-      network = "ethereum",
-    }) => {
+    async ({ privateKey, tokenAddress, toAddress, amount, network }) => {
       try {
         // Get the formattedKey with 0x prefix
         const formattedKey = privateKey.startsWith("0x")
           ? (privateKey as `0x${string}`)
-          : (`0x${privateKey}` as `0x${string}`);
+          : (`0x${privateKey}` as `0x${string}`)
 
         const result = await services.transferERC20(
           tokenAddress as Address,
@@ -270,7 +245,7 @@ export function registerTransactionTools(server: McpServer) {
           amount,
           formattedKey,
           network
-        );
+        )
 
         return {
           content: [
@@ -284,14 +259,14 @@ export function registerTransactionTools(server: McpServer) {
                   tokenAddress,
                   recipient: toAddress,
                   amount: result.amount.formatted,
-                  symbol: result.token.symbol,
+                  symbol: result.token.symbol
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -299,14 +274,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error transferring ERC20 tokens: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Approve ERC20 token spending
   server.tool(
@@ -333,25 +308,14 @@ export function registerTransactionTools(server: McpServer) {
         .describe(
           "The amount of tokens to approve in token units, not wei (e.g., '1000' to approve spending 1000 tokens). Use a very large number for unlimited approval."
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({
-      privateKey,
-      tokenAddress,
-      spenderAddress,
-      amount,
-      network = "ethereum",
-    }) => {
+    async ({ privateKey, tokenAddress, spenderAddress, amount, network }) => {
       try {
         // Get the formattedKey with 0x prefix
         const formattedKey = privateKey.startsWith("0x")
           ? (privateKey as `0x${string}`)
-          : (`0x${privateKey}` as `0x${string}`);
+          : (`0x${privateKey}` as `0x${string}`)
 
         const result = await services.approveERC20(
           tokenAddress as Address,
@@ -359,7 +323,7 @@ export function registerTransactionTools(server: McpServer) {
           amount,
           formattedKey,
           network
-        );
+        )
 
         return {
           content: [
@@ -373,14 +337,14 @@ export function registerTransactionTools(server: McpServer) {
                   tokenAddress,
                   spender: spenderAddress,
                   amount: result.amount.formatted,
-                  symbol: result.token.symbol,
+                  symbol: result.token.symbol
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -388,14 +352,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error approving token spending: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Transfer NFT (ERC721)
   server.tool(
@@ -418,25 +382,14 @@ export function registerTransactionTools(server: McpServer) {
       toAddress: z
         .string()
         .describe("The recipient wallet address that will receive the NFT"),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. Most NFTs are on Ethereum mainnet, which is the default."
-        ),
+      network: defaultNetworkParam
     },
-    async ({
-      privateKey,
-      tokenAddress,
-      tokenId,
-      toAddress,
-      network = "ethereum",
-    }) => {
+    async ({ privateKey, tokenAddress, tokenId, toAddress, network }) => {
       try {
         // Get the formattedKey with 0x prefix
         const formattedKey = privateKey.startsWith("0x")
           ? (privateKey as `0x${string}`)
-          : (`0x${privateKey}` as `0x${string}`);
+          : (`0x${privateKey}` as `0x${string}`)
 
         const result = await services.transferERC721(
           tokenAddress as Address,
@@ -444,7 +397,7 @@ export function registerTransactionTools(server: McpServer) {
           BigInt(tokenId),
           formattedKey,
           network
-        );
+        )
 
         return {
           content: [
@@ -459,14 +412,14 @@ export function registerTransactionTools(server: McpServer) {
                   tokenId: result.tokenId,
                   recipient: toAddress,
                   name: result.token.name,
-                  symbol: result.token.symbol,
+                  symbol: result.token.symbol
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -474,14 +427,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error transferring NFT: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Transfer ERC1155 token
   server.tool(
@@ -509,12 +462,7 @@ export function registerTransactionTools(server: McpServer) {
       toAddress: z
         .string()
         .describe("The recipient wallet address that will receive the tokens"),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. ERC1155 tokens exist across many networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
     async ({
       privateKey,
@@ -522,13 +470,13 @@ export function registerTransactionTools(server: McpServer) {
       tokenId,
       amount,
       toAddress,
-      network = "ethereum",
+      network
     }) => {
       try {
         // Get the formattedKey with 0x prefix
         const formattedKey = privateKey.startsWith("0x")
           ? (privateKey as `0x${string}`)
-          : (`0x${privateKey}` as `0x${string}`);
+          : (`0x${privateKey}` as `0x${string}`)
 
         const result = await services.transferERC1155(
           tokenAddress as Address,
@@ -537,7 +485,7 @@ export function registerTransactionTools(server: McpServer) {
           amount,
           formattedKey,
           network
-        );
+        )
 
         return {
           content: [
@@ -551,14 +499,14 @@ export function registerTransactionTools(server: McpServer) {
                   contract: tokenAddress,
                   tokenId: result.tokenId,
                   amount: result.amount,
-                  recipient: toAddress,
+                  recipient: toAddress
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -566,14 +514,14 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error transferring ERC1155 tokens: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Transfer ERC20 tokens
   server.tool(
@@ -600,20 +548,9 @@ export function registerTransactionTools(server: McpServer) {
         .describe(
           "Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({
-      privateKey,
-      tokenAddress,
-      toAddress,
-      amount,
-      network = "ethereum",
-    }) => {
+    async ({ privateKey, tokenAddress, toAddress, amount, network }) => {
       try {
         const result = await services.transferERC20(
           tokenAddress,
@@ -621,7 +558,7 @@ export function registerTransactionTools(server: McpServer) {
           amount,
           privateKey,
           network
-        );
+        )
 
         return {
           content: [
@@ -635,14 +572,14 @@ export function registerTransactionTools(server: McpServer) {
                   toAddress,
                   amount: result.amount.formatted,
                   symbol: result.token.symbol,
-                  network,
+                  network
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -650,12 +587,12 @@ export function registerTransactionTools(server: McpServer) {
               type: "text",
               text: `Error transferring tokens: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 }

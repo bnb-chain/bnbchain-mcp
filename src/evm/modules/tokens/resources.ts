@@ -1,26 +1,27 @@
 import {
   McpServer,
-  ResourceTemplate,
-} from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { Address } from "viem";
-import * as services from "@/evm/services/index.js";
+  ResourceTemplate
+} from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { Address } from "viem"
+
+import * as services from "@/evm/services/index.js"
 
 export function registerTokenResources(server: McpServer) {
   // Add ERC20 token info resource
   server.resource(
     "erc20_token_details",
     new ResourceTemplate("evm://{network}/token/{tokenAddress}", {
-      list: undefined,
+      list: undefined
     }),
     async (uri, params) => {
       try {
-        const network = params.network as string;
-        const tokenAddress = params.tokenAddress as Address;
+        const network = params.network as string
+        const tokenAddress = params.tokenAddress as Address
 
         const tokenInfo = await services.getERC20TokenInfo(
           tokenAddress,
           network
-        );
+        )
 
         return {
           contents: [
@@ -30,14 +31,14 @@ export function registerTokenResources(server: McpServer) {
                 {
                   address: tokenAddress,
                   network,
-                  ...tokenInfo,
+                  ...tokenInfo
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           contents: [
@@ -45,13 +46,13 @@ export function registerTokenResources(server: McpServer) {
               uri: uri.href,
               text: `Error fetching ERC20 token info: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
+              }`
+            }
+          ]
+        }
       }
     }
-  );
+  )
 
   // Add ERC20 token balance resource
   server.resource(
@@ -62,15 +63,15 @@ export function registerTokenResources(server: McpServer) {
     ),
     async (uri, params) => {
       try {
-        const network = params.network as string;
-        const tokenAddress = params.tokenAddress as Address;
-        const address = params.address as Address;
+        const network = params.network as string
+        const tokenAddress = params.tokenAddress as Address
+        const address = params.address as Address
 
         const balance = await services.getERC20Balance(
           tokenAddress,
           address,
           network
-        );
+        )
 
         return {
           contents: [
@@ -84,14 +85,14 @@ export function registerTokenResources(server: McpServer) {
                   raw: balance.raw.toString(),
                   formatted: balance.formatted,
                   symbol: balance.token.symbol,
-                  decimals: balance.token.decimals,
+                  decimals: balance.token.decimals
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           contents: [
@@ -99,43 +100,43 @@ export function registerTokenResources(server: McpServer) {
               uri: uri.href,
               text: `Error fetching ERC20 token balance: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
+              }`
+            }
+          ]
+        }
       }
     }
-  );
+  )
 
   // Add NFT (ERC721) token info resource
   server.resource(
     "erc721_nft_token_details",
     new ResourceTemplate("evm://{network}/nft/{tokenAddress}/{tokenId}", {
-      list: undefined,
+      list: undefined
     }),
     async (uri, params) => {
       try {
-        const network = params.network as string;
-        const tokenAddress = params.tokenAddress as Address;
-        const tokenId = BigInt(params.tokenId as string);
+        const network = params.network as string
+        const tokenAddress = params.tokenAddress as Address
+        const tokenId = BigInt(params.tokenId as string)
 
         const nftInfo = await services.getERC721TokenMetadata(
           tokenAddress,
           tokenId,
           network
-        );
+        )
 
         // Get owner separately
-        let owner = "Unknown";
+        let owner = "Unknown"
         try {
           const isOwner = await services.isNFTOwner(
             tokenAddress,
             params.address as Address,
             tokenId,
             network
-          );
+          )
           if (isOwner) {
-            owner = params.address as string;
+            owner = params.address as string
           }
         } catch (e) {
           // Owner info not available
@@ -151,14 +152,14 @@ export function registerTokenResources(server: McpServer) {
                   tokenId: tokenId.toString(),
                   network,
                   ...nftInfo,
-                  owner,
+                  owner
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           contents: [
@@ -166,13 +167,13 @@ export function registerTokenResources(server: McpServer) {
               uri: uri.href,
               text: `Error fetching NFT info: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
+              }`
+            }
+          ]
+        }
       }
     }
-  );
+  )
 
   // Add NFT ownership check resource
   server.resource(
@@ -183,17 +184,17 @@ export function registerTokenResources(server: McpServer) {
     ),
     async (uri, params) => {
       try {
-        const network = params.network as string;
-        const tokenAddress = params.tokenAddress as Address;
-        const tokenId = BigInt(params.tokenId as string);
-        const address = params.address as Address;
+        const network = params.network as string
+        const tokenAddress = params.tokenAddress as Address
+        const tokenId = BigInt(params.tokenId as string)
+        const address = params.address as Address
 
         const isOwner = await services.isNFTOwner(
           tokenAddress,
           address,
           tokenId,
           network
-        );
+        )
 
         return {
           contents: [
@@ -205,14 +206,14 @@ export function registerTokenResources(server: McpServer) {
                   tokenId: tokenId.toString(),
                   owner: address,
                   network,
-                  isOwner,
+                  isOwner
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           contents: [
@@ -220,13 +221,13 @@ export function registerTokenResources(server: McpServer) {
               uri: uri.href,
               text: `Error checking NFT ownership: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
+              }`
+            }
+          ]
+        }
       }
     }
-  );
+  )
 
   // Add ERC1155 token URI resource
   server.resource(
@@ -237,15 +238,15 @@ export function registerTokenResources(server: McpServer) {
     ),
     async (uri, params) => {
       try {
-        const network = params.network as string;
-        const tokenAddress = params.tokenAddress as Address;
-        const tokenId = BigInt(params.tokenId as string);
+        const network = params.network as string
+        const tokenAddress = params.tokenAddress as Address
+        const tokenId = BigInt(params.tokenId as string)
 
         const tokenURI = await services.getERC1155TokenURI(
           tokenAddress,
           tokenId,
           network
-        );
+        )
 
         return {
           contents: [
@@ -256,14 +257,14 @@ export function registerTokenResources(server: McpServer) {
                   contract: tokenAddress,
                   tokenId: tokenId.toString(),
                   network,
-                  uri: tokenURI,
+                  uri: tokenURI
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           contents: [
@@ -271,13 +272,13 @@ export function registerTokenResources(server: McpServer) {
               uri: uri.href,
               text: `Error fetching ERC1155 token URI: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
+              }`
+            }
+          ]
+        }
       }
     }
-  );
+  )
 
   // Add ERC1155 token balance resource
   server.resource(
@@ -288,17 +289,17 @@ export function registerTokenResources(server: McpServer) {
     ),
     async (uri, params) => {
       try {
-        const network = params.network as string;
-        const tokenAddress = params.tokenAddress as Address;
-        const tokenId = BigInt(params.tokenId as string);
-        const address = params.address as Address;
+        const network = params.network as string
+        const tokenAddress = params.tokenAddress as Address
+        const tokenId = BigInt(params.tokenId as string)
+        const address = params.address as Address
 
         const balance = await services.getERC1155Balance(
           tokenAddress,
           address,
           tokenId,
           network
-        );
+        )
 
         return {
           contents: [
@@ -310,14 +311,14 @@ export function registerTokenResources(server: McpServer) {
                   tokenId: tokenId.toString(),
                   owner: address,
                   network,
-                  balance: balance.toString(),
+                  balance: balance.toString()
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           contents: [
@@ -325,11 +326,11 @@ export function registerTokenResources(server: McpServer) {
               uri: uri.href,
               text: `Error fetching ERC1155 token balance: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
+              }`
+            }
+          ]
+        }
       }
     }
-  );
+  )
 }

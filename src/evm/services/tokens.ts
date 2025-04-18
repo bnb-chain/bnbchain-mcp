@@ -1,11 +1,12 @@
 import {
-  type Address,
-  type Hex,
-  type Hash,
   formatUnits,
   getContract,
-} from "viem";
-import { getPublicClient } from "./clients.js";
+  type Address,
+  type Hash,
+  type Hex
+} from "viem"
+
+import { getPublicClient } from "./clients.js"
 
 // Standard ERC20 ABI (minimal for reading)
 const erc20Abi = [
@@ -14,30 +15,30 @@ const erc20Abi = [
     name: "name",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "symbol",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "decimals",
     outputs: [{ type: "uint8" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "totalSupply",
     outputs: [{ type: "uint256" }],
     stateMutability: "view",
-    type: "function",
-  },
-] as const;
+    type: "function"
+  }
+] as const
 
 // Standard ERC721 ABI (minimal for reading)
 const erc721Abi = [
@@ -46,23 +47,23 @@ const erc721Abi = [
     name: "name",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "symbol",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [{ type: "uint256", name: "tokenId" }],
     name: "tokenURI",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
-  },
-] as const;
+    type: "function"
+  }
+] as const
 
 // Standard ERC1155 ABI (minimal for reading)
 const erc1155Abi = [
@@ -71,9 +72,9 @@ const erc1155Abi = [
     name: "uri",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
-  },
-] as const;
+    type: "function"
+  }
+] as const
 
 /**
  * Get ERC20 token information
@@ -82,34 +83,34 @@ export async function getERC20TokenInfo(
   tokenAddress: Address,
   network: string = "ethereum"
 ): Promise<{
-  name: string;
-  symbol: string;
-  decimals: number;
-  totalSupply: bigint;
-  formattedTotalSupply: string;
+  name: string
+  symbol: string
+  decimals: number
+  totalSupply: bigint
+  formattedTotalSupply: string
 }> {
-  const publicClient = getPublicClient(network);
+  const publicClient = getPublicClient(network)
 
   const contract = getContract({
     address: tokenAddress,
     abi: erc20Abi,
-    client: publicClient,
-  });
+    client: publicClient
+  })
 
   const [name, symbol, decimals, totalSupply] = await Promise.all([
     contract.read.name(),
     contract.read.symbol(),
     contract.read.decimals(),
-    contract.read.totalSupply(),
-  ]);
+    contract.read.totalSupply()
+  ])
 
   return {
     name,
     symbol,
     decimals,
     totalSupply,
-    formattedTotalSupply: formatUnits(totalSupply, decimals),
-  };
+    formattedTotalSupply: formatUnits(totalSupply, decimals)
+  }
 }
 
 /**
@@ -120,29 +121,29 @@ export async function getERC721TokenMetadata(
   tokenId: bigint,
   network: string = "ethereum"
 ): Promise<{
-  name: string;
-  symbol: string;
-  tokenURI: string;
+  name: string
+  symbol: string
+  tokenURI: string
 }> {
-  const publicClient = getPublicClient(network);
+  const publicClient = getPublicClient(network)
 
   const contract = getContract({
     address: tokenAddress,
     abi: erc721Abi,
-    client: publicClient,
-  });
+    client: publicClient
+  })
 
   const [name, symbol, tokenURI] = await Promise.all([
     contract.read.name(),
     contract.read.symbol(),
-    contract.read.tokenURI([tokenId]),
-  ]);
+    contract.read.tokenURI([tokenId])
+  ])
 
   return {
     name,
     symbol,
-    tokenURI,
-  };
+    tokenURI
+  }
 }
 
 /**
@@ -153,13 +154,13 @@ export async function getERC1155TokenURI(
   tokenId: bigint,
   network: string = "ethereum"
 ): Promise<string> {
-  const publicClient = getPublicClient(network);
+  const publicClient = getPublicClient(network)
 
   const contract = getContract({
     address: tokenAddress,
     abi: erc1155Abi,
-    client: publicClient,
-  });
+    client: publicClient
+  })
 
-  return contract.read.uri([tokenId]);
+  return contract.read.uri([tokenId])
 }

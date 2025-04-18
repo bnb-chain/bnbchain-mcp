@@ -1,52 +1,53 @@
 import {
+  getContract,
   parseEther,
   parseUnits,
   type Address,
   type Hash,
-  type Hex,
-  getContract,
-} from "viem";
-import { getPublicClient, getWalletClient } from "./clients.js";
-import { resolveAddress } from "./ens.js";
-import Logger from "@/utils/logger";
+  type Hex
+} from "viem"
+
+import Logger from "@/utils/logger"
+import { getPublicClient, getWalletClient } from "./clients.js"
+import { resolveAddress } from "./ens.js"
 
 // Standard ERC20 ABI for transfers
 const erc20TransferAbi = [
   {
     inputs: [
       { type: "address", name: "to" },
-      { type: "uint256", name: "amount" },
+      { type: "uint256", name: "amount" }
     ],
     name: "transfer",
     outputs: [{ type: "bool" }],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       { type: "address", name: "spender" },
-      { type: "uint256", name: "amount" },
+      { type: "uint256", name: "amount" }
     ],
     name: "approve",
     outputs: [{ type: "bool" }],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "decimals",
     outputs: [{ type: "uint8" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "symbol",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
-  },
-] as const;
+    type: "function"
+  }
+] as const
 
 // Standard ERC721 ABI for transfers
 const erc721TransferAbi = [
@@ -54,35 +55,35 @@ const erc721TransferAbi = [
     inputs: [
       { type: "address", name: "from" },
       { type: "address", name: "to" },
-      { type: "uint256", name: "tokenId" },
+      { type: "uint256", name: "tokenId" }
     ],
     name: "transferFrom",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "name",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
     name: "symbol",
     outputs: [{ type: "string" }],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [{ type: "uint256", name: "tokenId" }],
     name: "ownerOf",
     outputs: [{ type: "address" }],
     stateMutability: "view",
-    type: "function",
-  },
-] as const;
+    type: "function"
+  }
+] as const
 
 // ERC1155 ABI for transfers
 const erc1155TransferAbi = [
@@ -92,24 +93,24 @@ const erc1155TransferAbi = [
       { type: "address", name: "to" },
       { type: "uint256", name: "id" },
       { type: "uint256", name: "amount" },
-      { type: "bytes", name: "data" },
+      { type: "bytes", name: "data" }
     ],
     name: "safeTransferFrom",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       { type: "address", name: "account" },
-      { type: "uint256", name: "id" },
+      { type: "uint256", name: "id" }
     ],
     name: "balanceOf",
     outputs: [{ type: "uint256" }],
     stateMutability: "view",
-    type: "function",
-  },
-] as const;
+    type: "function"
+  }
+] as const
 
 /**
  * Transfer ETH to an address
@@ -126,23 +127,23 @@ export async function transferETH(
   network = "ethereum"
 ): Promise<Hash> {
   // Resolve ENS name to address if needed
-  const toAddress = await resolveAddress(toAddressOrEns, network);
+  const toAddress = await resolveAddress(toAddressOrEns, network)
 
   // Ensure the private key has 0x prefix
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as Hex)
-      : (privateKey as Hex);
+      : (privateKey as Hex)
 
-  const client = getWalletClient(formattedKey, network);
-  const amountWei = parseEther(amount);
+  const client = getWalletClient(formattedKey, network)
+  const amountWei = parseEther(amount)
 
   return client.sendTransaction({
     to: toAddress,
     value: amountWei,
     account: client.account!,
-    chain: client.chain,
-  });
+    chain: client.chain
+  })
 }
 
 /**
@@ -161,46 +162,46 @@ export async function transferERC20(
   privateKey: string | `0x${string}`,
   network: string = "ethereum"
 ): Promise<{
-  txHash: Hash;
+  txHash: Hash
   amount: {
-    raw: bigint;
-    formatted: string;
-  };
+    raw: bigint
+    formatted: string
+  }
   token: {
-    symbol: string;
-    decimals: number;
-  };
+    symbol: string
+    decimals: number
+  }
 }> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = (await resolveAddress(
     tokenAddressOrEns,
     network
-  )) as Address;
-  const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address;
+  )) as Address
+  const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
   // Ensure the private key has 0x prefix
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`);
+      : (privateKey as `0x${string}`)
 
   // Get token details
-  const publicClient = getPublicClient(network);
+  const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
     abi: erc20TransferAbi,
-    client: publicClient,
-  });
+    client: publicClient
+  })
 
   // Get token decimals and symbol
-  const decimals = await contract.read.decimals();
-  const symbol = await contract.read.symbol();
+  const decimals = await contract.read.decimals()
+  const symbol = await contract.read.symbol()
 
   // Parse the amount with the correct number of decimals
-  const rawAmount = parseUnits(amount, decimals);
+  const rawAmount = parseUnits(amount, decimals)
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
+  const walletClient = getWalletClient(formattedKey, network)
 
   // Send the transaction
   const hash = await walletClient.writeContract({
@@ -209,20 +210,20 @@ export async function transferERC20(
     functionName: "transfer",
     args: [toAddress, rawAmount],
     account: walletClient.account!,
-    chain: walletClient.chain,
-  });
+    chain: walletClient.chain
+  })
 
   return {
     txHash: hash,
     amount: {
       raw: rawAmount,
-      formatted: amount,
+      formatted: amount
     },
     token: {
       symbol,
-      decimals,
-    },
-  };
+      decimals
+    }
+  }
 }
 
 /**
@@ -241,49 +242,49 @@ export async function approveERC20(
   privateKey: string | `0x${string}`,
   network: string = "ethereum"
 ): Promise<{
-  txHash: Hash;
+  txHash: Hash
   amount: {
-    raw: bigint;
-    formatted: string;
-  };
+    raw: bigint
+    formatted: string
+  }
   token: {
-    symbol: string;
-    decimals: number;
-  };
+    symbol: string
+    decimals: number
+  }
 }> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = (await resolveAddress(
     tokenAddressOrEns,
     network
-  )) as Address;
+  )) as Address
   const spenderAddress = (await resolveAddress(
     spenderAddressOrEns,
     network
-  )) as Address;
+  )) as Address
 
   // Ensure the private key has 0x prefix
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`);
+      : (privateKey as `0x${string}`)
 
   // Get token details
-  const publicClient = getPublicClient(network);
+  const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
     abi: erc20TransferAbi,
-    client: publicClient,
-  });
+    client: publicClient
+  })
 
   // Get token decimals and symbol
-  const decimals = await contract.read.decimals();
-  const symbol = await contract.read.symbol();
+  const decimals = await contract.read.decimals()
+  const symbol = await contract.read.symbol()
 
   // Parse the amount with the correct number of decimals
-  const rawAmount = parseUnits(amount, decimals);
+  const rawAmount = parseUnits(amount, decimals)
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
+  const walletClient = getWalletClient(formattedKey, network)
 
   // Send the transaction
   const hash = await walletClient.writeContract({
@@ -292,20 +293,20 @@ export async function approveERC20(
     functionName: "approve",
     args: [spenderAddress, rawAmount],
     account: walletClient.account!,
-    chain: walletClient.chain,
-  });
+    chain: walletClient.chain
+  })
 
   return {
     txHash: hash,
     amount: {
       raw: rawAmount,
-      formatted: amount,
+      formatted: amount
     },
     token: {
       symbol,
-      decimals,
-    },
-  };
+      decimals
+    }
+  }
 }
 
 /**
@@ -324,29 +325,29 @@ export async function transferERC721(
   privateKey: string | `0x${string}`,
   network: string = "ethereum"
 ): Promise<{
-  txHash: Hash;
-  tokenId: string;
+  txHash: Hash
+  tokenId: string
   token: {
-    name: string;
-    symbol: string;
-  };
+    name: string
+    symbol: string
+  }
 }> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = (await resolveAddress(
     tokenAddressOrEns,
     network
-  )) as Address;
-  const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address;
+  )) as Address
+  const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
   // Ensure the private key has 0x prefix
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`);
+      : (privateKey as `0x${string}`)
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
-  const fromAddress = walletClient.account!.address;
+  const walletClient = getWalletClient(formattedKey, network)
+  const fromAddress = walletClient.account!.address
 
   // Send the transaction
   const hash = await walletClient.writeContract({
@@ -355,28 +356,28 @@ export async function transferERC721(
     functionName: "transferFrom",
     args: [fromAddress, toAddress, tokenId],
     account: walletClient.account!,
-    chain: walletClient.chain,
-  });
+    chain: walletClient.chain
+  })
 
   // Get token metadata
-  const publicClient = getPublicClient(network);
+  const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
     abi: erc721TransferAbi,
-    client: publicClient,
-  });
+    client: publicClient
+  })
 
   // Get token name and symbol
-  let name = "Unknown";
-  let symbol = "NFT";
+  let name = "Unknown"
+  let symbol = "NFT"
 
   try {
-    [name, symbol] = await Promise.all([
+    ;[name, symbol] = await Promise.all([
       contract.read.name(),
-      contract.read.symbol(),
-    ]);
+      contract.read.symbol()
+    ])
   } catch (error) {
-    Logger.error("Error fetching NFT metadata:", error);
+    Logger.error("Error fetching NFT metadata:", error)
   }
 
   return {
@@ -384,9 +385,9 @@ export async function transferERC721(
     tokenId: tokenId.toString(),
     token: {
       name,
-      symbol,
-    },
-  };
+      symbol
+    }
+  }
 }
 
 /**
@@ -407,29 +408,29 @@ export async function transferERC1155(
   privateKey: string | `0x${string}`,
   network: string = "ethereum"
 ): Promise<{
-  txHash: Hash;
-  tokenId: string;
-  amount: string;
+  txHash: Hash
+  tokenId: string
+  amount: string
 }> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = (await resolveAddress(
     tokenAddressOrEns,
     network
-  )) as Address;
-  const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address;
+  )) as Address
+  const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
   // Ensure the private key has 0x prefix
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`);
+      : (privateKey as `0x${string}`)
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
-  const fromAddress = walletClient.account!.address;
+  const walletClient = getWalletClient(formattedKey, network)
+  const fromAddress = walletClient.account!.address
 
   // Parse amount to bigint
-  const amountBigInt = BigInt(amount);
+  const amountBigInt = BigInt(amount)
 
   // Send the transaction
   const hash = await walletClient.writeContract({
@@ -438,12 +439,12 @@ export async function transferERC1155(
     functionName: "safeTransferFrom",
     args: [fromAddress, toAddress, tokenId, amountBigInt, "0x"],
     account: walletClient.account!,
-    chain: walletClient.chain,
-  });
+    chain: walletClient.chain
+  })
 
   return {
     txHash: hash,
     tokenId: tokenId.toString(),
-    amount,
-  };
+    amount
+  }
 }

@@ -1,4 +1,4 @@
-import * as util from 'node:util';
+import * as util from "node:util"
 
 enum LogLevel {
   DEBUG = 0,
@@ -7,57 +7,65 @@ enum LogLevel {
   ERROR = 3
 }
 
-type LogLevelStrings = keyof typeof LogLevel;
+type LogLevelStrings = keyof typeof LogLevel
 
 class Logger {
-  private static currentLevel: LogLevel = Logger.getLogLevelFromEnv();
+  private static currentLevel: LogLevel = Logger.getLogLevelFromEnv()
 
   private static getLogLevelFromEnv(): LogLevel {
-    const envLevel = (process.env.LOG_LEVEL || 'INFO').toUpperCase() as LogLevelStrings;
-    return LogLevel[envLevel] ?? LogLevel.INFO;
+    const envLevel = (
+      process.env.LOG_LEVEL || "INFO"
+    ).toUpperCase() as LogLevelStrings
+    return LogLevel[envLevel] ?? LogLevel.INFO
   }
 
   private static shouldLog(level: LogLevel): boolean {
-    return level >= this.currentLevel;
+    return level >= this.currentLevel
   }
 
-  private static formatMessage(level: LogLevelStrings, message: string, meta?: any): string {
-    const timestamp = new Date().toISOString();
-    const metaStr = meta ? ' ' + util.inspect(meta, { depth: 5, colors: true }) : '';
-    return `[${timestamp}] ${level}: ${message}${metaStr}`;
+  private static formatMessage(
+    level: LogLevelStrings,
+    message: string,
+    meta?: any
+  ): string {
+    const timestamp = new Date().toISOString()
+    const metaStr = meta
+      ? " " + util.inspect(meta, { depth: 5, colors: true })
+      : ""
+    return `[${timestamp}] ${level}: ${message}${metaStr}`
   }
 
   static setLogLevel(level: LogLevelStrings) {
-    this.currentLevel = LogLevel[level];
+    this.currentLevel = LogLevel[level]
   }
 
   static debug(message: string, meta?: any) {
     if (this.shouldLog(LogLevel.DEBUG)) {
-      console.debug(this.formatMessage('DEBUG', message, meta));
+      console.debug(this.formatMessage("DEBUG", message, meta))
     }
   }
 
   static info(message: string, meta?: any) {
     if (this.shouldLog(LogLevel.INFO)) {
-      console.info(this.formatMessage('INFO', message, meta));
+      console.info(this.formatMessage("INFO", message, meta))
     }
   }
 
   static warn(message: string, meta?: any) {
     if (this.shouldLog(LogLevel.WARN)) {
-      console.warn(this.formatMessage('WARN', message, meta));
+      console.warn(this.formatMessage("WARN", message, meta))
     }
   }
 
   static error(message: string, meta?: any) {
     if (this.shouldLog(LogLevel.ERROR)) {
-      console.error(this.formatMessage('ERROR', message, meta));
+      console.error(this.formatMessage("ERROR", message, meta))
     }
   }
 
   static getLevel(): LogLevelStrings {
-    return LogLevel[this.currentLevel] as LogLevelStrings;
+    return LogLevel[this.currentLevel] as LogLevelStrings
   }
 }
 
-export default Logger; 
+export default Logger

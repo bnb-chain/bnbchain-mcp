@@ -1,7 +1,9 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import type { Address } from "viem";
-import * as services from "@/evm/services/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { Address } from "viem"
+import { z } from "zod"
+
+import * as services from "@/evm/services/index.js"
+import { defaultNetworkParam } from "../common/types"
 
 export function registerNftTools(server: McpServer) {
   // Get NFT (ERC721) information
@@ -17,23 +19,18 @@ export function registerNftTools(server: McpServer) {
       tokenId: z
         .string()
         .describe("The ID of the specific NFT token to query (e.g., '1234')"),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. Most NFTs are on Ethereum mainnet, which is the default."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ tokenAddress, tokenId, network = "ethereum" }) => {
+    async ({ tokenAddress, tokenId, network }) => {
       try {
         const nftInfo = await services.getERC721TokenMetadata(
           tokenAddress as Address,
           BigInt(tokenId),
           network
-        );
+        )
 
         // Check ownership separately
-        let owner = null;
+        let owner = null
         try {
           // This may fail if tokenId doesn't exist
           owner = await services.getPublicClient(network).readContract({
@@ -44,12 +41,12 @@ export function registerNftTools(server: McpServer) {
                 name: "ownerOf",
                 outputs: [{ type: "address" }],
                 stateMutability: "view",
-                type: "function",
-              },
+                type: "function"
+              }
             ],
             functionName: "ownerOf",
-            args: [BigInt(tokenId)],
-          });
+            args: [BigInt(tokenId)]
+          })
         } catch (e) {
           // Ownership info not available
         }
@@ -64,14 +61,14 @@ export function registerNftTools(server: McpServer) {
                   tokenId,
                   network,
                   ...nftInfo,
-                  owner: owner || "Unknown",
+                  owner: owner || "Unknown"
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -79,14 +76,14 @@ export function registerNftTools(server: McpServer) {
               type: "text",
               text: `Error fetching NFT info: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Check NFT ownership
   server.tool(
@@ -104,21 +101,16 @@ export function registerNftTools(server: McpServer) {
         .describe(
           "The wallet address or ENS name to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ tokenAddress, tokenId, ownerAddress, network = "ethereum" }) => {
+    async ({ tokenAddress, tokenId, ownerAddress, network }) => {
       try {
         const isOwner = await services.isNFTOwner(
           tokenAddress,
           ownerAddress,
           BigInt(tokenId),
           network
-        );
+        )
 
         return {
           content: [
@@ -133,14 +125,14 @@ export function registerNftTools(server: McpServer) {
                   isOwner,
                   result: isOwner
                     ? "Address owns this NFT"
-                    : "Address does not own this NFT",
+                    : "Address does not own this NFT"
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -148,14 +140,14 @@ export function registerNftTools(server: McpServer) {
               type: "text",
               text: `Error checking NFT ownership: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Add tool for getting ERC1155 token URI
   server.tool(
@@ -172,20 +164,15 @@ export function registerNftTools(server: McpServer) {
         .describe(
           "The ID of the specific token to query metadata for (e.g., '1234')"
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. ERC1155 tokens exist across many networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ tokenAddress, tokenId, network = "ethereum" }) => {
+    async ({ tokenAddress, tokenId, network }) => {
       try {
         const uri = await services.getERC1155TokenURI(
           tokenAddress as Address,
           BigInt(tokenId),
           network
-        );
+        )
 
         return {
           content: [
@@ -196,14 +183,14 @@ export function registerNftTools(server: McpServer) {
                   contract: tokenAddress,
                   tokenId,
                   network,
-                  uri,
+                  uri
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -211,14 +198,14 @@ export function registerNftTools(server: McpServer) {
               type: "text",
               text: `Error fetching ERC1155 token URI: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Add tool for getting ERC721 NFT balance
   server.tool(
@@ -235,20 +222,15 @@ export function registerNftTools(server: McpServer) {
         .describe(
           "The wallet address to check the NFT balance for (e.g., '0x1234...')"
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. Most NFTs are on Ethereum mainnet, which is the default."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ tokenAddress, ownerAddress, network = "ethereum" }) => {
+    async ({ tokenAddress, ownerAddress, network }) => {
       try {
         const balance = await services.getERC721Balance(
           tokenAddress as Address,
           ownerAddress as Address,
           network
-        );
+        )
 
         return {
           content: [
@@ -259,14 +241,14 @@ export function registerNftTools(server: McpServer) {
                   collection: tokenAddress,
                   owner: ownerAddress,
                   network,
-                  balance: balance.toString(),
+                  balance: balance.toString()
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -274,14 +256,14 @@ export function registerNftTools(server: McpServer) {
               type: "text",
               text: `Error fetching NFT balance: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Add tool for getting ERC1155 token balance
   server.tool(
@@ -303,21 +285,16 @@ export function registerNftTools(server: McpServer) {
         .describe(
           "The wallet address to check the token balance for (e.g., '0x1234...')"
         ),
-      network: z
-        .string()
-        .optional()
-        .describe(
-          "Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', 'polygon') or chain ID. ERC1155 tokens exist across many networks. Defaults to Ethereum mainnet."
-        ),
+      network: defaultNetworkParam
     },
-    async ({ tokenAddress, tokenId, ownerAddress, network = "ethereum" }) => {
+    async ({ tokenAddress, tokenId, ownerAddress, network }) => {
       try {
         const balance = await services.getERC1155Balance(
           tokenAddress as Address,
           ownerAddress as Address,
           BigInt(tokenId),
           network
-        );
+        )
 
         return {
           content: [
@@ -329,14 +306,14 @@ export function registerNftTools(server: McpServer) {
                   tokenId,
                   owner: ownerAddress,
                   network,
-                  balance: balance.toString(),
+                  balance: balance.toString()
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -344,12 +321,12 @@ export function registerNftTools(server: McpServer) {
               type: "text",
               text: `Error fetching ERC1155 token balance: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 }

@@ -1,6 +1,7 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import { networkSchema } from "../common/types.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { z } from "zod"
+
+import { networkSchema } from "../common/types.js"
 
 export function registerTransactionPrompts(server: McpServer) {
   // Transaction analysis prompt
@@ -9,16 +10,18 @@ export function registerTransactionPrompts(server: McpServer) {
     "Analyze a specific transaction",
     {
       txHash: z.string().describe("Transaction hash to analyze"),
-      network: networkSchema,
+      network: networkSchema
     },
     ({ txHash, network = "bsc" }) => ({
-      messages: [{
-        role: "user",
-        content: {
-          type: "text",
-          text: `Please analyze transaction ${txHash} on the ${network} network and provide a detailed explanation of what this transaction does, who the parties involved are, the amount transferred (if applicable), gas used, and any other relevant information.`
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please analyze transaction ${txHash} on the ${network} network and provide a detailed explanation of what this transaction does, who the parties involved are, the amount transferred (if applicable), gas used, and any other relevant information.`
+          }
         }
-      }]
+      ]
     })
-  );
-} 
+  )
+}

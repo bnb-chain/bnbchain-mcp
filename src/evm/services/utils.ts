@@ -1,4 +1,4 @@
-import { parseEther, formatEther } from "viem";
+import { formatEther, parseEther } from "viem"
 
 /**
  * Utility functions for formatting and parsing values
@@ -23,16 +23,16 @@ export const utils = {
 
   // Format a number with commas
   formatNumber: (value: number | string): string => {
-    return Number(value).toLocaleString();
+    return Number(value).toLocaleString()
   },
 
   // Convert a hex string to a number
   hexToNumber: (hex: string): number => {
-    return parseInt(hex, 16);
+    return parseInt(hex, 16)
   },
 
   // Convert a number to a hex string
   numberToHex: (num: number): string => {
-    return "0x" + num.toString(16);
-  },
-};
+    return "0x" + num.toString(16)
+  }
+}

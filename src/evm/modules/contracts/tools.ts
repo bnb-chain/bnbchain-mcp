@@ -1,8 +1,9 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import type { Address, Hex } from "viem";
-import * as services from "@/evm/services/index.js";
-import { networkSchema } from "@/evm/modules/common/types.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { Address, Hex } from "viem"
+import { z } from "zod"
+
+import { defaultNetworkParam } from "@/evm/modules/common/types.js"
+import * as services from "@/evm/services/index.js"
 
 export function registerContractTools(server: McpServer) {
   // Check if address is contract
@@ -11,14 +12,14 @@ export function registerContractTools(server: McpServer) {
     "Check if an address is a smart contract or an externally owned account (EOA)",
     {
       address: z.string().describe("The wallet or contract address to check"),
-      network: networkSchema,
+      network: defaultNetworkParam
     },
     async ({ address, network = "bsc" }) => {
       try {
         const isContract = await services.isContract(
           address as Address,
           network
-        );
+        )
 
         return {
           content: [
@@ -29,14 +30,14 @@ export function registerContractTools(server: McpServer) {
                   address,
                   network,
                   isContract,
-                  type: isContract ? "Contract" : "EOA",
+                  type: isContract ? "Contract" : "EOA"
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -44,14 +45,14 @@ export function registerContractTools(server: McpServer) {
               type: "text",
               text: `Error checking contract status: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Read contract data
   server.tool(
@@ -71,36 +72,36 @@ export function registerContractTools(server: McpServer) {
         .array(z.any())
         .optional()
         .describe("The arguments to pass to the function"),
-      network: networkSchema,
+      network: defaultNetworkParam
     },
     async ({
       contractAddress,
       abi,
       functionName,
       args = [],
-      network = "bsc",
+      network = "bsc"
     }) => {
       try {
         // Parse ABI if it's a string
-        const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi;
+        const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi
 
         const params = {
           address: contractAddress as Address,
           abi: parsedAbi,
           functionName,
-          args,
-        };
+          args
+        }
 
-        const result = await services.readContract(params, network);
+        const result = await services.readContract(params, network)
 
         return {
           content: [
             {
               type: "text",
-              text: services.helpers.formatJson(result),
-            },
-          ],
-        };
+              text: services.helpers.formatJson(result)
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -108,14 +109,14 @@ export function registerContractTools(server: McpServer) {
               type: "text",
               text: `Error reading contract: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 
   // Write to contract
   server.tool(
@@ -137,7 +138,7 @@ export function registerContractTools(server: McpServer) {
         .describe(
           "Private key of the sending account. Used only for transaction signing."
         ),
-      network: networkSchema,
+      network: defaultNetworkParam
     },
     async ({
       contractAddress,
@@ -145,24 +146,24 @@ export function registerContractTools(server: McpServer) {
       functionName,
       args,
       privateKey,
-      network = "bsc",
+      network = "bsc"
     }) => {
       try {
         // Parse ABI if it's a string
-        const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi;
+        const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi
 
         const contractParams: Record<string, any> = {
           address: contractAddress as Address,
           abi: parsedAbi,
           functionName,
-          args,
-        };
+          args
+        }
 
         const txHash = await services.writeContract(
           privateKey as Hex,
           contractParams,
           network
-        );
+        )
 
         return {
           content: [
@@ -174,14 +175,14 @@ export function registerContractTools(server: McpServer) {
                   functionName,
                   args,
                   transactionHash: txHash,
-                  message: "Contract write transaction sent successfully",
+                  message: "Contract write transaction sent successfully"
                 },
                 null,
                 2
-              ),
-            },
-          ],
-        };
+              )
+            }
+          ]
+        }
       } catch (error) {
         return {
           content: [
@@ -189,12 +190,12 @@ export function registerContractTools(server: McpServer) {
               type: "text",
               text: `Error writing to contract: ${
                 error instanceof Error ? error.message : String(error)
-              }`,
-            },
+              }`
+            }
           ],
-          isError: true,
-        };
+          isError: true
+        }
       }
     }
-  );
+  )
 }

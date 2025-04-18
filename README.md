@@ -18,11 +18,13 @@ bun install
 ## Running the Server
 
 Development mode with hot reload:
+
 ```bash
 bun run dev
 ```
 
 Production mode:
+
 ```bash
 bun run start
 ```
@@ -30,7 +32,9 @@ bun run start
 ## Available Tools
 
 ### 1. Get Balance
+
 Get the balance of a BNB Chain address:
+
 ```typescript
 {
   name: "get-balance",
@@ -42,7 +46,9 @@ Get the balance of a BNB Chain address:
 ```
 
 ### 2. Get Latest Block
+
 Get information about the latest block:
+
 ```typescript
 {
   name: "get-latest-block",
@@ -55,16 +61,21 @@ Get information about the latest block:
 ## Available Resources
 
 ### Chain Information
+
 Access BNB Chain network information:
+
 ```
 bnb-chain://{network}
 ```
+
 Where network can be "mainnet" or "testnet"
 
 ## Available Prompts
 
 ### Transaction Analysis
+
 Analyze a BNB Chain transaction:
+
 ```typescript
 {
   name: "analyze-transaction",

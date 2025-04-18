@@ -1,6 +1,7 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import { networkSchema } from "../common/types.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { z } from "zod"
+
+import { networkSchema } from "../common/types.js"
 
 export function registerBlockPrompts(server: McpServer) {
   // Basic block explorer prompt
@@ -14,7 +15,7 @@ export function registerBlockPrompts(server: McpServer) {
         .describe(
           "Block number to explore. If not provided, latest block will be used."
         ),
-      network: networkSchema,
+      network: networkSchema
     },
     ({ blockNumber, network = "bsc" }) => ({
       messages: [
@@ -24,10 +25,10 @@ export function registerBlockPrompts(server: McpServer) {
             type: "text",
             text: blockNumber
               ? `Please analyze block #${blockNumber} on the ${network} network and provide information about its key metrics, transactions, and significance.`
-              : `Please analyze the latest block on the ${network} network and provide information about its key metrics, transactions, and significance.`,
-          },
-        },
-      ],
+              : `Please analyze the latest block on the ${network} network and provide information about its key metrics, transactions, and significance.`
+          }
+        }
+      ]
     })
-  );
+  )
 }
