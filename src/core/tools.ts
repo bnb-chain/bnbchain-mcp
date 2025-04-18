@@ -4,6 +4,7 @@ import { getSupportedNetworks, getRpcUrl } from "./chains.js";
 import * as services from "./services/index.js";
 import { type Address, type Hex, type Hash } from 'viem';
 import { normalize } from 'viem/ens';
+import { networkSchema } from "./prompts.js";
 
 /**
  * Register all EVM-related tools with the MCP server
@@ -21,9 +22,9 @@ export function registerEVMTools(server: McpServer) {
     "get_chain_info",
     "Get information about an EVM network",
     {
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    async ({ network = "ethereum" }) => {
+    async ({ network = "bsc" }) => {
       try {
         const chainId = await services.getChainId(network);
         const blockNumber = await services.getBlockNumber(network);
@@ -57,12 +58,12 @@ export function registerEVMTools(server: McpServer) {
   // Resolve ENS name to address
   server.tool(
     "resolve_ens",
-    "Resolve an ENS name to an Ethereum address",
+    "Resolve an ENS name to an evm address",
     {
       ensName: z.string().describe("ENS name to resolve (e.g., 'vitalik.eth')"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. ENS resolution works best on Ethereum mainnet. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    async ({ ensName, network = "ethereum" }) => {
+    async ({ ensName, network = "bsc" }) => {
       try {
         // Validate that the input is an ENS name
         if (!ensName.includes('.')) {

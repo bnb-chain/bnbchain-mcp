@@ -1,6 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+export const networkSchema = z.string()
+  .describe("Network name (e.g. 'bsc', 'opbnb', 'ethereum', 'base', etc.) or chain ID. Supports others main popular networks. Defaults to BSC mainnet.")
+  .optional();
+
 /**
  * Register all EVM-related prompts with the MCP server
  * @param server The MCP server instance
@@ -12,9 +16,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Explore information about a specific block",
     {
       blockNumber: z.string().optional().describe("Block number to explore. If not provided, latest block will be used."),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    ({ blockNumber, network = "ethereum" }) => ({
+    ({ blockNumber, network = "bsc" }) => ({
       messages: [{
         role: "user",
         content: {
@@ -33,9 +37,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Analyze a specific transaction",
     {
       txHash: z.string().describe("Transaction hash to analyze"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    ({ txHash, network = "ethereum" }) => ({
+    ({ txHash, network = "bsc" }) => ({
       messages: [{
         role: "user",
         content: {
@@ -52,9 +56,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Analyze an EVM address",
     {
       address: z.string().describe("Ethereum address to analyze"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    ({ address, network = "ethereum" }) => ({
+    ({ address, network = "bsc" }) => ({
       messages: [{
         role: "user",
         content: {
@@ -72,9 +76,9 @@ export function registerEVMPrompts(server: McpServer) {
     {
       contractAddress: z.string().describe("The contract address"),
       abiJson: z.string().optional().describe("The contract ABI as a JSON string"),
-      network: z.string().optional().describe("Network name or chain ID. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    ({ contractAddress, abiJson, network = "ethereum" }) => ({
+    ({ contractAddress, abiJson, network = "bsc" }) => ({
       messages: [{
         role: "user",
         content: {
@@ -110,7 +114,7 @@ export function registerEVMPrompts(server: McpServer) {
     "compare_networks",
     "Compare different EVM-compatible networks",
     {
-      networkList: z.string().describe("Comma-separated list of networks to compare (e.g., 'ethereum,optimism,arbitrum')")
+      networkList: z.string().describe("Comma-separated list of networks to compare (e.g., 'bsc,opbnb,ethereum,optimism,base,etc.')")
     },
     ({ networkList }) => {
       const networks = networkList.split(',').map(n => n.trim());
@@ -134,9 +138,9 @@ export function registerEVMPrompts(server: McpServer) {
       tokenAddress: z.string().describe("Token contract address to analyze"),
       tokenType: z.string().optional().describe("Type of token to analyze (erc20, erc721/nft, or auto-detect). Defaults to auto."),
       tokenId: z.string().optional().describe("Token ID (required for NFT analysis)"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: networkSchema,
     },
-    ({ tokenAddress, tokenType = "auto", tokenId, network = "ethereum" }) => {
+    ({ tokenAddress, tokenType = "auto", tokenId, network = "bsc" }) => {
       let promptText = "";
       
       if (tokenType === "erc20" || tokenType === "auto") {

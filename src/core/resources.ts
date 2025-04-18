@@ -43,11 +43,11 @@ export function registerEVMResources(server: McpServer) {
 
   // Default chain info (Ethereum mainnet)
   server.resource(
-    "ethereum_chain_info", 
+    "bnb_chain_info", 
     "evm://chain",
     async (uri) => {
       try {
-        const network = "ethereum";
+        const network = "bsc";
         const chainId = await services.getChainId(network);
         const blockNumber = await services.getBlockNumber(network);
         const rpcUrl = getRpcUrl(network);
@@ -160,7 +160,7 @@ export function registerEVMResources(server: McpServer) {
     "evm://block/latest",
     async (uri) => {
       try {
-        const network = "ethereum";
+        const network = "bsc";
         const block = await services.getLatestBlock(network);
         
         return {
@@ -214,13 +214,13 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Default ETH balance (Ethereum mainnet)
+  // Default BNB balance (BSC mainnet)
   server.resource(
-    "default_eth_balance",
-    new ResourceTemplate("evm://address/{address}/eth-balance", { list: undefined }),
+    "default_bnb_balance",
+    new ResourceTemplate("evm://address/{address}/bnb-balance", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "ethereum";
+        const network = "bsc";
         const address = params.address as string;
         const balance = await services.getETHBalance(address as Address, network);
         
@@ -296,7 +296,7 @@ export function registerEVMResources(server: McpServer) {
     new ResourceTemplate("evm://address/{address}/token/{tokenAddress}/balance", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "ethereum";
+        const network = "bsc";
         const address = params.address as string;
         const tokenAddress = params.tokenAddress as string;
         
@@ -365,7 +365,7 @@ export function registerEVMResources(server: McpServer) {
     new ResourceTemplate("evm://tx/{txHash}", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "ethereum";
+        const network = "bsc";
         const txHash = params.txHash as string;
         const tx = await services.getTransaction(txHash as Hash, network);
         
