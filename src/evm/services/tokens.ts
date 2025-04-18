@@ -1,78 +1,78 @@
-import { 
-  type Address, 
+import {
+  type Address,
   type Hex,
   type Hash,
   formatUnits,
-  getContract
-} from 'viem';
-import { getPublicClient } from './clients.js';
+  getContract,
+} from "viem";
+import { getPublicClient } from "./clients.js";
 
 // Standard ERC20 ABI (minimal for reading)
 const erc20Abi = [
   {
     inputs: [],
-    name: 'name',
-    outputs: [{ type: 'string' }],
-    stateMutability: 'view',
-    type: 'function'
+    name: "name",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'symbol',
-    outputs: [{ type: 'string' }],
-    stateMutability: 'view',
-    type: 'function'
+    name: "symbol",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'decimals',
-    outputs: [{ type: 'uint8' }],
-    stateMutability: 'view',
-    type: 'function'
+    name: "decimals",
+    outputs: [{ type: "uint8" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'totalSupply',
-    outputs: [{ type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function'
-  }
+    name: "totalSupply",
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 // Standard ERC721 ABI (minimal for reading)
 const erc721Abi = [
   {
     inputs: [],
-    name: 'name',
-    outputs: [{ type: 'string' }],
-    stateMutability: 'view',
-    type: 'function'
+    name: "name",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'symbol',
-    outputs: [{ type: 'string' }],
-    stateMutability: 'view',
-    type: 'function'
+    name: "symbol",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
-    inputs: [{ type: 'uint256', name: 'tokenId' }],
-    name: 'tokenURI',
-    outputs: [{ type: 'string' }],
-    stateMutability: 'view',
-    type: 'function'
-  }
+    inputs: [{ type: "uint256", name: "tokenId" }],
+    name: "tokenURI",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 // Standard ERC1155 ABI (minimal for reading)
 const erc1155Abi = [
   {
-    inputs: [{ type: 'uint256', name: 'id' }],
-    name: 'uri',
-    outputs: [{ type: 'string' }],
-    stateMutability: 'view',
-    type: 'function'
-  }
+    inputs: [{ type: "uint256", name: "id" }],
+    name: "uri",
+    outputs: [{ type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 /**
@@ -80,7 +80,7 @@ const erc1155Abi = [
  */
 export async function getERC20TokenInfo(
   tokenAddress: Address,
-  network: string = 'ethereum'
+  network: string = "ethereum"
 ): Promise<{
   name: string;
   symbol: string;
@@ -100,7 +100,7 @@ export async function getERC20TokenInfo(
     contract.read.name(),
     contract.read.symbol(),
     contract.read.decimals(),
-    contract.read.totalSupply()
+    contract.read.totalSupply(),
   ]);
 
   return {
@@ -108,7 +108,7 @@ export async function getERC20TokenInfo(
     symbol,
     decimals,
     totalSupply,
-    formattedTotalSupply: formatUnits(totalSupply, decimals)
+    formattedTotalSupply: formatUnits(totalSupply, decimals),
   };
 }
 
@@ -118,7 +118,7 @@ export async function getERC20TokenInfo(
 export async function getERC721TokenMetadata(
   tokenAddress: Address,
   tokenId: bigint,
-  network: string = 'ethereum'
+  network: string = "ethereum"
 ): Promise<{
   name: string;
   symbol: string;
@@ -135,13 +135,13 @@ export async function getERC721TokenMetadata(
   const [name, symbol, tokenURI] = await Promise.all([
     contract.read.name(),
     contract.read.symbol(),
-    contract.read.tokenURI([tokenId])
+    contract.read.tokenURI([tokenId]),
   ]);
 
   return {
     name,
     symbol,
-    tokenURI
+    tokenURI,
   };
 }
 
@@ -151,7 +151,7 @@ export async function getERC721TokenMetadata(
 export async function getERC1155TokenURI(
   tokenAddress: Address,
   tokenId: bigint,
-  network: string = 'ethereum'
+  network: string = "ethereum"
 ): Promise<string> {
   const publicClient = getPublicClient(network);
 
@@ -162,4 +162,4 @@ export async function getERC1155TokenURI(
   });
 
   return contract.read.uri([tokenId]);
-} 
+}

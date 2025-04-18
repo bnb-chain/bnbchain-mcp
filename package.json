@@ -8,7 +8,7 @@
     "dev": "bun --watch run src/server/stdio.ts",
     "dev:sse": "bun --watch run src/server/sse.ts",
     "build": "bun build src/**/*.ts --outdir dist --target node",
-    "test:client": "bun run test/client.ts"
+    "test": "bun run test/client.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.9.0",

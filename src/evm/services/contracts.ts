@@ -1,18 +1,21 @@
-import { 
-  type Address, 
-  type Hash, 
+import {
+  type Address,
+  type Hash,
   type Hex,
   type ReadContractParameters,
   type GetLogsParameters,
-  type Log
-} from 'viem';
-import { getPublicClient, getWalletClient } from './clients.js';
-import { resolveAddress } from './ens.js';
+  type Log,
+} from "viem";
+import { getPublicClient, getWalletClient } from "./clients.js";
+import { resolveAddress } from "./ens.js";
 
 /**
  * Read from a contract for a specific network
  */
-export async function readContract(params: ReadContractParameters, network = 'ethereum') {
+export async function readContract(
+  params: ReadContractParameters,
+  network = "ethereum"
+) {
   const client = getPublicClient(network);
   return await client.readContract(params);
 }
@@ -21,9 +24,9 @@ export async function readContract(params: ReadContractParameters, network = 'et
  * Write to a contract for a specific network
  */
 export async function writeContract(
-  privateKey: Hex, 
-  params: Record<string, any>, 
-  network = 'ethereum'
+  privateKey: Hex,
+  params: Record<string, any>,
+  network = "ethereum"
 ): Promise<Hash> {
   const client = getWalletClient(privateKey, network);
   return await client.writeContract(params as any);
@@ -32,7 +35,10 @@ export async function writeContract(
 /**
  * Get logs for a specific network
  */
-export async function getLogs(params: GetLogsParameters, network = 'ethereum'): Promise<Log[]> {
+export async function getLogs(
+  params: GetLogsParameters,
+  network = "ethereum"
+): Promise<Log[]> {
   const client = getPublicClient(network);
   return await client.getLogs(params);
 }
@@ -43,11 +49,14 @@ export async function getLogs(params: GetLogsParameters, network = 'ethereum'): 
  * @param network Network name or chain ID
  * @returns True if the address is a contract, false if it's an EOA
  */
-export async function isContract(addressOrEns: string, network = 'ethereum'): Promise<boolean> {
+export async function isContract(
+  addressOrEns: string,
+  network = "ethereum"
+): Promise<boolean> {
   // Resolve ENS name to address if needed
   const address = await resolveAddress(addressOrEns, network);
-  
+
   const client = getPublicClient(network);
   const code = await client.getBytecode({ address });
-  return code !== undefined && code !== '0x';
-} 
+  return code !== undefined && code !== "0x";
+}
