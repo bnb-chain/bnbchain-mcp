@@ -14,6 +14,7 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "Private key in hex format (with or without 0x prefix). SECURITY: This is used only for address derivation and is not stored."
         )
+        .default(process.env.PRIVATE_KEY as string)
     },
     async ({ privateKey }) => {
       try {

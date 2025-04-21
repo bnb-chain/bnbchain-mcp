@@ -1,5 +1,7 @@
 {
-  "name": "bnbchain-mcp",
+  "name": "@bnb-chain/mcp-server",
+  "version": "0.0.1",
+  "description": "A MCP server for BNB Chain that supports BSC, opBNB, Greenfield, and other popular EVM-compatible networks.",
   "module": "index.ts",
   "scripts": {
     "start": "node dist/server/stdio.js",
@@ -10,6 +12,15 @@
     "test": "npx @modelcontextprotocol/inspector bun dev",
     "prepare": "husky",
     "format": "prettier --write ."
+  },
+  "bin": {
+    "bnbchain-mcp-server": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.9.0",
@@ -30,6 +41,7 @@
     "@commitlint/config-conventional": "^19.5.0",
     "@ianvs/prettier-plugin-sort-imports": "4.1.1"
   },
+  "license": "MIT",
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"

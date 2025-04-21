@@ -155,7 +155,8 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .describe(
           "Private key of the sender account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
-        ),
+        )
+        .default(process.env.PRIVATE_KEY as string),
       to: z
         .string()
         .describe(
@@ -220,7 +221,8 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .describe(
           "Private key of the sending account (this is used for signing and is never stored)"
-        ),
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe("The address of the ERC20 token contract"),
@@ -292,7 +294,8 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .describe(
           "Private key of the token owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
-        ),
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe(
@@ -370,7 +373,8 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .describe(
           "Private key of the NFT owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
-        ),
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe(
@@ -445,7 +449,8 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .describe(
           "Private key of the token owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
-        ),
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe(
@@ -532,7 +537,8 @@ export function registerTransactionTools(server: McpServer) {
         .string()
         .describe(
           "Private key of the sender account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
-        ),
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe(
