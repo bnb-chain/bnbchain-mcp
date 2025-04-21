@@ -2,29 +2,6 @@ name: Release and Publish
 
 on:
   workflow_dispatch:
-    inputs:
-      version_type:
-        description: "Version type (prerelease, prepatch, patch, preminor, minor, premajor, major)"
-        required: true
-        default: "patch"
-        type: choice
-        options:
-          - prerelease
-          - prepatch
-          - patch
-          - preminor
-          - minor
-          - premajor
-          - major
-      custom_version:
-        description: "Custom version (leave empty to use version_type)"
-        required: false
-        type: string
-      dist_tag:
-        description: "npm distribution tag (latest, next, beta, etc)"
-        required: false
-        default: "latest"
-        type: string
 
 jobs:
   release-and-publish:
@@ -33,6 +10,7 @@ jobs:
       contents: write
       packages: write
       id-token: write
+      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
