@@ -3,18 +3,18 @@
   "version": "0.0.1",
   "description": "A MCP server for BNB Chain that supports BSC, opBNB, Greenfield, and other popular EVM-compatible networks.",
   "scripts": {
-    "start": "node dist/server/stdio.js",
-    "start:sse": "node dist/server/sse.js",
-    "dev": "bun --watch run src/server/stdio.ts",
-    "dev:sse": "bun --watch run src/server/sse.ts",
-    "build": "bun build src/**/*.ts --outdir dist --target node --format cjs",
+    "start": "node dist/index.js",
+    "start:sse": "bun run start --sse",
+    "dev": "bun --watch run src/index.ts",
+    "dev:sse": "bun run dev --sse",
+    "build": "bun build src/*.ts --outdir dist --target node --format cjs",
     "test": "npx @modelcontextprotocol/inspector bun dev",
     "prepare": "husky",
     "format": "prettier --write ."
   },
-  "main": "dist/server/stdio.js",
+  "main": "dist/index.js",
   "bin": {
-    "bnbchain-mcp": "./dist/cli/index.js"
+    "bnbchain-mcp": "./dist/index.js"
   },
   "files": [
     "dist"
