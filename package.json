@@ -1,5 +1,5 @@
 {
-  "name": "@bnb-chain/mcp-server",
+  "name": "@bnb-chain/mcp",
   "version": "0.0.1",
   "description": "A MCP server for BNB Chain that supports BSC, opBNB, Greenfield, and other popular EVM-compatible networks.",
   "scripts": {
@@ -14,7 +14,7 @@
   },
   "main": "dist/server/stdio.js",
   "bin": {
-    "bnbchain-mcp-server": "./dist/cli/index.js"
+    "bnbchain-mcp": "./dist/cli/index.js"
   },
   "files": [
     "dist"
