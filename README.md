@@ -94,7 +94,7 @@ Supports BSC, opBNB, Ethereum, and other major EVM-compatible networks. For more
 
 ## Testing
 
-We use the `@modelcontextprotocol/inspector` tool for testing. Run the following command to open a UI interface for inspection:
+We use the [`@modelcontextprotocol/inspector`](https://github.com/modelcontextprotocol/inspector) tool for testing. Run the following command to open a UI interface for inspection:
 
 ```bash
 bun run test
