@@ -1,7 +1,0 @@
-{
-  "mcpServers": {
-    "bnbchain-mcp": {
-      "url": "http://localhost:3001/sse"
-    }
-  }
-}
