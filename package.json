@@ -2,17 +2,17 @@
   "name": "@bnb-chain/mcp-server",
   "version": "0.0.1",
   "description": "A MCP server for BNB Chain that supports BSC, opBNB, Greenfield, and other popular EVM-compatible networks.",
-  "module": "index.ts",
   "scripts": {
     "start": "node dist/server/stdio.js",
     "start:sse": "node dist/server/sse.js",
     "dev": "bun --watch run src/server/stdio.ts",
     "dev:sse": "bun --watch run src/server/sse.ts",
-    "build": "bun build src/**/*.ts --outdir dist --target node",
+    "build": "bun build src/**/*.ts --outdir dist --target node --format cjs",
     "test": "npx @modelcontextprotocol/inspector bun dev",
     "prepare": "husky",
     "format": "prettier --write ."
   },
+  "main": "dist/server/stdio.js",
   "bin": {
     "bnbchain-mcp-server": "./dist/cli/index.js"
   },
@@ -32,14 +32,14 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.0.0",
-    "husky": "^9.1.6",
-    "prettier": "3.2.4",
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
-    "@ianvs/prettier-plugin-sort-imports": "4.1.1"
+    "husky": "^9.1.7",
+    "prettier": "3.2.4"
   },
   "license": "MIT",
   "commitlint": {

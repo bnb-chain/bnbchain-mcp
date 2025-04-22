@@ -94,7 +94,7 @@ Supports BSC, opBNB, Ethereum, and other major EVM-compatible networks. For more
 
 ## Testing
 
-We use the @modelcontextprotocol/inspector tool for testing. Run the following command to open a UI interface for inspection:
+We use the `@modelcontextprotocol/inspector` tool for testing. Run the following command to open a UI interface for inspection:
 
 ```bash
 bun run test
@@ -115,3 +115,12 @@ Please ensure your code follows our coding standards and includes appropriate te
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## References and Acknowledgments
+
+This project is built upon and inspired by the following open-source projects:
+
+- [TermiX-official/bsc-mcp](https://github.com/TermiX-official/bsc-mcp) - Original BSC MCP implementation
+- [mcpdotdirect/evm-mcp-server](https://github.com/mcpdotdirect/evm-mcp-server) - EVM-compatible MCP server implementation
+
+We extend our gratitude to the original authors for their contributions to the blockchain ecosystem.

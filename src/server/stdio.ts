@@ -10,7 +10,7 @@ export const startStdioServer = async () => {
   try {
     const server = startServer()
     const transport = new StdioServerTransport()
-    Logger.info("BNBChain MCP Server running on stdio")
+    Logger.info("BNBChain MCP Server running on stdio mode")
 
     await server.connect(transport)
   } catch (error) {
