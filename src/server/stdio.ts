@@ -13,10 +13,9 @@ export const startStdioServer = async () => {
     Logger.info("BNBChain MCP Server running on stdio mode")
 
     await server.connect(transport)
+    return server
   } catch (error) {
-    Logger.error("Error starting BNBChain MCP server:", error)
+    Logger.error("Error starting BNBChain MCP Stdio server:", error)
     process.exit(1)
   }
 }
-
-startStdioServer()
