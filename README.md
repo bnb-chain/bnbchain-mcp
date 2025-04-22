@@ -35,7 +35,10 @@ Default mode
   "mcpServers": {
     "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp"]
+      "args": ["-y", "@bnb-chain/mcp"],
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here"
+      }
     }
   }
 }
@@ -48,7 +51,10 @@ SSE mode
   "mcpServers": {
     "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp", "--sse"]
+      "args": ["-y", "@bnb-chain/mcp", "--sse"],
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here"
+      }
     }
   }
 }
