@@ -33,9 +33,9 @@ Default mode
 ```json
 {
   "mcpServers": {
-    "bnbchain-mcp-server": {
+    "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp-server"]
+      "args": ["-y", "@bnb-chain/mcp"]
     }
   }
 }
@@ -46,9 +46,9 @@ SSE mode
 ```json
 {
   "mcpServers": {
-    "bnbchain-mcp-server": {
+    "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp-server", "--sse"]
+      "args": ["-y", "@bnb-chain/mcp", "--sse"]
     }
   }
 }
