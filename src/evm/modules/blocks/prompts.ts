@@ -6,8 +6,8 @@ import { networkSchema } from "../common/types.js"
 export function registerBlockPrompts(server: McpServer) {
   // Basic block explorer prompt
   server.prompt(
-    "explore_block",
-    "Explore information about a specific block",
+    "analyze_block",
+    "Analyze a block and provide detailed information about its contents",
     {
       blockNumber: z
         .string()
