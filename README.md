@@ -18,6 +18,7 @@ The project is organized into several core modules:
 - **Transactions**: Transaction management
 - **Wallet**: Wallet operations and management
 - **Common**: Shared utilities and types
+- Additional features coming soon (Greenfield, Swap, Bridge, etc.)
 
 ## How to Use in Cursor
 
@@ -37,7 +38,7 @@ Default mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here"
+        "PRIVATE_KEY": "your_private_key_here. (optinal)"
       }
     }
   }
@@ -53,7 +54,7 @@ SSE mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp", "--sse"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here"
+        "PRIVATE_KEY": "your_private_key_here. (optinal)"
       }
     }
   }
