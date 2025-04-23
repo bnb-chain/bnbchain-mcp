@@ -79,7 +79,6 @@ bun dev
 | Name                                                               | Description                                           |
 | ------------------------------------------------------------------ | ----------------------------------------------------- |
 | [`get_chain_info`](src/evm/modules/network/tools.ts)               | Get information about an EVM network                  |
-| [`get_supported_networks`](src/evm/modules/network/tools.ts)       | Get a list of supported EVM networks                  |
 | [`get_transaction`](src/evm/modules/transactions/tools.ts)         | Get detailed information about a specific transaction |
 | [`get_transaction_receipt`](src/evm/modules/transactions/tools.ts) | Get a transaction receipt by its hash                 |
 | [`estimate_gas`](src/evm/modules/transactions/tools.ts)            | Estimate the gas cost for a transaction               |

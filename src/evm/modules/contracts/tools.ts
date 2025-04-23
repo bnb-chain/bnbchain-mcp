@@ -74,13 +74,7 @@ export function registerContractTools(server: McpServer) {
         .describe("The arguments to pass to the function"),
       network: defaultNetworkParam
     },
-    async ({
-      contractAddress,
-      abi,
-      functionName,
-      args = [],
-      network = "bsc"
-    }) => {
+    async ({ contractAddress, abi, functionName, args = [], network }) => {
       try {
         // Parse ABI if it's a string
         const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi

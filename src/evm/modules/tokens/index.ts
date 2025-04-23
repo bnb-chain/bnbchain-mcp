@@ -1,9 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { registerTokenPrompts } from "./prompts"
-import { registerTokenResources } from "./resources"
+import { registerTokenTools } from "./tools"
 
 export function registerTokens(server: McpServer) {
-  registerTokenResources(server)
+  registerTokenTools(server)
   registerTokenPrompts(server)
 }

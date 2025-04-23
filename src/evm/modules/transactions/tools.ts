@@ -146,10 +146,10 @@ export function registerTransactionTools(server: McpServer) {
 
   // TRANSFER TOOLS
 
-  // Transfer ETH
+  // Transfer BNB
   server.tool(
-    "transfer_eth",
-    "Transfer native tokens (ETH, MATIC, etc.) to an address",
+    "transfer_native_token",
+    "Transfer native tokens (BNB, ETH, MATIC, etc.) to an address",
     {
       privateKey: z
         .string()
@@ -165,7 +165,7 @@ export function registerTransactionTools(server: McpServer) {
       amount: z
         .string()
         .describe(
-          "Amount to send in ETH (or the native token of the network), as a string (e.g., '0.1')"
+          "Amount to send in BNB (or the native token of the network), as a string (e.g., '0.1')"
         ),
       network: defaultNetworkParam
     },
@@ -201,80 +201,7 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: `Error transferring ETH: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
-      }
-    }
-  )
-
-  // Transfer ERC20
-  server.tool(
-    "transfer_erc20",
-    "Transfer ERC20 tokens to another address",
-    {
-      privateKey: z
-        .string()
-        .describe(
-          "Private key of the sending account (this is used for signing and is never stored)"
-        )
-        .default(process.env.PRIVATE_KEY as string),
-      tokenAddress: z
-        .string()
-        .describe("The address of the ERC20 token contract"),
-      toAddress: z.string().describe("The recipient address"),
-      amount: z
-        .string()
-        .describe(
-          "The amount of tokens to send (in token units, e.g., '10' for 10 tokens)"
-        ),
-      network: defaultNetworkParam
-    },
-    async ({ privateKey, tokenAddress, toAddress, amount, network }) => {
-      try {
-        // Get the formattedKey with 0x prefix
-        const formattedKey = privateKey.startsWith("0x")
-          ? (privateKey as `0x${string}`)
-          : (`0x${privateKey}` as `0x${string}`)
-
-        const result = await services.transferERC20(
-          tokenAddress as Address,
-          toAddress as Address,
-          amount,
-          formattedKey,
-          network
-        )
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  success: true,
-                  txHash: result.txHash,
-                  network,
-                  tokenAddress,
-                  recipient: toAddress,
-                  amount: result.amount.formatted,
-                  symbol: result.token.symbol
-                },
-                null,
-                2
-              )
-            }
-          ]
-        }
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error transferring ERC20 tokens: ${
+              text: `Error transferring BNB: ${
                 error instanceof Error ? error.message : String(error)
               }`
             }
@@ -530,7 +457,7 @@ export function registerTransactionTools(server: McpServer) {
 
   // Transfer ERC20 tokens
   server.tool(
-    "transfer_token",
+    "transfer_erc20",
     "Transfer ERC20 tokens to an address",
     {
       privateKey: z

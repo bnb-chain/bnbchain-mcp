@@ -7,10 +7,10 @@ import * as services from "@/evm/services/index.js"
 import { defaultNetworkParam } from "../common/types.js"
 
 export function registerNetworkTools(server: McpServer) {
-  // Get chain information
+  // Get EVM info for a specific network
   server.tool(
     "get_chain_info",
-    "Get information about an EVM network",
+    "Get chain information for a specific network",
     {
       network: defaultNetworkParam
     },
@@ -42,12 +42,45 @@ export function registerNetworkTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: `Error fetching chain info: ${
-                error instanceof Error ? error.message : String(error)
-              }`
+              text: `Error fetching chain info: ${error instanceof Error ? error.message : String(error)}`
             }
-          ],
-          isError: true
+          ]
+        }
+      }
+    }
+  )
+
+  // Get supported networks
+  server.tool(
+    "get_supported_networks",
+    "Get list of supported networks",
+    {},
+    async () => {
+      try {
+        const networks = getSupportedNetworks()
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  supportedNetworks: networks
+                },
+                null,
+                2
+              )
+            }
+          ]
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error fetching supported networks: ${error instanceof Error ? error.message : String(error)}`
+            }
+          ]
         }
       }
     }
@@ -56,10 +89,10 @@ export function registerNetworkTools(server: McpServer) {
   // Resolve ENS name to address
   server.tool(
     "resolve_ens",
-    "Resolve an ENS name to an evm address",
+    "Resolve an ENS name to an EVM address (not supported on BSC)",
     {
       ensName: z.string().describe("ENS name to resolve (e.g., 'vitalik.eth')"),
-      network: defaultNetworkParam
+      network: defaultNetworkParam.default("eth")
     },
     async ({ ensName, network }) => {
       try {
@@ -105,45 +138,6 @@ export function registerNetworkTools(server: McpServer) {
             {
               type: "text",
               text: `Error resolving ENS name: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
-      }
-    }
-  )
-
-  // Get supported networks
-  server.tool(
-    "get_supported_networks",
-    "Get a list of supported EVM networks",
-    {},
-    async () => {
-      try {
-        const networks = getSupportedNetworks()
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  supportedNetworks: networks
-                },
-                null,
-                2
-              )
-            }
-          ]
-        }
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching supported networks: ${
                 error instanceof Error ? error.message : String(error)
               }`
             }

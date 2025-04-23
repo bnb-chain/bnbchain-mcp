@@ -24,7 +24,6 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
 
-    "types": ["bun-types"],
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
     "outDir": "dist",
