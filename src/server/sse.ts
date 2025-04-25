@@ -70,6 +70,5 @@ export const startSSEServer = async () => {
     return server
   } catch (error) {
     Logger.error("Error starting BNBChain MCP SSE Server:", error)
-    process.exit(1)
   }
 }

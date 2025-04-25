@@ -36,7 +36,7 @@ Default mode
   "mcpServers": {
     "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp"],
+      "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
         "PRIVATE_KEY": "your_private_key_here. (optinal)"
       }
@@ -52,7 +52,7 @@ SSE mode
   "mcpServers": {
     "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp", "--sse"],
+      "args": ["-y", "@bnb-chain/mcp@latest", "--sse"],
       "env": {
         "PRIVATE_KEY": "your_private_key_here. (optinal)"
       }
@@ -61,11 +61,43 @@ SSE mode
 }
 ```
 
+## Integration with Claude Desktop
+
+To connect to the MCP server from Claude Desktop:
+
+1. Open Claude Desktop and go to Settings
+2. Click on "Developer" in the left sidebar
+3. Click the "Edit Config" Button
+4. Add the following configuration to the `claude_desktop_config.json` file:
+
+```json
+{
+  "mcpServers": {
+    "bnbchain-mcp": {
+      "command": "npx",
+      "args": ["-y", "@bnb-chain/mcp@latest"],
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here"
+      }
+    }
+  }
+}
+```
+
+5. Save the file and restart Claude Desktop
+
+Once connected, you can use all the MCP prompts and tools directly in your Claude Desktop conversations. For example:
+
+- "Analyze this address: 0x123..."
+- "Explain the EVM concept of gas"
+- "Check the latest block on BSC"
+
 ## Development
 
 ### Prerequisites
 
 - [bun](http://bun.sh/) 1.2.10 or higher
+- [Node.js](https://nodejs.org/en/download) (v16 or higher)
 
 ```bash
 # Install dependencies

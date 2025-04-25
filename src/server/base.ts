@@ -2,7 +2,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { registerEVM } from "@/evm/index.js"
 import Logger from "@/utils/logger.js"
-import { getSupportedNetworks } from "../evm/chains.js"
 
 // Create and start the MCP server
 export const startServer = () => {
@@ -15,12 +14,6 @@ export const startServer = () => {
 
     // Register all resources, tools, and prompts
     registerEVM(server)
-
-    // Log server information
-    Logger.info(`BNBChain MCP Server initialized`)
-    Logger.info(`Supported networks: ${getSupportedNetworks().join(", ")}`)
-    Logger.info("Server is ready to handle requests")
-
     return server
   } catch (error) {
     Logger.error("Failed to initialize server:", error)

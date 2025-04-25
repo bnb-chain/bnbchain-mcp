@@ -9,15 +9,19 @@ const args = process.argv.slice(2)
 const sseMode = args.includes("--sse") || args.includes("-s")
 
 async function main() {
-  let server: McpServer
+  let server: McpServer | undefined
   if (sseMode) {
     server = await startSSEServer()
   } else {
     server = await startStdioServer()
   }
 
+  if (!server) {
+    logger.error("Failed to start server")
+    process.exit(1)
+  }
+
   const handleShutdown = async () => {
-    logger.debug("BNBChain MCP Server shutting down")
     await server.close()
     process.exit(0)
   }
