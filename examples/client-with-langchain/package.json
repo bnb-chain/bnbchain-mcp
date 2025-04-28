@@ -1,0 +1,25 @@
+{
+  "name": "client-with-langchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/core": "^0.3.49",
+    "@langchain/langgraph": "^0.2.67",
+    "@langchain/mcp-adapters": "^0.4.2",
+    "@langchain/openai": "^0.5.7",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "typescript": "^5.8.3"
+  }
+}
