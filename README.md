@@ -20,7 +20,7 @@ The project is organized into several core modules:
 - **Common**: Shared utilities and types
 - Additional features coming soon (Greenfield, Swap, Bridge, etc.)
 
-## How to Use in Cursor
+## Integration with Cursor
 
 To connect to the MCP server from Cursor:
 
@@ -91,6 +91,18 @@ Once connected, you can use all the MCP prompts and tools directly in your Claud
 - "Analyze this address: 0x123..."
 - "Explain the EVM concept of gas"
 - "Check the latest block on BSC"
+
+## Integration with Other Clients
+
+If you want to integrate BNBChain MCP into your own client, please check out the [examples](./examples) directory for more detailed information and reference implementations.
+
+The examples demonstrate:
+
+- How to set up the MCP client
+- Authentication and configuration
+- Making API calls to interact with blockchain networks
+- Handling responses and errors
+- Best practices for integration
 
 ## Development
 
