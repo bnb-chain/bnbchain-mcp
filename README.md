@@ -109,7 +109,7 @@ The examples demonstrate:
 ### Prerequisites
 
 - [bun](http://bun.sh/) 1.2.10 or higher
-- [Node.js](https://nodejs.org/en/download) (v16 or higher)
+- [Node.js](https://nodejs.org/en/download) (v17 or higher)
 
 ```bash
 # Install dependencies

@@ -16,7 +16,7 @@ The Anthropic client integration enables Claude models to interact directly with
 
 ### Prerequisites
 
-- Node.js 16 or higher
+- Node.js 17 or higher
 - An Anthropic API key
 - (Optional) A private key for blockchain transactions
 
@@ -39,6 +39,7 @@ The Anthropic client integration enables Claude models to interact directly with
 ### Running the Client
 
 ```bash
+npm run build
 npm start
 ```
 
