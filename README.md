@@ -104,20 +104,74 @@ The examples demonstrate:
 - Handling responses and errors
 - Best practices for integration
 
-## Development
+## Local Development
 
 ### Prerequisites
 
-- [bun](http://bun.sh/) 1.2.10 or higher
-- [Node.js](https://nodejs.org/en/download) (v17 or higher)
+- [bun](http://bun.sh/) v1.2.10 or higher
+- [Node.js](https://nodejs.org/en/download) v17 or higher
+
+### Quick Start
+
+1. Clone the repository:
 
 ```bash
-# Install dependencies
+git clone https://github.com/bnb-chain/bnbchain-mcp.git
+cd bnbchain-mcp
+```
+
+2. Set up environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` file with your configuration:
+
+- `PRIVATE_KEY`: Your wallet private key (required for transaction operations)
+- `LOG_LEVEL`: Set logging level (DEBUG, INFO, WARN, ERROR)
+- `PORT`: Server port number (default: 3001)
+
+3. Install dependencies and start development server:
+
+```bash
+# Install project dependencies
 bun install
 
 # Start the development server
-bun dev
+bun dev:sse
 ```
+
+### Testing with MCP Clients
+
+Configure the local server in your MCP clients using this template:
+
+```json
+{
+  "mcpServers": {
+    "bnbchain-mcp": {
+      "url": "http://localhost:3001/sse",
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here"
+      }
+    }
+  }
+}
+```
+
+#### Testing with Web UI
+
+We use [`@modelcontextprotocol/inspector`](https://github.com/modelcontextprotocol/inspector) for testing. Launch the test UI:
+
+```bash
+bun run test
+```
+
+#### Available Scripts
+
+- `bun dev:sse`: Start development server with hot reload
+- `bun build`: Build the project
+- `bun test`: Run test suite
 
 ## Available Prompts and Tools
 
@@ -167,14 +221,6 @@ bun dev
 ## Supported Networks
 
 Supports BSC, opBNB, Ethereum, and other major EVM-compatible networks. For more details, see [`src/evm/chains.ts`](src/evm/chains.ts).
-
-## Testing
-
-We use the [`@modelcontextprotocol/inspector`](https://github.com/modelcontextprotocol/inspector) tool for testing. Run the following command to open a UI interface for inspection:
-
-```bash
-bun run test
-```
 
 ## Contributing
 
