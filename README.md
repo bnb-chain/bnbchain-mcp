@@ -2,6 +2,10 @@
 
 A powerful toolkit for interacting with BNB Chain and other EVM-compatible networks through natural language processing and AI assistance.
 
+<a href="https://glama.ai/mcp/servers/@bnb-chain/bnbchain-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@bnb-chain/bnbchain-mcp/badge" alt="bnbchain-mcp MCP server" />
+</a>
+
 ## Description
 
 BNBChain MCP is a Model Context Protocol implementation that enables seamless interaction with blockchain networks through AI-powered interfaces. It provides a comprehensive set of tools and resources for blockchain development, smart contract interaction, and network management.
