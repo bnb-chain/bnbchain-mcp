@@ -8,7 +8,7 @@
     "dev": "bun run src/index.ts --sse",
     "build": "bun build src/*.ts --outdir dist --target node --format cjs",
     "test": "npx @modelcontextprotocol/inspector bun dev",
-    "bun:test": "bun test",
+    "bun:test": "LOGLEVEL=debug bun test",
     "prepare": "husky",
     "format": "prettier --write ."
   },

@@ -18,6 +18,7 @@ The project is organized into several core modules:
 - **Transactions**: Transaction management
 - **Wallet**: Wallet operations and management
 - **Common**: Shared utilities and types
+- **Greenfield**: Support file management operations on Greenfield network including, uploading, downloading, and managing files and buckets
 - Additional features coming soon (Greenfield, Swap, Bridge, etc.)
 
 ## Integration with Cursor
@@ -159,7 +160,7 @@ Configure the local server in your MCP clients using this template:
 }
 ```
 
-#### Testing with Web UI
+### Testing with Web UI
 
 We use [`@modelcontextprotocol/inspector`](https://github.com/modelcontextprotocol/inspector) for testing. Launch the test UI:
 
@@ -167,7 +168,7 @@ We use [`@modelcontextprotocol/inspector`](https://github.com/modelcontextprotoc
 bun run test
 ```
 
-#### Available Scripts
+### Available Scripts
 
 - `bun dev:sse`: Start development server with hot reload
 - `bun build`: Build the project
@@ -217,6 +218,16 @@ bun run test
 | get_erc1155_token_uri        | Get the metadata URI for an ERC1155 token                                    |
 | get_nft_balance              | Get the total number of NFTs owned by an address from a specific collection  |
 | get_erc1155_balance          | Get the balance of a specific ERC1155 token ID owned by an address           |
+| get_bucket_info              | Get detailed information about a specific bucket                             |
+| list_buckets                 | List all buckets owned by an address                                         |
+| create_bucket                | Create a new bucket                                                          |
+| delete_bucket                | Delete a bucket                                                              |
+| get_object_info              | Get detailed information about a specific object                             |
+| list_objects                 | List all objects in a bucket                                                 |
+| upload_object                | Upload an object to a bucket                                                 |
+| download_object              | Download an object from a bucket                                             |
+| delete_object                | Delete an object from a bucket                                               |
+| create_folder                | Create a folder in a bucket                                                  |
 
 ## Supported Networks
 

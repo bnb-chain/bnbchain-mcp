@@ -5,6 +5,7 @@ import {
   RedundancyType,
   VisibilityType
 } from "@bnb-chain/greenfield-js-sdk"
+import { BucketInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
@@ -19,13 +20,32 @@ interface BucketData {
   bucketName: string
 }
 
+export const getBucketInfo = async (
+  network: "testnet" | "mainnet",
+  bucketName: string
+): Promise<ApiResponse<BucketInfo>> => {
+  try {
+    const client = getClient(network)
+    const res = await client.bucket.headBucket(bucketName)
+    return response.success(res.bucketInfo as {} as BucketInfo)
+  } catch (error) {
+    Logger.error(`Get bucket info operation failed: ${error}`)
+    return response.fail(`Get bucket info operation failed: ${error}`)
+  }
+}
+
 /**
  * Create a bucket in Greenfield
  */
 export const createBucket = async (
   network: "testnet" | "mainnet",
-  privateKey: Hex,
-  bucketName?: string
+  {
+    privateKey,
+    bucketName
+  }: {
+    privateKey: Hex
+    bucketName?: string
+  }
 ): Promise<ApiResponse<BucketData>> => {
   const client = getClient(network)
   const account = await getAccount(network, privateKey)
@@ -86,8 +106,13 @@ export const createBucket = async (
  */
 export const deleteBucket = async (
   network: "testnet" | "mainnet",
-  privateKey: Hex,
-  bucketName: string
+  {
+    privateKey,
+    bucketName
+  }: {
+    privateKey: Hex
+    bucketName: string
+  }
 ): Promise<ApiResponse<void>> => {
   try {
     const client = getClient(network)

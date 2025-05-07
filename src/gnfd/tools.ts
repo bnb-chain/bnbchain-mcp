@@ -30,9 +30,11 @@ export function registerGnfdTools(server: McpServer) {
 
   const bucketNameParam = z
     .string()
-    .default("created-by-bnbchain-mcp")
     .optional()
-    .describe(`Optional bucket name.  Default is 'created-by-bnbchain-mcp'`)
+    .default("created-by-bnbchain-mcp")
+    .describe(
+      "The bucket name to use. If not provided, will use default 'created-by-bnbchain-mcp'"
+    )
 
   // Unified error handling
   const handleError = (error: unknown, operation: string) => {
@@ -120,15 +122,14 @@ export function registerGnfdTools(server: McpServer) {
     {
       network: networkParam,
       privateKey: privateKeyParam,
-      bucketName: z.string().describe("A new bucket name")
+      bucketName: bucketNameParam
     },
     async ({ network, privateKey, bucketName }) => {
       try {
-        const result = await services.createBucket(
-          network,
-          privateKey as Hex,
+        const result = await services.createBucket(network, {
+          privateKey: privateKey as Hex,
           bucketName
-        )
+        })
         return formatResponse(result)
       } catch (error) {
         return handleError(error, "creating bucket")
@@ -150,19 +151,23 @@ export function registerGnfdTools(server: McpServer) {
         ),
       bucketName: bucketNameParam
     },
-    async ({ network, privateKey, filePath, bucketName }) => {
+    async ({
+      network,
+      privateKey,
+      filePath,
+      bucketName = "created-by-bnbchain-mcp"
+    }) => {
       try {
         // Ensure absolute path is used
         const absoluteFilePath = path.isAbsolute(filePath)
           ? filePath
           : path.resolve(process.cwd(), filePath)
 
-        const result = await services.createFile(
-          network,
-          privateKey as Hex,
-          absoluteFilePath,
+        const result = await services.createFile(network, {
+          privateKey: privateKey as Hex,
+          filePath: absoluteFilePath,
           bucketName
-        )
+        })
         return formatResponse(result)
       } catch (error) {
         return handleError(error, "creating file")
@@ -186,12 +191,11 @@ export function registerGnfdTools(server: McpServer) {
     },
     async ({ network, privateKey, folderName, bucketName }) => {
       try {
-        const result = await services.createFolder(
-          network,
-          privateKey as Hex,
+        const result = await services.createFolder(network, {
+          privateKey: privateKey as Hex,
           folderName,
           bucketName
-        )
+        })
         return formatResponse(result)
       } catch (error) {
         return handleError(error, "creating folder")
@@ -258,12 +262,11 @@ export function registerGnfdTools(server: McpServer) {
     },
     async ({ network, privateKey, bucketName, objectName }) => {
       try {
-        const result = await services.deleteObject(
-          network,
-          privateKey as Hex,
+        const result = await services.deleteObject(network, {
+          privateKey: privateKey as Hex,
           bucketName,
           objectName
-        )
+        })
         return formatResponse(result)
       } catch (error) {
         return handleError(error, "deleting object")
@@ -282,14 +285,80 @@ export function registerGnfdTools(server: McpServer) {
     },
     async ({ network, privateKey, bucketName }) => {
       try {
-        const result = await services.deleteBucket(
-          network,
-          privateKey as Hex,
+        const result = await services.deleteBucket(network, {
+          privateKey: privateKey as Hex,
           bucketName
-        )
+        })
         return formatResponse(result)
       } catch (error) {
         return handleError(error, "deleting bucket")
+      }
+    }
+  )
+
+  // 11. Get bucket info
+  server.tool(
+    "gnfd_get_bucket_info",
+    "Get detailed information about a bucket",
+    {
+      network: networkParam,
+      bucketName: z.string().describe("The name of the bucket to get info for")
+    },
+    async ({ network, bucketName }) => {
+      try {
+        const result = await services.getBucketInfo(network, bucketName)
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "getting bucket info")
+      }
+    }
+  )
+
+  // 12. Get object info
+  server.tool(
+    "gnfd_get_object_info",
+    "Get detailed information about an object in a bucket",
+    {
+      network: networkParam,
+      bucketName: z
+        .string()
+        .describe("The name of the bucket containing the object"),
+      objectName: z.string().describe("The name of the object to get info for")
+    },
+    async ({ network, bucketName, objectName }) => {
+      try {
+        const result = await services.getObjectInfo(network, {
+          bucketName,
+          objectName
+        })
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "getting object info")
+      }
+    }
+  )
+  // 13. Download object
+  server.tool(
+    "gnfd_download_object",
+    "Download an object from a bucket",
+    {
+      network: networkParam,
+      bucketName: z
+        .string()
+        .describe("The name of the bucket containing the object"),
+      objectName: z.string().describe("The name of the object to download"),
+      privateKey: privateKeyParam
+    },
+    async ({ network, bucketName, objectName, privateKey }) => {
+      try {
+        const result = await services.downloadObject(network, {
+          bucketName,
+          objectName,
+          privateKey: privateKey as Hex
+        })
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "downloading object")
       }
     }
   )

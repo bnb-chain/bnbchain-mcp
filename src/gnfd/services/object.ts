@@ -1,6 +1,6 @@
 import "reflect-metadata"
 
-import { readFileSync, statSync } from "fs"
+import { readFileSync, statSync, writeFileSync } from "fs"
 import path from "path"
 import {
   bytesFromBase64,
@@ -8,6 +8,7 @@ import {
   RedundancyType,
   VisibilityType
 } from "@bnb-chain/greenfield-js-sdk"
+import { ObjectInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import mimeTypes from "mime-types"
 import type { Hex } from "viem"
@@ -48,9 +49,15 @@ const createFileObject = (filePath: string) => {
  */
 export const createFile = async (
   network: "testnet" | "mainnet",
-  privateKey: Hex,
-  filePath: string,
-  bucketName?: string
+  {
+    privateKey,
+    filePath,
+    bucketName
+  }: {
+    privateKey: Hex
+    filePath: string
+    bucketName?: string
+  }
 ): Promise<ApiResponse<FileData>> => {
   try {
     // Ensure the file exists
@@ -66,7 +73,10 @@ export const createFile = async (
     )
 
     // Get or create bucket
-    const bucketNameRes = await createBucket(network, privateKey, bucketName)
+    const bucketNameRes = await createBucket(network, {
+      privateKey,
+      bucketName
+    })
     if (bucketNameRes.status === "error") {
       return response.fail(
         bucketNameRes.message || "Unknown bucket creation error"
@@ -121,7 +131,7 @@ export const createFile = async (
       }
     )
 
-    Logger.debug(`Upload result: ${uploadRes}`)
+    Logger.debug(`Upload result: ${JSON.stringify(uploadRes)}`)
 
     if (uploadRes.code === 0) {
       return response.success({
@@ -142,15 +152,24 @@ export const createFile = async (
  */
 export const createFolder = async (
   network: "testnet" | "mainnet",
-  privateKey: Hex,
-  folderName?: string,
-  bucketName?: string
+  {
+    privateKey,
+    folderName,
+    bucketName
+  }: {
+    privateKey: Hex
+    folderName?: string
+    bucketName?: string
+  }
 ): Promise<ApiResponse<{ bucketName: string; folderName: string }>> => {
   try {
     const _folderName = folderName || "created-by-bnbchain-mcp"
 
     // Get or create bucket
-    const bucketNameRes = await createBucket(network, privateKey, bucketName)
+    const bucketNameRes = await createBucket(network, {
+      privateKey,
+      bucketName
+    })
     if (bucketNameRes.status === "error") {
       return response.fail(
         bucketNameRes.message || "Unknown bucket creation error"
@@ -201,14 +220,41 @@ export const createFolder = async (
   }
 }
 
+export const getObjectInfo = async (
+  network: "testnet" | "mainnet",
+  {
+    bucketName,
+    objectName
+  }: {
+    bucketName: string
+    objectName: string
+  }
+): Promise<ApiResponse<ObjectInfo>> => {
+  try {
+    const client = getClient(network)
+    const res = await client.object.headObject(bucketName, objectName)
+
+    return response.success(res.objectInfo as {} as ObjectInfo)
+  } catch (error) {
+    Logger.error(`Get object info operation failed: ${error}`)
+    return response.fail(`Get object info operation failed: ${error}`)
+  }
+}
+
 /**
  * Delete an object in Greenfield
  */
 export const deleteObject = async (
   network: "testnet" | "mainnet",
-  privateKey: Hex,
-  bucketName: string,
-  objectName: string
+  {
+    privateKey,
+    bucketName,
+    objectName
+  }: {
+    privateKey: Hex
+    bucketName: string
+    objectName: string
+  }
 ): Promise<ApiResponse<void>> => {
   try {
     const client = getClient(network)
@@ -294,5 +340,49 @@ export const listObjects = async (
   } catch (error) {
     Logger.error(`List objects operation failed: ${error}`)
     return response.fail(`List objects operation failed: ${error}`)
+  }
+}
+
+export const downloadObject = async (
+  network: "testnet" | "mainnet",
+  {
+    privateKey,
+    bucketName,
+    objectName
+  }: {
+    privateKey: Hex
+    bucketName: string
+    objectName: string
+  }
+): Promise<ApiResponse<{ file: string }>> => {
+  try {
+    const client = getClient(network)
+    const res = await client.object.getObject(
+      {
+        bucketName,
+        objectName
+      },
+      {
+        type: "ECDSA",
+        privateKey: privateKey
+      }
+    )
+    if (res.code !== 0) {
+      return response.fail(`Failed to download object: ${JSON.stringify(res)}`)
+    }
+    // blob to file
+    const file = res.body as unknown as Blob
+    if (!file) {
+      return response.fail("Object is not a file")
+    }
+    // add tmp prefix to avoid file name conflict
+    const filePath = path.join(process.cwd(), "tmp-" + objectName)
+    const buffer = await file.arrayBuffer()
+    writeFileSync(filePath, Buffer.from(buffer))
+
+    return response.success({ file: filePath })
+  } catch (error) {
+    Logger.error(`Download object operation failed: ${error}`)
+    return response.fail(`Download object operation failed: ${error}`)
   }
 }
