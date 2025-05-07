@@ -39,7 +39,7 @@ Default mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here. (optinal)"
+        "PRIVATE_KEY": "your_private_key_here. (optional)"
       }
     }
   }
@@ -55,7 +55,7 @@ SSE mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest", "--sse"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here. (optinal)"
+        "PRIVATE_KEY": "your_private_key_here. (optional)"
       }
     }
   }
