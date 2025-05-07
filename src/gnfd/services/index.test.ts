@@ -26,7 +26,6 @@ test("list buckets", async () => {
   const res = await listBuckets("testnet", {
     privateKey: process.env.PRIVATE_KEY as Hex
   })
-  console.log(res)
   expect(res.status).toBe("success")
 })
 
@@ -37,9 +36,8 @@ test("delete bucket", async () => {
   const res = await deleteBucket(
     "testnet",
     process.env.PRIVATE_KEY as Hex,
-    bucketsRes.data?.buckets[0] || ""
+    bucketsRes.data?.buckets[0]?.bucketName || ""
   )
-  console.log(res)
   expect(res.status).toBe("success")
 })
 
@@ -49,9 +47,7 @@ test("delete object", async () => {
     "testnet",
     process.env.PRIVATE_KEY as Hex,
     "created-by-bnbchain-mcp",
-    objectsRes.data?.objects[0] || ""
+    objectsRes.data?.objects[0]?.objectName || ""
   )
-  console.log(res)
-  console.log(await listObjects("testnet", "created-by-bnbchain-mcp"))
   expect(res.status).toBe("success")
 })

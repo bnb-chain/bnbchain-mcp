@@ -139,7 +139,9 @@ export const listBuckets = async (
     address?: string
     privateKey?: Hex
   }
-): Promise<ApiResponse<{ buckets: Array<string> }>> => {
+): Promise<
+  ApiResponse<{ buckets: Array<{ bucketName: string; createAt: number }> }>
+> => {
   try {
     const client = getClient(network)
     if (!address && !privateKey) {
@@ -162,9 +164,10 @@ export const listBuckets = async (
       )
     }
     // Get detailed info for each bucket
-    const bucketsWithInfo = (bucketListResponse.body || []).map(
-      (it) => it.BucketInfo.BucketName
-    )
+    const bucketsWithInfo = (bucketListResponse.body || []).map((it) => ({
+      bucketName: it.BucketInfo.BucketName,
+      createAt: it.BucketInfo.CreateAt
+    }))
 
     return response.success({ buckets: bucketsWithInfo })
   } catch (error) {

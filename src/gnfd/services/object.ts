@@ -258,7 +258,9 @@ export const deleteObject = async (
 export const listObjects = async (
   network: "testnet" | "mainnet",
   bucketName: string
-): Promise<ApiResponse<{ objects: Array<string> }>> => {
+): Promise<
+  ApiResponse<{ objects: Array<{ objectName: string; createAt: number }> }>
+> => {
   try {
     const client = getClient(network)
 
@@ -283,7 +285,10 @@ export const listObjects = async (
 
     const res =
       objectsRes.body?.GfSpListObjectsByBucketNameResponse?.Objects || []
-    const objects = res.map((it) => it.ObjectInfo.ObjectName)
+    const objects = res.map((it) => ({
+      objectName: it.ObjectInfo.ObjectName,
+      createAt: it.ObjectInfo.CreateAt
+    }))
 
     return response.success({ objects })
   } catch (error) {
