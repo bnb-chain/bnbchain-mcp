@@ -1,10 +1,4 @@
-import "reflect-metadata"
-
-import {
-  Long,
-  RedundancyType,
-  VisibilityType
-} from "@bnb-chain/greenfield-js-sdk"
+import { Long, VisibilityType } from "@bnb-chain/greenfield-js-sdk"
 import { BucketInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import type { Hex } from "viem"
 

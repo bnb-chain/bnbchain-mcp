@@ -1,3 +1,7 @@
+import { Mime } from "mime"
+import otherTypes from "mime/types/other.js"
+import standardTypes from "mime/types/standard.js"
+
 export const generateString = (length: number) => {
   const characters = "abcdefghijklmnopqrstuvwxyz"
 
@@ -74,4 +78,16 @@ export const helpers = {
       },
       2
     )
+}
+
+const mime = new Mime(standardTypes, otherTypes)
+mime.define(
+  {
+    "application/javascript": ["js", "ts", "jsx", "tsx", "mjs"]
+  },
+  true
+)
+
+export const getMimeType = (path: string) => {
+  return mime.getType(path)
 }

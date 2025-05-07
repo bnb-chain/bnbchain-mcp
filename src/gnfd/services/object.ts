@@ -1,6 +1,10 @@
-import "reflect-metadata"
-
-import { readFileSync, statSync, writeFileSync } from "fs"
+import {
+  existsSync,
+  fstatSync,
+  readFileSync,
+  statSync,
+  writeFileSync
+} from "fs"
 import path from "path"
 import {
   bytesFromBase64,
@@ -10,11 +14,10 @@ import {
 } from "@bnb-chain/greenfield-js-sdk"
 import { ObjectInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
-import mimeTypes from "mime-types"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
-import { ApiResponse, response } from "../util"
+import { ApiResponse, getMimeType, response } from "../util"
 import { getAccount } from "./account"
 import { createBucket } from "./bucket"
 import { getClient } from "./client"
@@ -33,8 +36,7 @@ interface FileData {
 const createFileObject = (filePath: string) => {
   const stats = statSync(filePath)
   const fileSize = stats.size
-  const extname = path.extname(filePath)
-  const fileType = mimeTypes.lookup(extname) || "application/octet-stream"
+  const fileType = getMimeType(filePath) || "unknown"
 
   return {
     name: path.basename(filePath),
@@ -348,14 +350,27 @@ export const downloadObject = async (
   {
     privateKey,
     bucketName,
-    objectName
+    objectName,
+    targetPath
   }: {
     privateKey: Hex
     bucketName: string
     objectName: string
+    targetPath?: string
   }
 ): Promise<ApiResponse<{ file: string }>> => {
   try {
+    let filePath = ""
+    if (!targetPath || !existsSync(targetPath)) {
+      Logger.debug(
+        `Target path ${targetPath} does not exist, using current directory`
+      )
+      // add tmp prefix to avoid file name conflict
+      filePath = path.join(process.cwd(), "tmp-" + objectName)
+    } else {
+      filePath = path.join(targetPath, objectName)
+    }
+
     const client = getClient(network)
     const res = await client.object.getObject(
       {
@@ -375,8 +390,6 @@ export const downloadObject = async (
     if (!file) {
       return response.fail("Object is not a file")
     }
-    // add tmp prefix to avoid file name conflict
-    const filePath = path.join(process.cwd(), "tmp-" + objectName)
     const buffer = await file.arrayBuffer()
     writeFileSync(filePath, Buffer.from(buffer))
 

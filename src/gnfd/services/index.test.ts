@@ -1,11 +1,13 @@
-import { readFileSync } from "fs"
+import "reflect-metadata"
+
+import { readFileSync, unlinkSync } from "fs"
 import path from "path"
 import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import { expect, setDefaultTimeout, test } from "bun:test"
 import dotenv from "dotenv"
 import type { Hex } from "viem"
 
-import { generateString } from "../util"
+import { generateString, getMimeType } from "../util"
 import {
   createBucket,
   deleteBucket,
@@ -26,6 +28,11 @@ setDefaultTimeout(50000)
 const bucketName = "mcp-test-" + generateString(5)
 const fileName = __filename
 const objectName = path.basename(fileName)
+
+test("test get mime type", async () => {
+  expect(getMimeType(__filename)).toBe("application/javascript")
+  expect(getMimeType("dist/test.pdf")).toBe("application/pdf")
+})
 
 test("test checksum", async () => {
   const fileBuffer = readFileSync(fileName)
@@ -84,8 +91,11 @@ test("download object", async () => {
   const res = await downloadObject("testnet", {
     privateKey: process.env.PRIVATE_KEY as Hex,
     bucketName,
-    objectName
+    objectName,
+    targetPath: process.cwd()
   })
+  // remove the file after test
+  unlinkSync(path.resolve(process.cwd(), objectName))
   expect(res.status).toBe("success")
 })
 

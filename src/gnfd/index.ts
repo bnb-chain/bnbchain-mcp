@@ -1,3 +1,5 @@
+import "reflect-metadata"
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
 
 import { registerGnfdTools } from "./tools"

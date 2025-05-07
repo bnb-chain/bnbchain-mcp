@@ -234,9 +234,7 @@ export function registerGnfdTools(server: McpServer) {
     "List all objects in a bucket",
     {
       network: networkParam,
-      bucketName: z
-        .string()
-        .describe("The name of the bucket to list objects from")
+      bucketName: bucketNameParam
     },
     async ({ network, bucketName }) => {
       try {
@@ -255,9 +253,7 @@ export function registerGnfdTools(server: McpServer) {
     {
       network: networkParam,
       privateKey: privateKeyParam,
-      bucketName: z
-        .string()
-        .describe("The name of the bucket containing the object"),
+      bucketName: bucketNameParam,
       objectName: z.string().describe("The name of the object to delete")
     },
     async ({ network, privateKey, bucketName, objectName }) => {
@@ -281,7 +277,7 @@ export function registerGnfdTools(server: McpServer) {
     {
       network: networkParam,
       privateKey: privateKeyParam,
-      bucketName: z.string().describe("The name of the bucket to delete")
+      bucketName: bucketNameParam
     },
     async ({ network, privateKey, bucketName }) => {
       try {
@@ -302,7 +298,7 @@ export function registerGnfdTools(server: McpServer) {
     "Get detailed information about a bucket",
     {
       network: networkParam,
-      bucketName: z.string().describe("The name of the bucket to get info for")
+      bucketName: bucketNameParam
     },
     async ({ network, bucketName }) => {
       try {
@@ -320,9 +316,7 @@ export function registerGnfdTools(server: McpServer) {
     "Get detailed information about an object in a bucket",
     {
       network: networkParam,
-      bucketName: z
-        .string()
-        .describe("The name of the bucket containing the object"),
+      bucketName: bucketNameParam,
       objectName: z.string().describe("The name of the object to get info for")
     },
     async ({ network, bucketName, objectName }) => {
@@ -343,17 +337,20 @@ export function registerGnfdTools(server: McpServer) {
     "Download an object from a bucket",
     {
       network: networkParam,
-      bucketName: z
-        .string()
-        .describe("The name of the bucket containing the object"),
+      bucketName: bucketNameParam,
       objectName: z.string().describe("The name of the object to download"),
+      targetPath: z
+        .string()
+        .optional()
+        .describe("The path to save the downloaded object"),
       privateKey: privateKeyParam
     },
-    async ({ network, bucketName, objectName, privateKey }) => {
+    async ({ network, bucketName, objectName, targetPath, privateKey }) => {
       try {
         const result = await services.downloadObject(network, {
           bucketName,
           objectName,
+          targetPath,
           privateKey: privateKey as Hex
         })
         return formatResponse(result)
