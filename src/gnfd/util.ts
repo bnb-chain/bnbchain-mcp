@@ -11,6 +11,53 @@ export const generateString = (length: number) => {
 }
 
 /**
+ * Standard response type for GNFD operations
+ */
+export type ApiResponse<T = unknown> = {
+  status: "success" | "error"
+  message?: string
+  data?: T
+}
+
+/**
+ * Response utility for standardizing API responses
+ */
+export const response = {
+  /**
+   * Create a success response
+   * @param dataOrMessage Success data or message
+   * @param data Optional data when first parameter is a message
+   */
+  success: <T = void>(dataOrMessage?: T | string, data?: T): ApiResponse<T> => {
+    // If dataOrMessage is a string, it's the message
+    if (typeof dataOrMessage === "string") {
+      return {
+        status: "success",
+        message: dataOrMessage,
+        ...(data !== undefined ? { data } : {})
+      }
+    }
+
+    // If dataOrMessage is not a string, it's the data
+    return {
+      status: "success",
+      ...(dataOrMessage !== undefined ? { data: dataOrMessage as T } : {})
+    }
+  },
+
+  /**
+   * Create an error response
+   * @param message Error message
+   */
+  fail: <T = void>(message: string): ApiResponse<T> => {
+    return {
+      status: "error",
+      message
+    }
+  }
+}
+
+/**
  * Utility functions for formatting and parsing values in GNFD services
  */
 export const helpers = {

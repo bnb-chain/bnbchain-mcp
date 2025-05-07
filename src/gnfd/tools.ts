@@ -198,4 +198,99 @@ export function registerGnfdTools(server: McpServer) {
       }
     }
   )
+
+  // 7. List buckets
+  server.tool(
+    "gnfd_list_buckets",
+    "List all buckets owned by the account",
+    {
+      network: networkParam,
+      address: z
+        .string()
+        .optional()
+        .describe("The address of the account to list buckets for"),
+      privateKey: privateKeyParam
+    },
+    async ({ network, address, privateKey }) => {
+      try {
+        const result = await services.listBuckets(network, {
+          privateKey: privateKey as Hex,
+          address: address as string
+        })
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "listing buckets")
+      }
+    }
+  )
+
+  // 8. List objects
+  server.tool(
+    "gnfd_list_objects",
+    "List all objects in a bucket",
+    {
+      network: networkParam,
+      bucketName: z
+        .string()
+        .describe("The name of the bucket to list objects from")
+    },
+    async ({ network, bucketName }) => {
+      try {
+        const result = await services.listObjects(network, bucketName)
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "listing objects")
+      }
+    }
+  )
+
+  // 9. Delete object
+  server.tool(
+    "gnfd_delete_object",
+    "Delete an object from a bucket",
+    {
+      network: networkParam,
+      privateKey: privateKeyParam,
+      bucketName: z
+        .string()
+        .describe("The name of the bucket containing the object"),
+      objectName: z.string().describe("The name of the object to delete")
+    },
+    async ({ network, privateKey, bucketName, objectName }) => {
+      try {
+        const result = await services.deleteObject(
+          network,
+          privateKey as Hex,
+          bucketName,
+          objectName
+        )
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "deleting object")
+      }
+    }
+  )
+
+  // 10. Delete bucket
+  server.tool(
+    "gnfd_delete_bucket",
+    "Delete a bucket",
+    {
+      network: networkParam,
+      privateKey: privateKeyParam,
+      bucketName: z.string().describe("The name of the bucket to delete")
+    },
+    async ({ network, privateKey, bucketName }) => {
+      try {
+        const result = await services.deleteBucket(
+          network,
+          privateKey as Hex,
+          bucketName
+        )
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "deleting bucket")
+      }
+    }
+  )
 }
