@@ -65,6 +65,10 @@ export const createFile = async (
     // Ensure the file exists
     const objectName = path.basename(filePath)
     const fileObj = createFileObject(filePath)
+    if (fileObj.size > 1024 * 1024 * 1024) {
+      return response.fail("File size must be less than 1GB")
+    }
+
     const rs = new NodeAdapterReedSolomon()
     const expectCheckSums = await rs.encodeInSubWorker(
       Uint8Array.from(fileObj.content)
