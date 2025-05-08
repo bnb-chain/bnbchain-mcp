@@ -62,18 +62,17 @@ export function registerGnfdTools(server: McpServer) {
 
   // 1. Get account balance
   server.tool(
-    "gnfd_get_account_balance",
-    "Get the account balance for a Greenfield address",
+    "gnfd_get_all_account_balances",
+    "Get the balance for all accounts in Greenfield (includes owner and payment accounts)",
     {
       network: networkParam,
       privateKey: privateKeyParam
     },
     async ({ network, privateKey }) => {
       try {
-        const balance = await services.getAccountBalance(
-          network,
-          privateKey as Hex
-        )
+        const balance = await services.getAllAccountBalances(network, {
+          privateKey: privateKey as Hex
+        })
         return formatResponse(balance)
       } catch (error) {
         return handleError(error, "fetching account balance")
@@ -356,6 +355,98 @@ export function registerGnfdTools(server: McpServer) {
         return formatResponse(result)
       } catch (error) {
         return handleError(error, "downloading object")
+      }
+    }
+  )
+  // 14. Create payment account
+  server.tool(
+    "gnfd_create_payment_account",
+    "Create a new payment account",
+    {
+      network: networkParam,
+      privateKey: privateKeyParam
+    },
+    async ({ network, privateKey }) => {
+      try {
+        const result = await services.createPaymentAccount(
+          network,
+          privateKey as Hex
+        )
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "creating payment account")
+      }
+    }
+  )
+
+  // 15. Deposit to payment account
+  server.tool(
+    "gnfd_deposit_to_payment",
+    "Deposit funds into a payment account",
+    {
+      network: networkParam,
+      to: z.string().describe("The payment account address to deposit to"),
+      amount: z.string().describe("The amount to deposit (in BNB)"),
+      privateKey: privateKeyParam
+    },
+    async ({ network, to, amount, privateKey }) => {
+      try {
+        const result = await services.depositToPaymentAccount(network, {
+          to,
+          amount,
+          privateKey: privateKey as Hex
+        })
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "depositing to payment account")
+      }
+    }
+  )
+
+  // 16. Withdraw from payment account
+  server.tool(
+    "gnfd_withdraw_from_payment",
+    "Withdraw funds from a payment account",
+    {
+      network: networkParam,
+      from: z.string().describe("The payment account address to withdraw from"),
+      amount: z.string().describe("The amount to withdraw (in BNB)"),
+      privateKey: privateKeyParam
+    },
+    async ({ network, from, amount, privateKey }) => {
+      try {
+        const result = await services.withdrawFromPaymentAccount(network, {
+          from,
+          amount,
+          privateKey: privateKey as Hex
+        })
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "withdrawing from payment account")
+      }
+    }
+  )
+
+  // 17. Disable refund for payment account
+  server.tool(
+    "gnfd_disable_refund",
+    "Disable refund for a payment account (IRREVERSIBLE)",
+    {
+      network: networkParam,
+      address: z
+        .string()
+        .describe("The payment account address to disable refund for"),
+      privateKey: privateKeyParam
+    },
+    async ({ network, address, privateKey }) => {
+      try {
+        const result = await services.disableRefundForPaymentAccount(network, {
+          address,
+          privateKey: privateKey as Hex
+        })
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "disabling refund for payment account")
       }
     }
   )

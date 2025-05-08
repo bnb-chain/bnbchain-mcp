@@ -222,16 +222,26 @@ bun run test
 | get_erc1155_token_uri        | Get the metadata URI for an ERC1155 token                                    |
 | get_nft_balance              | Get the total number of NFTs owned by an address from a specific collection  |
 | get_erc1155_balance          | Get the balance of a specific ERC1155 token ID owned by an address           |
-| gnfd_get_bucket_info         | Get detailed information about a specific bucket                             |
-| gnfd_list_buckets            | List all buckets owned by an address                                         |
-| gnfd_create_bucket           | Create a new bucket                                                          |
-| gnfd_delete_bucket           | Delete a bucket                                                              |
-| gnfd_get_object_info         | Get detailed information about a specific object                             |
-| gnfd_list_objects            | List all objects in a bucket                                                 |
-| gnfd_upload_object           | Upload an object to a bucket                                                 |
-| gnfd_download_object         | Download an object from a bucket                                             |
-| gnfd_delete_object           | Delete an object from a bucket                                               |
-| gnfd_create_folder           | Create a folder in a bucket                                                  |
+
+### Greenfield tools
+
+| Name                          | Description                                                            |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| gnfd_get_bucket_info          | Get detailed information about a specific bucket                       |
+| gnfd_list_buckets             | List all buckets owned by an address                                   |
+| gnfd_create_bucket            | Create a new bucket                                                    |
+| gnfd_delete_bucket            | Delete a bucket                                                        |
+| gnfd_get_object_info          | Get detailed information about a specific object                       |
+| gnfd_list_objects             | List all objects in a bucket                                           |
+| gnfd_upload_object            | Upload an object to a bucket                                           |
+| gnfd_download_object          | Download an object from a bucket                                       |
+| gnfd_delete_object            | Delete an object from a bucket                                         |
+| gnfd_create_folder            | Create a folder in a bucket                                            |
+| gnfd_get_all_account_balances | Get the balance for all accounts (includes owner and payment accounts) |
+| gnfd_get_module_accounts      | Get a list of all module accounts and their information                |
+| gnfd_deposit_to_payment       | Deposit funds into a payment account                                   |
+| gnfd_withdraw_from_payment    | Withdraw funds from a payment account                                  |
+| gnfd_disable_refund           | Disable refund for a payment account (IRREVERSIBLE)                    |
 
 ## Supported Networks
 

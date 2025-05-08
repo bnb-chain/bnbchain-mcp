@@ -70,25 +70,17 @@ export const createBucket = async (
       primarySpAddress: spInfo.primarySpAddress
     })
 
-    const createBucketTxSimulateInfo = await createBucketTx.simulate({
-      denom: "BNB"
-    })
-
-    const createBucketTxRes = await createBucketTx.broadcast({
-      denom: "BNB",
-      gasLimit: Number(createBucketTxSimulateInfo?.gasLimit),
-      gasPrice: createBucketTxSimulateInfo?.gasPrice || "5000000000",
-      payer: account.address,
-      granter: "",
-      privateKey: privateKey
-    })
-
-    if (createBucketTxRes.code === 0) {
+    const tx = await executeTransaction<{ bucketName: string }>(
+      createBucketTx,
+      account,
+      privateKey,
+      "Create bucket",
+      _bucketName
+    )
+    if (tx.status === "success") {
       return response.success({ bucketName: _bucketName })
     } else {
-      return response.fail(
-        `Create bucket failed: ${JSON.stringify(createBucketTxRes)}`
-      )
+      return tx
     }
   } catch (error) {
     return response.fail(`Create bucket failed: ${error}`)
