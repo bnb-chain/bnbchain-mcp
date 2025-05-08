@@ -3,6 +3,7 @@ import type { Address } from "viem"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
+import { safeStringify } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types"
 
 export function registerTokenTools(server: McpServer) {
@@ -25,13 +26,12 @@ export function registerTokenTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   address: tokenAddress,
                   network,
                   ...tokenInfo
                 },
-                null,
                 2
               )
             }
@@ -69,7 +69,7 @@ export function registerTokenTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   network,
                   address,
@@ -78,7 +78,6 @@ export function registerTokenTools(server: McpServer) {
                     ether: balance.ether
                   }
                 },
-                null,
                 2
               )
             }
@@ -118,7 +117,7 @@ export function registerTokenTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   tokenAddress,
                   owner: address,
@@ -128,7 +127,6 @@ export function registerTokenTools(server: McpServer) {
                   symbol: balance.token.symbol,
                   decimals: balance.token.decimals
                 },
-                null,
                 2
               )
             }

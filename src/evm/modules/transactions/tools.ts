@@ -3,6 +3,7 @@ import type { Address, Hash } from "viem"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
+import { safeStringify } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types"
 
 export function registerTransactionTools(server: McpServer) {
@@ -117,12 +118,11 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   network,
                   estimatedGas: gas.toString()
                 },
-                null,
                 2
               )
             }
@@ -182,7 +182,7 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   success: true,
                   txHash,
@@ -190,7 +190,6 @@ export function registerTransactionTools(server: McpServer) {
                   amount,
                   network
                 },
-                null,
                 2
               )
             }
@@ -259,7 +258,7 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   success: true,
                   txHash: result.txHash,
@@ -269,7 +268,6 @@ export function registerTransactionTools(server: McpServer) {
                   amount: result.amount.formatted,
                   symbol: result.token.symbol
                 },
-                null,
                 2
               )
             }
@@ -334,7 +332,7 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   success: true,
                   txHash: result.txHash,
@@ -345,7 +343,6 @@ export function registerTransactionTools(server: McpServer) {
                   name: result.token.name,
                   symbol: result.token.symbol
                 },
-                null,
                 2
               )
             }
@@ -423,7 +420,7 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   success: true,
                   txHash: result.txHash,
@@ -433,7 +430,6 @@ export function registerTransactionTools(server: McpServer) {
                   amount: result.amount,
                   recipient: toAddress
                 },
-                null,
                 2
               )
             }
@@ -497,7 +493,7 @@ export function registerTransactionTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   success: true,
                   txHash: result.txHash,
@@ -507,7 +503,6 @@ export function registerTransactionTools(server: McpServer) {
                   symbol: result.token.symbol,
                   network
                 },
-                null,
                 2
               )
             }

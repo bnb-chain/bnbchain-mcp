@@ -1,12 +1,7 @@
-import {
-  formatUnits,
-  getContract,
-  type Address,
-  type Hash,
-  type Hex
-} from "viem"
+import { formatUnits, getContract, type Address } from "viem"
 
 import { getPublicClient } from "./clients.js"
+import { isContract } from "./contracts.js"
 
 // Standard ERC20 ABI (minimal for reading)
 const erc20Abi = [
@@ -90,6 +85,10 @@ export async function getERC20TokenInfo(
   formattedTotalSupply: string
 }> {
   const publicClient = getPublicClient(network)
+  const isContractAddr = await isContract(tokenAddress, network)
+  if (!isContractAddr) {
+    throw new Error("Token address is not a contract")
+  }
 
   const contract = getContract({
     address: tokenAddress,
@@ -126,6 +125,10 @@ export async function getERC721TokenMetadata(
   tokenURI: string
 }> {
   const publicClient = getPublicClient(network)
+  const isContractAddr = await isContract(tokenAddress, network)
+  if (!isContractAddr) {
+    throw new Error("Token address is not a contract")
+  }
 
   const contract = getContract({
     address: tokenAddress,
@@ -155,6 +158,10 @@ export async function getERC1155TokenURI(
   network: string = "ethereum"
 ): Promise<string> {
   const publicClient = getPublicClient(network)
+  const isContractAddr = await isContract(tokenAddress, network)
+  if (!isContractAddr) {
+    throw new Error("Token address is not a contract")
+  }
 
   const contract = getContract({
     address: tokenAddress,

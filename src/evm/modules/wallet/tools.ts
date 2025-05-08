@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
+import { safeStringify } from "@/utils/helper"
 
 export function registerWalletTools(server: McpServer) {
   // Get address from private key
@@ -29,12 +30,11 @@ export function registerWalletTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   address,
                   privateKey: "0x" + privateKey.replace(/^0x/, "")
                 },
-                null,
                 2
               )
             }

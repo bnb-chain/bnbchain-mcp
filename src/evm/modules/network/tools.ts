@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import { getRpcUrl, getSupportedNetworks } from "@/evm/chains.js"
 import * as services from "@/evm/services/index.js"
+import { safeStringify } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types.js"
 
 export function registerNetworkTools(server: McpServer) {
@@ -24,14 +25,13 @@ export function registerNetworkTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   network,
                   chainId,
                   blockNumber: blockNumber.toString(),
                   rpcUrl
                 },
-                null,
                 2
               )
             }
@@ -63,11 +63,10 @@ export function registerNetworkTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   supportedNetworks: networks
                 },
-                null,
                 2
               )
             }
@@ -119,14 +118,13 @@ export function registerNetworkTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   ensName: ensName,
                   normalizedName: normalizedEns,
                   resolvedAddress: address,
                   network
                 },
-                null,
                 2
               )
             }
