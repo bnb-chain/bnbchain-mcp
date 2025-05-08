@@ -1,18 +1,12 @@
-import {
-  existsSync,
-  fstatSync,
-  readFileSync,
-  statSync,
-  writeFileSync
-} from "fs"
+import { existsSync, readFileSync, statSync, writeFileSync } from "fs"
 import path from "path"
+import { ObjectInfo } from "@bnb-chain/greenfield-cosmos-types/greenfield/storage/types"
 import {
   bytesFromBase64,
   Long,
   RedundancyType,
   VisibilityType
 } from "@bnb-chain/greenfield-js-sdk"
-import { ObjectInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import type { Hex } from "viem"
 
@@ -54,11 +48,13 @@ export const createFile = async (
   {
     privateKey,
     filePath,
-    bucketName
+    bucketName,
+    visibility
   }: {
     privateKey: Hex
     filePath: string
     bucketName?: string
+    visibility?: "public" | "private"
   }
 ): Promise<ApiResponse<FileData>> => {
   try {
@@ -101,7 +97,10 @@ export const createFile = async (
       bucketName: _bucketName,
       objectName: objectName,
       creator: account.address,
-      visibility: VisibilityType.VISIBILITY_TYPE_PRIVATE,
+      visibility:
+        visibility === "public"
+          ? VisibilityType.VISIBILITY_TYPE_PUBLIC_READ
+          : VisibilityType.VISIBILITY_TYPE_PRIVATE,
       contentType: fileObj.type as string,
       redundancyType: RedundancyType.REDUNDANCY_EC_TYPE,
       payloadSize: Long.fromInt(fileObj.content.byteLength),
@@ -161,11 +160,13 @@ export const createFolder = async (
   {
     privateKey,
     folderName,
-    bucketName
+    bucketName,
+    visibility
   }: {
     privateKey: Hex
     folderName?: string
     bucketName?: string
+    visibility?: "public" | "private"
   }
 ): Promise<ApiResponse<{ bucketName: string; folderName: string }>> => {
   try {
@@ -197,7 +198,10 @@ export const createFolder = async (
       bucketName: _bucketName,
       objectName: formattedFolderName,
       creator: account.address,
-      visibility: VisibilityType.VISIBILITY_TYPE_PRIVATE,
+      visibility:
+        visibility === "public"
+          ? VisibilityType.VISIBILITY_TYPE_PUBLIC_READ
+          : VisibilityType.VISIBILITY_TYPE_PRIVATE,
       redundancyType: RedundancyType.REDUNDANCY_EC_TYPE
     })
 
@@ -240,7 +244,7 @@ export const getObjectInfo = async (
     const client = getClient(network)
     const res = await client.object.headObject(bucketName, objectName)
 
-    return response.success(res.objectInfo as {} as ObjectInfo)
+    return response.success(res.objectInfo as ObjectInfo)
   } catch (error) {
     Logger.error(`Get object info operation failed: ${error}`)
     return response.fail(`Get object info operation failed: ${error}`)
@@ -311,7 +315,9 @@ export const listObjects = async (
   network: "testnet" | "mainnet",
   bucketName: string
 ): Promise<
-  ApiResponse<{ objects: Array<{ objectName: string; createAt: number }> }>
+  ApiResponse<{
+    objects: Array<{ objectName: string; createAt: number; visibility: string }>
+  }>
 > => {
   try {
     const client = getClient(network)
@@ -339,7 +345,11 @@ export const listObjects = async (
       objectsRes.body?.GfSpListObjectsByBucketNameResponse?.Objects || []
     const objects = res.map((it) => ({
       objectName: it.ObjectInfo.ObjectName,
-      createAt: it.ObjectInfo.CreateAt
+      createAt: it.ObjectInfo.CreateAt,
+      visibility:
+        it.ObjectInfo.Visibility === VisibilityType.VISIBILITY_TYPE_PUBLIC_READ
+          ? "public"
+          : "private"
     }))
 
     return response.success({ objects })
@@ -352,18 +362,46 @@ export const listObjects = async (
 export const downloadObject = async (
   network: "testnet" | "mainnet",
   {
-    privateKey,
     bucketName,
     objectName,
+    privateKey,
     targetPath
   }: {
-    privateKey: Hex
     bucketName: string
     objectName: string
+    privateKey?: Hex
     targetPath?: string
   }
 ): Promise<ApiResponse<{ file: string }>> => {
   try {
+    const objectInfo = await getObjectInfo(network, {
+      bucketName,
+      objectName
+    })
+    if (objectInfo.status === "error") {
+      return response.fail(objectInfo.message || "Object does not exist")
+    }
+
+    const objectInfoData = objectInfo.data as ObjectInfo
+    Logger.debug(`Object info: ${JSON.stringify(objectInfoData)}`)
+    // for public object, use sp endpoint to download
+    if (
+      objectInfoData.visibility === VisibilityType.VISIBILITY_TYPE_PUBLIC_READ
+    ) {
+      const sp = await selectSp(network)
+      return response.success({
+        file: sp.endpoint + "/view/" + bucketName + "/" + objectName
+      })
+    }
+
+    // for private object, private key is required
+    if (
+      objectInfoData.visibility === VisibilityType.VISIBILITY_TYPE_PRIVATE &&
+      !privateKey
+    ) {
+      return response.fail("Object is private and private key is not provided")
+    }
+
     let filePath = ""
     if (!targetPath || !existsSync(targetPath)) {
       Logger.debug(
@@ -383,7 +421,7 @@ export const downloadObject = async (
       },
       {
         type: "ECDSA",
-        privateKey: privateKey
+        privateKey: privateKey || ""
       }
     )
     if (res.code !== 0) {

@@ -35,10 +35,12 @@ export const createBucket = async (
   network: "testnet" | "mainnet",
   {
     privateKey,
-    bucketName
+    bucketName,
+    visibility
   }: {
     privateKey: Hex
     bucketName?: string
+    visibility?: "public" | "private"
   }
 ): Promise<ApiResponse<BucketData>> => {
   const client = getClient(network)
@@ -64,7 +66,10 @@ export const createBucket = async (
     const createBucketTx = await client.bucket.createBucket({
       bucketName: _bucketName,
       creator: account.address,
-      visibility: VisibilityType.VISIBILITY_TYPE_PUBLIC_READ,
+      visibility:
+        visibility === "public"
+          ? VisibilityType.VISIBILITY_TYPE_PUBLIC_READ
+          : VisibilityType.VISIBILITY_TYPE_PRIVATE,
       chargedReadQuota: Long.fromString("0"),
       paymentAddress: account.address,
       primarySpAddress: spInfo.primarySpAddress
