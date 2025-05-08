@@ -57,6 +57,6 @@ export async function isContract(
   const address = await resolveAddress(addressOrEns, network)
 
   const client = getPublicClient(network)
-  const code = await client.getBytecode({ address })
+  const code = await client.getCode({ address })
   return code !== undefined && code !== "0x"
 }

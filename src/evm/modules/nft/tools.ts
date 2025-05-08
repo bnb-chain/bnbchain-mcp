@@ -3,6 +3,7 @@ import type { Address } from "viem"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
+import { safeStringify } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types"
 
 export function registerNftTools(server: McpServer) {
@@ -55,7 +56,7 @@ export function registerNftTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   contract: tokenAddress,
                   tokenId,
@@ -63,7 +64,6 @@ export function registerNftTools(server: McpServer) {
                   ...nftInfo,
                   owner: owner || "Unknown"
                 },
-                null,
                 2
               )
             }
@@ -116,7 +116,7 @@ export function registerNftTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   tokenAddress,
                   tokenId,
@@ -127,7 +127,6 @@ export function registerNftTools(server: McpServer) {
                     ? "Address owns this NFT"
                     : "Address does not own this NFT"
                 },
-                null,
                 2
               )
             }
@@ -178,14 +177,13 @@ export function registerNftTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   contract: tokenAddress,
                   tokenId,
                   network,
                   uri
                 },
-                null,
                 2
               )
             }
@@ -236,14 +234,13 @@ export function registerNftTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   collection: tokenAddress,
                   owner: ownerAddress,
                   network,
                   balance: balance.toString()
                 },
-                null,
                 2
               )
             }
@@ -300,7 +297,7 @@ export function registerNftTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   contract: tokenAddress,
                   tokenId,
@@ -308,7 +305,6 @@ export function registerNftTools(server: McpServer) {
                   network,
                   balance: balance.toString()
                 },
-                null,
                 2
               )
             }
