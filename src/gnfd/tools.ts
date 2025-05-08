@@ -450,4 +450,101 @@ export function registerGnfdTools(server: McpServer) {
       }
     }
   )
+
+  // 18. Get bucket quota
+  server.tool(
+    "gnfd_get_bucket_quota",
+    "Get the quota for a bucket",
+    {
+      network: networkParam,
+      bucketName: bucketNameParam,
+      privateKey: privateKeyParam
+    },
+    async ({ network, bucketName, privateKey }) => {
+      try {
+        const result = await services.getBucketQuota(
+          network,
+          bucketName,
+          privateKey as Hex
+        )
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "getting bucket quota")
+      }
+    }
+  )
+
+  // 19. Get payment account stream record
+  server.tool(
+    "gnfd_get_payment_account_stream_record",
+    "Get the stream record for a payment account",
+    {
+      network: networkParam,
+      address: z
+        .string()
+        .describe("The address of the payment account to get stream record for")
+    },
+    async ({ network, address }) => {
+      try {
+        const result = await services.getPaymentAccount(
+          network,
+          address
+        )
+        return formatResponse(result)
+      } catch (error) {
+        return handleError(error, "getting payment account info")
+      }
+    }
+  ),
+    // 20. Get bucket full info
+    server.tool(
+      "gnfd_get_bucket_full_info",
+      "Get the full info for a bucket",
+      {
+        network: networkParam,
+        bucketName: bucketNameParam,
+        privateKey: privateKeyParam
+      },
+      async ({ network, bucketName, privateKey }) => {
+        try {
+          const result = await services.getBucketFullInfo(
+            network,
+            bucketName,
+            privateKey as Hex
+          )
+          return formatResponse(result)
+        } catch (error) {
+          return handleError(error, "getting bucket full info")
+        }
+      }
+    ),
+
+    // 21. Get payment account related buckets
+    server.tool(
+      "gnfd_get_payment_account_related_buckets",
+      "Get the related buckets for a payment account",
+      {
+        network: networkParam,
+        paymentAddress: z
+          .string()
+          .describe(
+            "The address of the payment account to get related buckets for"
+          ),
+        privateKey: privateKeyParam
+      },
+      async ({ network, paymentAddress, privateKey }) => {
+        try {
+          const result = await services.getPaymentAccountRelatedBuckets(
+            network,
+            {
+              paymentAddress,
+              privateKey: privateKey as Hex
+            }
+          )
+          return formatResponse(result)
+        } catch (error) {
+          return handleError(error, "getting payment account related buckets")
+        }
+      }
+    )
 }

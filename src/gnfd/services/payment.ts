@@ -1,5 +1,7 @@
+import { StreamAccountStatus } from "@bnb-chain/greenfield-cosmos-types/greenfield/payment/stream_record"
 import { Hex, parseEther } from "viem"
 
+import { selectSp } from "@/gnfd/services/sp"
 import { ApiResponse, response } from "../util"
 import { getAccount } from "./account"
 import { getClient } from "./client"
@@ -155,5 +157,81 @@ export const disableRefundForPaymentAccount = async (
     return tx
   } catch (error: any) {
     return response.fail(`Failed to disable refund: ${error.message}`)
+  }
+}
+
+/**
+ * Get a payment account info in Greenfield
+ */
+export const getPaymentAccount = async (
+  network: "testnet" | "mainnet",
+  address: string
+) => {
+  try {
+    const client = await getClient(network)
+    const { streamRecord } = await client.payment.getStreamRecord(address)
+    const formattedStreamRecord = {
+      address,
+      settleDate: new Date(
+        Number(streamRecord.settleTimestamp) * 1000
+      ).toISOString(),
+      updateDate: new Date(
+        Number(streamRecord.crudTimestamp) * 1000
+      ).toISOString(),
+      status: StreamAccountStatus[streamRecord.status],
+      netflowRate: streamRecord.netflowRate,
+      staticBalance: streamRecord.staticBalance,
+      bufferBalance: streamRecord.bufferBalance,
+      lockBalance: streamRecord.lockBalance,
+      frozenNetflowRate: streamRecord.frozenNetflowRate
+    }
+    return response.success(formattedStreamRecord)
+  } catch (error: any) {
+    return response.fail(
+      `Failed to get payment account info: ${error.message}`
+    )
+  }
+}
+
+export const getPaymentAccountRelatedBuckets = async (network: "testnet" | "mainnet", {
+  paymentAddress,
+  privateKey
+}: {
+  paymentAddress: string
+  privateKey: Hex
+}) => {
+  try {
+    const client = await getClient(network)
+    const sp = await selectSp(network)
+    const ownerAccount = (await getAccount(network, privateKey)).address
+    const buckets = await client.bucket.listBuckets({
+      address: ownerAccount,
+      endpoint: sp.endpoint
+    })
+
+    const { streamRecord } =
+      await client.payment.getStreamRecord(paymentAddress)
+
+    const relatedBuckets = buckets.body
+      ?.filter((bucket) => {
+        return (
+          bucket.BucketInfo.PaymentAddress.toLowerCase() ===
+          paymentAddress.toLowerCase()
+        )
+      })
+      .map((bucket) => {
+        return {
+          ...bucket,
+          settleDate: new Date(
+            Number(streamRecord.settleTimestamp) * 1000
+          ).toISOString()
+        }
+      })
+
+    return response.success(relatedBuckets)
+  } catch (error: any) {
+    return response.fail(
+      `Failed to get payment account related buckets: ${error.message}`
+    )
   }
 }
