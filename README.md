@@ -23,7 +23,7 @@ The project is organized into several core modules:
 - **Wallet**: Wallet operations and management
 - **Common**: Shared utilities and types
 - **Greenfield**: Support file management operations on Greenfield network including, uploading, downloading, and managing files and buckets
-- Additional features coming soon (Greenfield, Swap, Bridge, etc.)
+- Additional features coming soon (Swap, Bridge, etc.)
 
 ## Integration with Cursor
 

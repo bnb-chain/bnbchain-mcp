@@ -87,7 +87,7 @@ test("list objects", async () => {
   expect(res.status).toBe("success")
 })
 
-test("download object", async () => {
+test("download private object", async () => {
   const res = await downloadObject("testnet", {
     privateKey: process.env.PRIVATE_KEY as Hex,
     bucketName,
@@ -97,6 +97,27 @@ test("download object", async () => {
   // remove the file after test
   unlinkSync(path.resolve(process.cwd(), objectName))
   expect(res.status).toBe("success")
+})
+
+test("download public object", async () => {
+  await createFile("testnet", {
+    privateKey: process.env.PRIVATE_KEY as Hex,
+    filePath: fileName,
+    bucketName: "created-by-bnbchain-mcp",
+    visibility: "public"
+  })
+
+  const res = await downloadObject("testnet", {
+    bucketName: "created-by-bnbchain-mcp",
+    objectName
+  })
+  // remove the file after test
+  await deleteObject("testnet", {
+    privateKey: process.env.PRIVATE_KEY as Hex,
+    bucketName: "created-by-bnbchain-mcp",
+    objectName
+  })
+  expect(res.data?.file.startsWith("https://")).toBeTrue()
 })
 
 test("delete object", async () => {

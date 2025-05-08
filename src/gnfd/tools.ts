@@ -149,13 +149,19 @@ export function registerGnfdTools(server: McpServer) {
         .describe(
           "Absolute path to the file to upload. The file must exist on the machine."
         ),
-      bucketName: bucketNameParam
+      bucketName: bucketNameParam,
+      visibility: z
+        .enum(["public", "private"])
+        .optional()
+        .default("private")
+        .describe("The visibility of the file. Defaults to 'private'.")
     },
     async ({
       network,
       privateKey,
       filePath,
-      bucketName = "created-by-bnbchain-mcp"
+      bucketName = "created-by-bnbchain-mcp",
+      visibility
     }) => {
       try {
         // Ensure absolute path is used
@@ -166,7 +172,8 @@ export function registerGnfdTools(server: McpServer) {
         const result = await services.createFile(network, {
           privateKey: privateKey as Hex,
           filePath: absoluteFilePath,
-          bucketName
+          bucketName,
+          visibility
         })
         return formatResponse(result)
       } catch (error) {
@@ -187,14 +194,20 @@ export function registerGnfdTools(server: McpServer) {
         .optional()
         .default("created-by-bnbchain-mcp")
         .describe("Optional folder name. Default is 'created-by-bnbchain-mcp'"),
-      bucketName: bucketNameParam
+      bucketName: bucketNameParam,
+      visibility: z
+        .enum(["public", "private"])
+        .optional()
+        .default("private")
+        .describe("The visibility of the folder. Defaults to 'private'.")
     },
-    async ({ network, privateKey, folderName, bucketName }) => {
+    async ({ network, privateKey, folderName, bucketName, visibility }) => {
       try {
         const result = await services.createFolder(network, {
           privateKey: privateKey as Hex,
           folderName,
-          bucketName
+          bucketName,
+          visibility
         })
         return formatResponse(result)
       } catch (error) {
