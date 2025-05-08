@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import { defaultNetworkParam } from "@/evm/modules/common/types.js"
 import * as services from "@/evm/services/index.js"
+import { safeStringify } from "@/utils/helper"
 
 export function registerContractTools(server: McpServer) {
   // Check if address is contract
@@ -25,14 +26,13 @@ export function registerContractTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   address,
                   network,
                   isContract,
                   type: isContract ? "Contract" : "EOA"
                 },
-                null,
                 2
               )
             }
@@ -164,7 +164,7 @@ export function registerContractTools(server: McpServer) {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
+              text: safeStringify(
                 {
                   contractAddress,
                   functionName,
@@ -172,7 +172,6 @@ export function registerContractTools(server: McpServer) {
                   transactionHash: txHash,
                   message: "Contract write transaction sent successfully"
                 },
-                null,
                 2
               )
             }

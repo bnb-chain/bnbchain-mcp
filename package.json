@@ -5,10 +5,11 @@
   "scripts": {
     "start": "node dist/index.js",
     "start:sse": "npm run start --sse",
-    "dev": "bun run --watch src/index.ts --sse",
+    "dev:sse": "bun run --watch src/index.ts --sse",
+    "dev": "bun run --watch src/index.ts",
     "build": "bun build src/*.ts --outdir dist --target node --format cjs",
     "test": "npx @modelcontextprotocol/inspector bun dev",
-    "bun:test": "LOGLEVEL=debug bun test src",
+    "bun:test": "LOGLEVEL=debug bun test",
     "prepare": "husky",
     "format": "prettier --write ."
   },
