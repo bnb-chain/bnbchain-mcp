@@ -1,6 +1,6 @@
 import { StreamAccountStatus } from "@bnb-chain/greenfield-cosmos-types/greenfield/payment/stream_record"
+import { Long } from "@bnb-chain/greenfield-js-sdk"
 import { Hex, parseEther } from "viem"
-import { Long } from '@bnb-chain/greenfield-js-sdk';
 
 import { selectSp } from "@/gnfd/services/sp"
 import { ApiResponse, response } from "../util"
@@ -9,15 +9,15 @@ import { getClient } from "./client"
 import { executeTransaction } from "./common"
 
 type StoreFeeConfig = {
-  readPrice: string;
-  primarySpStorePrice: string;
-  secondarySpStorePrice: string;
-  validatorTaxRate: string;
-  minChargeSize: number;
-  redundantDataChunkNum: number;
-  redundantParityChunkNum: number;
-  reserveTime: string;
-};
+  readPrice: string
+  primarySpStorePrice: string
+  secondarySpStorePrice: string
+  validatorTaxRate: string
+  minChargeSize: number
+  redundantDataChunkNum: number
+  redundantParityChunkNum: number
+  reserveTime: string
+}
 /**
  * Creates a payment account for the specified address
  * @param privateKey The private key for signing the transaction
@@ -173,16 +173,25 @@ export const disableRefundForPaymentAccount = async (
 
 /**
  * Get a payment account info in Greenfield
+ * @param network The network to use
+ * @param paymentAddress The payment account address
+ * @returns The payment account info
  */
-export const getPaymentAccount = async (
+export const getPaymentAccountInfo = async (
   network: "testnet" | "mainnet",
-  address: string
+  paymentAddress: string
 ) => {
   try {
-    const client = await getClient(network)
-    const { streamRecord } = await client.payment.getStreamRecord(address)
+    const client = getClient(network)
+    const account = await client.payment.paymentAccount({
+      addr: paymentAddress
+    })
+    const { streamRecord } =
+      await client.payment.getStreamRecord(paymentAddress)
     const formattedStreamRecord = {
-      address,
+      owner: account.paymentAccount.owner,
+      refundable: account.paymentAccount.refundable,
+      paymentAddress,
       settleDate: new Date(
         Number(streamRecord.settleTimestamp) * 1000
       ).toISOString(),
@@ -198,44 +207,52 @@ export const getPaymentAccount = async (
     }
     return response.success(formattedStreamRecord)
   } catch (error: any) {
-    return response.fail(
-      `Failed to get payment account info: ${error.message}`
-    )
+    return response.fail(`Failed to get payment account info: ${error.message}`)
   }
 }
 
 /**
  * Get store fee calculation configuration in Greenfield
  */
-const _getStoreFeeConfig = async (network: 'mainnet' | 'testnet', timestamp?: number) => {
-  const client = await getClient(network);
-  const time = timestamp || Math.floor(+new Date() / 1000);
-  const [globalSpStoragePrice, { params: storageParams }, { params: paymentParams }] =
-    await Promise.all([
-      client.sp.getQueryGlobalSpStorePriceByTime({ timestamp: Long.fromNumber(time) }),
-      client.storage.params(),
-      client.payment.params(),
-    ]);
+const _getStoreFeeConfig = async (
+  network: "mainnet" | "testnet",
+  timestamp?: number
+) => {
+  const client = getClient(network)
+  const time = timestamp || Math.floor(+new Date() / 1000)
+  const [
+    globalSpStoragePrice,
+    { params: storageParams },
+    { params: paymentParams }
+  ] = await Promise.all([
+    client.sp.getQueryGlobalSpStorePriceByTime({
+      timestamp: Long.fromNumber(time)
+    }),
+    client.storage.params(),
+    client.payment.params()
+  ])
 
   const {
     minChargeSize = new Long(0),
     redundantDataChunkNum = 0,
-    redundantParityChunkNum = 0,
-  } = (storageParams && storageParams.versionedParams) || {};
+    redundantParityChunkNum = 0
+  } = (storageParams && storageParams.versionedParams) || {}
 
-  const { reserveTime, validatorTaxRate } = paymentParams?.versionedParams || {};
+  const { reserveTime, validatorTaxRate } = paymentParams?.versionedParams || {}
 
   return {
-    primarySpStorePrice: globalSpStoragePrice?.globalSpStorePrice.primaryStorePrice || '',
-    readPrice: globalSpStoragePrice?.globalSpStorePrice.readPrice || '',
-    secondarySpStorePrice: globalSpStoragePrice?.globalSpStorePrice.secondaryStorePrice || '',
-    validatorTaxRate: validatorTaxRate || '',
+    primarySpStorePrice:
+      globalSpStoragePrice?.globalSpStorePrice.primaryStorePrice || "",
+    readPrice: globalSpStoragePrice?.globalSpStorePrice.readPrice || "",
+    secondarySpStorePrice:
+      globalSpStoragePrice?.globalSpStorePrice.secondaryStorePrice || "",
+    validatorTaxRate: validatorTaxRate || "",
     minChargeSize: minChargeSize.toNumber(),
     redundantDataChunkNum,
     redundantParityChunkNum,
-    reserveTime: reserveTime?.toString() || '',
-  };
-};
+    reserveTime: reserveTime?.toString() || ""
+  }
+}
 
 /**
  * Estimate the netflow rate per second for a specified size
@@ -243,7 +260,7 @@ const _getStoreFeeConfig = async (network: 'mainnet' | 'testnet', timestamp?: nu
 const _estimateStoreNetflowRate = (
   size: number,
   storeFeeConfig: StoreFeeConfig,
-  isChargeSize = false,
+  isChargeSize = false
 ) => {
   const {
     primarySpStorePrice,
@@ -251,31 +268,39 @@ const _estimateStoreNetflowRate = (
     redundantDataChunkNum,
     redundantParityChunkNum,
     minChargeSize,
-    validatorTaxRate,
-  } = storeFeeConfig;
-  const chargeSize = isChargeSize ? size : size >= minChargeSize ? size : minChargeSize;
-  const primarySpRate = Number(primarySpStorePrice) * chargeSize;
-  const secondarySpNum = redundantDataChunkNum + redundantParityChunkNum;
-  let secondarySpRate = Number(secondarySpStorePrice) * chargeSize;
-  secondarySpRate = secondarySpRate * secondarySpNum;
-  const validatorTax = Number(validatorTaxRate) * (primarySpRate + secondarySpRate);
-  const netflowRate = primarySpRate + secondarySpRate + validatorTax;
+    validatorTaxRate
+  } = storeFeeConfig
+  const chargeSize = isChargeSize
+    ? size
+    : size >= minChargeSize
+      ? size
+      : minChargeSize
+  const primarySpRate = Number(primarySpStorePrice) * chargeSize
+  const secondarySpNum = redundantDataChunkNum + redundantParityChunkNum
+  let secondarySpRate = Number(secondarySpStorePrice) * chargeSize
+  secondarySpRate = secondarySpRate * secondarySpNum
+  const validatorTax =
+    Number(validatorTaxRate) * (primarySpRate + secondarySpRate)
+  const netflowRate = primarySpRate + secondarySpRate + validatorTax
 
-  return netflowRate / (10 ** 18);
-};
+  return netflowRate / 10 ** 18
+}
 
 /**
  * Get the related buckets for a payment account
  */
-export const getPaymentAccountRelatedBuckets = async (network: "testnet" | "mainnet", {
-  paymentAddress,
-  privateKey
-}: {
-  paymentAddress: string
-  privateKey: Hex
-}) => {
+export const getPaymentAccountRelatedBuckets = async (
+  network: "testnet" | "mainnet",
+  {
+    paymentAddress,
+    privateKey
+  }: {
+    paymentAddress: string
+    privateKey: Hex
+  }
+) => {
   try {
-    const client = await getClient(network)
+    const client = getClient(network)
     const sp = await selectSp(network)
     const storeFeeConfig = await _getStoreFeeConfig(network)
     const ownerAccount = (await getAccount(network, privateKey)).address
@@ -295,14 +320,18 @@ export const getPaymentAccountRelatedBuckets = async (network: "testnet" | "main
         )
       })
       .map((bucket) => ({
-          ...bucket,
-          settlementDate: new Date(
-            Number(streamRecord.settleTimestamp) * 1000
-          ).toISOString(),
+        ...bucket,
+        settlementDate: new Date(
+          Number(streamRecord.settleTimestamp) * 1000
+        ).toISOString(),
+        netflowRateInSeconds: _estimateStoreNetflowRate(
           // @ts-ignore
-          netflowRateInSeconds: _estimateStoreNetflowRate(bucket.StorageSize, storeFeeConfig),
+          bucket.StorageSize,
+          storeFeeConfig
+        ),
+        netflowRateInDays:
           // @ts-ignore
-          netflowRateInDays: _estimateStoreNetflowRate(bucket.StorageSize, storeFeeConfig) * 86400,
+          _estimateStoreNetflowRate(bucket.StorageSize, storeFeeConfig) * 86400
       }))
 
     return response.success(relatedBuckets)
