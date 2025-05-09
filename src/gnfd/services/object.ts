@@ -17,7 +17,7 @@ import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
-import { ApiResponse, getMimeType, response } from "../util"
+import { getMimeType, response, type ApiResponse } from "../util"
 import { getAccount } from "./account"
 import { createBucket } from "./bucket"
 import { getClient } from "./client"

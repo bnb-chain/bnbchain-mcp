@@ -1,7 +1,9 @@
+import { BaseAccount } from "@bnb-chain/greenfield-cosmos-types/cosmos/auth/v1beta1/auth"
+import { type TxResponse } from "@bnb-chain/greenfield-js-sdk"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
-import { ApiResponse, response } from "../util"
+import { response, type ApiResponse } from "../util"
 
 /**
  * Execute a transaction with proper error handling
@@ -12,8 +14,8 @@ import { ApiResponse, response } from "../util"
  * @param successDetail Additional details for success message
  */
 export const executeTransaction = async <T = void>(
-  tx: any,
-  account: any,
+  tx: TxResponse,
+  account: BaseAccount,
   privateKey: Hex,
   operationName: string,
   successDetail: string

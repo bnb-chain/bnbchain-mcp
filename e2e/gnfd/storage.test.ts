@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto"
+import { unlinkSync } from "fs"
 import path from "path"
 import { describe, expect, it } from "bun:test"
 
@@ -41,6 +42,21 @@ describe("Greenfield Storage Test", async () => {
     expect(obj.status).toBe("success")
   })
 
+  it("get bucket full info", async () => {
+    const res = await client.callTool({
+      name: "gnfd_get_bucket_full_info",
+      arguments: {
+        network: "testnet"
+      }
+    })
+    const text = res.content?.[0]?.text
+    const obj = parseText<{
+      status: string
+    }>(text)
+
+    expect(obj.status).toBe("success")
+  })
+
   it("create object (upload file)", async () => {
     const res = await client.callTool({
       name: "gnfd_create_file",
@@ -69,6 +85,25 @@ describe("Greenfield Storage Test", async () => {
     const obj = parseText<{
       status: string
     }>(text)
+    expect(obj.status).toBe("success")
+  })
+
+  it("download object", async () => {
+    const res = await client.callTool({
+      name: "gnfd_download_object",
+      arguments: {
+        network: "testnet",
+        bucketName: TEST_BUCKET_NAME,
+        objectName: objectName,
+        targetPath: process.cwd()
+      }
+    })
+    const text = res.content?.[0]?.text
+    const obj = parseText<{
+      status: string
+    }>(text)
+    // remove the file after test
+    unlinkSync(path.resolve(process.cwd(), objectName))
     expect(obj.status).toBe("success")
   })
 

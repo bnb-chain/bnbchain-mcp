@@ -9,24 +9,21 @@ describe("Greenfield Account Test", async () => {
     const res = await client.callTool({
       name: "gnfd_get_account_balance",
       arguments: {
-        network: "mainnet"
+        network: "testnet"
       }
     })
     const text = res.content?.[0]?.text
     const obj = parseText<{
-      balance: {
-        amount: string
-        denom: string
-      }
+      denom: string
     }>(text)
-    expect(BigInt(obj.balance.amount)).toBeTypeOf("bigint")
+    expect(obj.denom).toBe("BNB")
   })
 
   it("get all storage providers", async () => {
     const res = await client.callTool({
       name: "gnfd_get_all_sps",
       arguments: {
-        network: "mainnet"
+        network: "testnet"
       }
     })
     const text = res.content?.[0]?.text

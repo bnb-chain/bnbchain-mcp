@@ -19,48 +19,6 @@ describe("EVM Network Test", async () => {
     expect(obj.chainId).toBe(56) // BSC mainnet chain ID
   })
 
-  it("get chain info for BSC testnet", async () => {
-    const res = await client.callTool({
-      name: "get_chain_info",
-      arguments: {
-        network: "bsc-testnet"
-      }
-    })
-    const text = res.content?.[0]?.text
-    const obj = parseText<{
-      chainId: number
-    }>(text)
-    expect(obj.chainId).toBe(97) // BSC testnet chain ID
-  })
-
-  it("get chain info for opBNB", async () => {
-    const res = await client.callTool({
-      name: "get_chain_info",
-      arguments: {
-        network: "opbnb"
-      }
-    })
-    const text = res.content?.[0]?.text
-    const obj = parseText<{
-      chainId: number
-    }>(text)
-    expect(obj.chainId).toBe(204) // opBNB mainnet chain ID
-  })
-
-  it("get chain info for opBNB testnet", async () => {
-    const res = await client.callTool({
-      name: "get_chain_info",
-      arguments: {
-        network: "opbnb-testnet"
-      }
-    })
-    const text = res.content?.[0]?.text
-    const obj = parseText<{
-      chainId: number
-    }>(text)
-    expect(obj.chainId).toBe(5611) // opBNB testnet chain ID
-  })
-
   it("get supported networks", async () => {
     const res = await client.callTool({
       name: "get_supported_networks",

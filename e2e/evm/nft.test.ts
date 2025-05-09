@@ -34,7 +34,7 @@ describe("EVM NFT Test", async () => {
   describe("ERC1155 Tests", () => {
     it("get ERC1155 token URI", async () => {
       const res = await client.callTool({
-        name: "get_erc1155_token_uri",
+        name: "get_erc1155_token_metadata",
         arguments: {
           tokenAddress: ERC1155_ADDRESS,
           tokenId: ERC1155_TOKEN_ID,

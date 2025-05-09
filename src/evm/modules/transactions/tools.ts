@@ -27,27 +27,6 @@ export function registerTransactionTools(server: McpServer) {
     }
   )
 
-  // Get transaction receipt
-  server.tool(
-    "get_transaction_receipt",
-    "Get a transaction receipt by its hash",
-    {
-      txHash: z.string().describe("The transaction hash to look up"),
-      network: defaultNetworkParam
-    },
-    async ({ txHash, network }) => {
-      try {
-        const receipt = await services.getTransactionReceipt(
-          txHash as Hash,
-          network
-        )
-        return mcpToolRes.success(receipt)
-      } catch (error) {
-        return mcpToolRes.error(error, `fetching transaction receipt ${txHash}`)
-      }
-    }
-  )
-
   // Estimate gas
   server.tool(
     "estimate_gas",
