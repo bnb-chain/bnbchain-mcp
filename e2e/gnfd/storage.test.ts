@@ -42,6 +42,22 @@ describe("Greenfield Storage Test", async () => {
     expect(obj.status).toBe("success")
   })
 
+  it("get bucket full info", async () => {
+    const res = await client.callTool({
+      name: "gnfd_get_bucket_full_info",
+      arguments: {
+        network: "testnet"
+      }
+    })
+    const text = res.content?.[0]?.text
+    const obj = parseText<{
+      status: string
+    }>(text)
+
+    console.log("bucket full info", obj)
+    expect(obj.status).toBe("success")
+  })
+
   it("create object (upload file)", async () => {
     const res = await client.callTool({
       name: "gnfd_create_file",

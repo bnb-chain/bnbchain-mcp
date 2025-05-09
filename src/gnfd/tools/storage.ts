@@ -203,6 +203,29 @@ export function registerStorageTools(server: McpServer) {
     }
   )
 
+  // Get bucket full info
+  server.tool(
+    "gnfd_get_bucket_full_info",
+    "Get bucket basic information and quota usage",
+    {
+      network: networkParam,
+      bucketName: bucketNameParam,
+      privateKey: privateKeyParam
+    },
+    async ({ network, bucketName, privateKey }) => {
+      try {
+        const result = await services.getBucketFullInfo(
+          network,
+          bucketName,
+          privateKey as Hex
+        )
+        return mcpToolRes.success(result)
+      } catch (error) {
+        return mcpToolRes.error(error, "getting bucket full info")
+      }
+    }
+  )
+
   // Get object info
   server.tool(
     "gnfd_get_object_info",
@@ -250,29 +273,6 @@ export function registerStorageTools(server: McpServer) {
         return mcpToolRes.success(result)
       } catch (error) {
         return mcpToolRes.error(error, "downloading object")
-      }
-    }
-  )
-
-  // Get bucket full info
-  server.tool(
-    "gnfd_get_bucket_full_info",
-    "Get bucket basic information and quota usage",
-    {
-      network: networkParam,
-      bucketName: bucketNameParam,
-      privateKey: privateKeyParam
-    },
-    async ({ network, bucketName, privateKey }) => {
-      try {
-        const result = await services.getBucketFullInfo(
-          network,
-          bucketName,
-          privateKey as Hex
-        )
-        return mcpToolRes.success(result)
-      } catch (error) {
-        return mcpToolRes.error(error, "getting bucket full info")
       }
     }
   )
