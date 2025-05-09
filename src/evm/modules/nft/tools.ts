@@ -3,7 +3,7 @@ import type { Address } from "viem"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
-import { safeStringify } from "@/utils/helper"
+import { mcpToolRes } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types"
 
 export function registerNftTools(server: McpServer) {
@@ -24,126 +24,15 @@ export function registerNftTools(server: McpServer) {
     },
     async ({ tokenAddress, tokenId, network }) => {
       try {
-        const nftInfo = await services.getERC721TokenMetadata(
+        const metadata = await services.getERC721TokenMetadata(
           tokenAddress as Address,
           BigInt(tokenId),
           network
         )
 
-        // Check ownership separately
-        let owner = null
-        try {
-          // This may fail if tokenId doesn't exist
-          owner = await services.getPublicClient(network).readContract({
-            address: tokenAddress as Address,
-            abi: [
-              {
-                inputs: [{ type: "uint256" }],
-                name: "ownerOf",
-                outputs: [{ type: "address" }],
-                stateMutability: "view",
-                type: "function"
-              }
-            ],
-            functionName: "ownerOf",
-            args: [BigInt(tokenId)]
-          })
-        } catch (e) {
-          // Ownership info not available
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  contract: tokenAddress,
-                  tokenId,
-                  network,
-                  ...nftInfo,
-                  owner: owner || "Unknown"
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success(metadata)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching NFT info: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
-      }
-    }
-  )
-
-  // Check NFT ownership
-  server.tool(
-    "check_nft_ownership",
-    "Check if an address owns a specific NFT",
-    {
-      tokenAddress: z
-        .string()
-        .describe(
-          "The contract address or ENS name of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for BAYC or 'boredapeyachtclub.eth')"
-        ),
-      tokenId: z.string().describe("The ID of the NFT to check (e.g., '1234')"),
-      ownerAddress: z
-        .string()
-        .describe(
-          "The wallet address or ENS name to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"
-        ),
-      network: defaultNetworkParam
-    },
-    async ({ tokenAddress, tokenId, ownerAddress, network }) => {
-      try {
-        const isOwner = await services.isNFTOwner(
-          tokenAddress,
-          ownerAddress,
-          BigInt(tokenId),
-          network
-        )
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  tokenAddress,
-                  tokenId,
-                  ownerAddress,
-                  network,
-                  isOwner,
-                  result: isOwner
-                    ? "Address owns this NFT"
-                    : "Address does not own this NFT"
-                },
-                2
-              )
-            }
-          ]
-        }
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error checking NFT ownership: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "fetching NFT metadata")
       }
     }
   )
@@ -167,106 +56,80 @@ export function registerNftTools(server: McpServer) {
     },
     async ({ tokenAddress, tokenId, network }) => {
       try {
-        const uri = await services.getERC1155TokenURI(
+        const metadata = await services.getERC1155TokenMetadata(
           tokenAddress as Address,
           BigInt(tokenId),
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  contract: tokenAddress,
-                  tokenId,
-                  network,
-                  uri
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success(metadata)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching ERC1155 token URI: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "fetching ERC1155 token URI")
       }
     }
   )
 
-  // Add tool for getting ERC721 NFT balance
+  // Transfer NFT
   server.tool(
-    "get_nft_balance",
-    "Get the total number of NFTs owned by an address from a specific collection. This returns the count of NFTs, not individual token IDs.",
+    "transfer_nft",
+    "Transfer an NFT to an address",
     {
+      privateKey: z
+        .string()
+        .describe(
+          "Private key of the owner's account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe(
           "The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for Bored Ape Yacht Club)"
         ),
-      ownerAddress: z
+      tokenId: z
         .string()
-        .describe(
-          "The wallet address to check the NFT balance for (e.g., '0x1234...')"
-        ),
+        .describe("The ID of the specific NFT to transfer (e.g., '1234')"),
+      toAddress: z
+        .string()
+        .describe("The recipient address that will receive the NFT"),
       network: defaultNetworkParam
     },
-    async ({ tokenAddress, ownerAddress, network }) => {
+    async ({ privateKey, tokenAddress, tokenId, toAddress, network }) => {
       try {
-        const balance = await services.getERC721Balance(
+        const result = await services.transferERC721(
           tokenAddress as Address,
-          ownerAddress as Address,
+          toAddress as Address,
+          BigInt(tokenId),
+          privateKey,
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  collection: tokenAddress,
-                  owner: ownerAddress,
-                  network,
-                  balance: balance.toString()
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success({
+          success: true,
+          txHash: result.txHash,
+          network,
+          contract: tokenAddress,
+          tokenId: result.tokenId,
+          recipient: toAddress,
+          name: result.token.name,
+          symbol: result.token.symbol
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching NFT balance: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "transferring NFT")
       }
     }
   )
 
-  // Add tool for getting ERC1155 token balance
+  // Transfer ERC1155 token
   server.tool(
-    "get_erc1155_balance",
-    "Get the balance of a specific ERC1155 token ID owned by an address. ERC1155 allows multiple tokens of the same ID, so the balance can be greater than 1.",
+    "transfer_erc1155",
+    "Transfer ERC1155 tokens to another address. ERC1155 is a multi-token standard that can represent both fungible and non-fungible tokens in a single contract.",
     {
+      privateKey: z
+        .string()
+        .describe(
+          "Private key of the token owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."
+        )
+        .default(process.env.PRIVATE_KEY as string),
       tokenAddress: z
         .string()
         .describe(
@@ -274,54 +137,46 @@ export function registerNftTools(server: McpServer) {
         ),
       tokenId: z
         .string()
-        .describe(
-          "The ID of the specific token to check the balance for (e.g., '1234')"
-        ),
-      ownerAddress: z
+        .describe("The ID of the specific token to transfer (e.g., '1234')"),
+      amount: z
         .string()
         .describe(
-          "The wallet address to check the token balance for (e.g., '0x1234...')"
+          "The quantity of tokens to send (e.g., '1' for a single NFT or '10' for 10 fungible tokens)"
         ),
+      toAddress: z
+        .string()
+        .describe("The recipient wallet address that will receive the tokens"),
       network: defaultNetworkParam
     },
-    async ({ tokenAddress, tokenId, ownerAddress, network }) => {
+    async ({
+      privateKey,
+      tokenAddress,
+      tokenId,
+      amount,
+      toAddress,
+      network
+    }) => {
       try {
-        const balance = await services.getERC1155Balance(
+        const result = await services.transferERC1155(
           tokenAddress as Address,
-          ownerAddress as Address,
+          toAddress as Address,
           BigInt(tokenId),
+          amount,
+          privateKey,
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  contract: tokenAddress,
-                  tokenId,
-                  owner: ownerAddress,
-                  network,
-                  balance: balance.toString()
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success({
+          success: true,
+          txHash: result.txHash,
+          network,
+          contract: tokenAddress,
+          tokenId: result.tokenId,
+          amount: result.amount,
+          recipient: toAddress
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching ERC1155 token balance: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "transferring ERC1155 tokens")
       }
     }
   )

@@ -1,6 +1,7 @@
 import type { Hex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
+import Logger from "@/utils/logger"
 import { getClient } from "./client"
 
 export const getAddressFromPrivateKey = (privateKey: Hex) => {
@@ -33,6 +34,14 @@ export const getAccountBalance = async (
 }
 
 export const getModuleAccounts = async (network: "testnet" | "mainnet") => {
-  const client = getClient(network)
-  return await client.account.getModuleAccounts()
+  try {
+    const client = getClient(network)
+    const moduleAccounts = await client.account.getModuleAccounts()
+
+    Logger.debug("moduleAccounts: ", moduleAccounts)
+    return moduleAccounts
+  } catch (error) {
+    Logger.error("Error fetching module accounts: ", error)
+    throw error
+  }
 }

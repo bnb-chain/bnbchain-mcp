@@ -1,10 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Address } from "viem"
+import type { Address, Hex } from "viem"
+import { privateKeyToAccount } from "viem/accounts"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
-import { safeStringify } from "@/utils/helper"
-import { defaultNetworkParam } from "../common/types"
+import { mcpToolRes } from "@/utils/helper"
+import { defaultNetworkParam, privateKeyParam } from "../common/types"
 
 export function registerTokenTools(server: McpServer) {
   // Get ERC20 token info
@@ -22,30 +23,9 @@ export function registerTokenTools(server: McpServer) {
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  address: tokenAddress,
-                  network,
-                  ...tokenInfo
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success(tokenInfo)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching ERC20 token info: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching ERC20 token info")
       }
     }
   )
@@ -55,43 +35,23 @@ export function registerTokenTools(server: McpServer) {
     "get_native_balance",
     "Get native token balance for an address",
     {
-      address: z.string().describe("The address to check balance for"),
-      network: defaultNetworkParam
+      network: defaultNetworkParam,
+      address: z
+        .string()
+        .optional()
+        .describe("The address to check balance for"),
+      privateKey: privateKeyParam
     },
-    async ({ network, address }) => {
+    async ({ network, address, privateKey }) => {
       try {
-        const balance = await services.getETHBalance(
-          address as services.Address,
+        const result = await services.getNativeBalance(
+          address || privateKeyToAccount(privateKey as Hex).address,
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  network,
-                  address,
-                  balance: {
-                    wei: balance.wei.toString(),
-                    ether: balance.ether
-                  }
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success(result)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching native token balance: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching native token balance")
       }
     }
   )
@@ -103,44 +63,46 @@ export function registerTokenTools(server: McpServer) {
     {
       tokenAddress: z.string().describe("The ERC20 token contract address"),
       address: z.string().describe("The address to check balance for"),
-      network: defaultNetworkParam
+      network: defaultNetworkParam,
+      privateKey: privateKeyParam
     },
-    async ({ network, tokenAddress, address }) => {
+    async ({ network, tokenAddress, address, privateKey }) => {
       try {
-        const balance = await services.getERC20Balance(
+        const res = await services.getERC20Balance(
           tokenAddress as Address,
-          address as Address,
+          address || privateKeyToAccount(privateKey as Hex).address,
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  tokenAddress,
-                  owner: address,
-                  network,
-                  raw: balance.raw.toString(),
-                  formatted: balance.formatted,
-                  symbol: balance.token.symbol,
-                  decimals: balance.token.decimals
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success(res)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching ERC20 token balance: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching ERC20 token balance")
+      }
+    }
+  )
+
+  // Create ERC20 token
+  server.tool(
+    "create_erc20_token",
+    "Create a new ERC20 token",
+    {
+      name: z.string().describe("The name of the token"),
+      symbol: z.string().describe("The symbol of the token"),
+      network: defaultNetworkParam,
+      privateKey: privateKeyParam
+    },
+    async ({ network, name, symbol, privateKey }) => {
+      try {
+        const result = await services.createERC20Token({
+          name,
+          symbol,
+          privateKey: privateKey as Hex,
+          network
+        })
+
+        return mcpToolRes.success(result)
+      } catch (error) {
+        return mcpToolRes.error(error, "creating ERC20 token")
       }
     }
   )

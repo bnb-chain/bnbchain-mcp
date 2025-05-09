@@ -42,3 +42,28 @@ export const safeParse = (text: string): any => {
     return null
   }
 }
+
+export const mcpToolRes = {
+  // Unified error handling
+  error: (error: unknown, operation: string) => {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `Error ${operation}: ${error instanceof Error ? error.message : String(error)}`
+        }
+      ]
+    }
+  },
+  // Unified response formatting
+  success: (data: unknown) => {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: safeStringify(data, 2)
+        }
+      ]
+    }
+  }
+}
