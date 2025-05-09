@@ -54,7 +54,6 @@ describe("Greenfield Storage Test", async () => {
       status: string
     }>(text)
 
-    console.log("bucket full info", obj)
     expect(obj.status).toBe("success")
   })
 

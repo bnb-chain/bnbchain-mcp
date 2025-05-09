@@ -34,6 +34,27 @@ const _createPaymentAccount = async () => {
   return obj.status
 }
 
+const _getPaymentAccountInfo = async () => {
+  const client = await getClient()
+  const paymentAccountAddress = await _getPaymentAccountAddress()
+  const res = await client.callTool({
+    name: "gnfd_get_payment_account_info",
+    arguments: {
+      network: "testnet",
+      paymentAddress: paymentAccountAddress
+    }
+  })
+  const text = res.content?.[0]?.text
+  const obj = parseText<{
+    status: string
+    data: {
+      refundable: boolean
+    }
+  }>(text)
+
+  return obj
+}
+
 describe("Greenfield Payment Test", async () => {
   const client = await getClient()
   let paymentAccountAddress = await _getPaymentAccountAddress()
@@ -54,37 +75,44 @@ describe("Greenfield Payment Test", async () => {
     expect(obj.length).toBeGreaterThan(0)
   })
 
-  //   it("deposit to payment account", async () => {
-  //     const res = await client.callTool({
-  //       name: "gnfd_deposit_to_payment",
-  //       arguments: {
-  //         network: "testnet",
-  //         to: paymentAccountAddress, // Example address
-  //         amount: "0.01"
-  //       }
-  //     })
-  //     const text = res.content?.[0]?.text
-  //     const obj = parseText<{
-  //       status: string
-  //     }>(text)
-  //     expect(obj.status).toBe("success")
-  //   })
+  it("deposit to payment account", async () => {
+    const res = await client.callTool({
+      name: "gnfd_deposit_to_payment",
+      arguments: {
+        network: "testnet",
+        to: paymentAccountAddress, // Example address
+        amount: "0.01"
+      }
+    })
+    const text = res.content?.[0]?.text
+    const obj = parseText<{
+      status: string
+    }>(text)
+    expect(obj.status).toBe("success")
+  })
 
-  //   it("withdraw from payment account", async () => {
-  //     const res = await client.callTool({
-  //       name: "gnfd_withdraw_from_payment",
-  //       arguments: {
-  //         network: "testnet",
-  //         from: paymentAccountAddress, // Example address
-  //         amount: "0.01"
-  //       }
-  //     })
-  //     const text = res.content?.[0]?.text
-  //     const obj = parseText<{
-  //       status: string
-  //     }>(text)
-  //     expect(obj.status).toBe("success")
-  //   })
+  it("get payment account info", async () => {
+    const obj = await _getPaymentAccountInfo()
+
+    expect(obj.status).toBe("success")
+  })
+
+  it("withdraw from payment account", async () => {
+    const accountInfo = await _getPaymentAccountInfo()
+    const res = await client.callTool({
+      name: "gnfd_withdraw_from_payment",
+      arguments: {
+        network: "testnet",
+        from: paymentAccountAddress, // Example address
+        amount: "0.01"
+      }
+    })
+    const text = res.content?.[0]?.text
+    const obj = parseText<{
+      status: string
+    }>(text)
+    expect(obj.status).toBe(accountInfo.data.refundable ? "success" : "error")
+  })
 
   //   it("disable refund for payment account", async () => {
   //     const res = await client.callTool({
@@ -101,39 +129,21 @@ describe("Greenfield Payment Test", async () => {
   //     expect(obj.status).toBe("success")
   //   })
 
-  it("get payment account info", async () => {
-    const res = await client.callTool({
-      name: "gnfd_get_payment_account_info",
-      arguments: {
-        network: "testnet",
-        paymentAddress: paymentAccountAddress
-      }
-    })
-    const text = res.content?.[0]?.text
-    const obj = parseText<{
-      status: string
-      data: any
-    }>(text)
+  //   it("get payment account related buckets", async () => {
+  //     const res = await client.callTool({
+  //       name: "gnfd_get_payment_account_related_buckets",
+  //       arguments: {
+  //         network: "testnet",
+  //         paymentAddress: paymentAccountAddress
+  //       }
+  //     })
+  //     const text = res.content?.[0]?.text
+  //     const obj = parseText<{
+  //       status: string
+  //       data: any
+  //     }>(text)
 
-    console.log("payment account info", obj.data)
-    expect(obj.status).toBe("success")
-  })
-
-  it("get payment account related buckets", async () => {
-    const res = await client.callTool({
-      name: "gnfd_get_payment_account_related_buckets",
-      arguments: {
-        network: "testnet",
-        paymentAddress: paymentAccountAddress
-      }
-    })
-    const text = res.content?.[0]?.text
-    const obj = parseText<{
-      status: string
-      data: any
-    }>(text)
-
-    console.log("payment account related buckets", obj.data)
-    expect(obj.status).toBe("success")
-  })
+  //     console.log("payment account related buckets", obj.data)
+  //     expect(obj.status).toBe("success")
+  //   })
 })

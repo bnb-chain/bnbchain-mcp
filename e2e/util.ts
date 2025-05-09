@@ -1,10 +1,8 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
-import { setDefaultTimeout } from "bun:test"
 import dotenv from "dotenv"
 
 dotenv.config()
-setDefaultTimeout(50000)
 
 export class MCPClient {
   private mcp: Client

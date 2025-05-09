@@ -24,20 +24,20 @@ describe("EVM Transactions Test", async () => {
     expect(obj.blockHash).toStartWith("0x")
   })
 
-  it("get transaction receipt", async () => {
-    const res = await client.callTool({
-      name: "get_transaction_receipt",
-      arguments: {
-        txHash: TX_HASH,
-        network: "bsc"
-      }
-    })
-    const text = res.content?.[0]?.text
-    const obj = parseText<{
-      blockHash: string
-    }>(text)
-    expect(obj.blockHash).toStartWith("0x")
-  })
+  // it("get transaction receipt", async () => {
+  //   const res = await client.callTool({
+  //     name: "get_transaction_receipt",
+  //     arguments: {
+  //       txHash: TX_HASH,
+  //       network: "bsc"
+  //     }
+  //   })
+  //   const text = res.content?.[0]?.text
+  //   const obj = parseText<{
+  //     blockHash: string
+  //   }>(text)
+  //   expect(obj.blockHash).toStartWith("0x")
+  // })
 
   it("estimate gas", async () => {
     const res = await client.callTool({

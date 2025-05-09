@@ -219,7 +219,7 @@ bun run test
 | get_erc20_balance            | Get ERC20 token balance for an address                                       |
 | get_nft_info                 | Get detailed information about a specific NFT                                |
 | check_nft_ownership          | Check if an address owns a specific NFT                                      |
-| get_erc1155_token_uri        | Get the metadata URI for an ERC1155 token                                    |
+| get_erc1155_token_metadata   | Get the metadata for an ERC1155 token                                        |
 | get_nft_balance              | Get the total number of NFTs owned by an address from a specific collection  |
 | get_erc1155_balance          | Get the balance of a specific ERC1155 token ID owned by an address           |
 

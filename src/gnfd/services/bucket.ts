@@ -35,7 +35,14 @@ export const getBucketFullInfo = async (
   network: "testnet" | "mainnet",
   bucketName: string,
   privateKey: Hex
-): Promise<ApiResponse<BucketInfo & IQuotaProps>> => {
+): Promise<
+  ApiResponse<
+    BucketInfo & {
+      quotaDetail: IQuotaProps
+      remainQuota: { value: bigint; unit: string }
+    }
+  >
+> => {
   try {
     const client = getClient(network)
     const bucketInfoRes = await getBucketInfo(network, bucketName)
@@ -57,10 +64,21 @@ export const getBucketFullInfo = async (
     if (quotaRes.code === 0) {
       const bucketInfo = bucketInfoRes.data as {} as BucketInfo
       const quota = quotaRes.body as IQuotaProps
+      const remainQuotaValue =
+        BigInt(quota.freeQuota) +
+        BigInt(quota.readQuota) +
+        BigInt(quota.monthlyFreeQuota) -
+        BigInt(quota.consumedQuota) -
+        BigInt(quota.monthlyQuotaConsumedSize)
+
       return response.success({
         ...bucketInfo,
-        ...quota
-      } as BucketInfo & IQuotaProps)
+        quotaDetail: quota,
+        remainQuota: {
+          value: remainQuotaValue,
+          unit: "bytes"
+        }
+      })
     } else {
       return response.fail("Get bucket full info operation failed")
     }

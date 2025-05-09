@@ -104,28 +104,28 @@ export function registerPaymentTools(server: McpServer) {
   )
 
   // Disable refund for payment account
-  server.tool(
-    "gnfd_disable_refund",
-    "Disable refund for a payment account (IRREVERSIBLE)",
-    {
-      network: networkParam,
-      address: z
-        .string()
-        .describe("The payment account address to disable refund for"),
-      privateKey: privateKeyParam
-    },
-    async ({ network, address, privateKey }) => {
-      try {
-        const result = await services.disableRefundForPaymentAccount(network, {
-          address,
-          privateKey: privateKey as Hex
-        })
-        return mcpToolRes.success(result)
-      } catch (error) {
-        return mcpToolRes.error(error, "disabling refund for payment account")
-      }
-    }
-  )
+  // server.tool(
+  //   "gnfd_disable_refund",
+  //   "Disable refund for a payment account (IRREVERSIBLE)",
+  //   {
+  //     network: networkParam,
+  //     address: z
+  //       .string()
+  //       .describe("The payment account address to disable refund for"),
+  //     privateKey: privateKeyParam
+  //   },
+  //   async ({ network, address, privateKey }) => {
+  //     try {
+  //       const result = await services.disableRefundForPaymentAccount(network, {
+  //         address,
+  //         privateKey: privateKey as Hex
+  //       })
+  //       return mcpToolRes.success(result)
+  //     } catch (error) {
+  //       return mcpToolRes.error(error, "disabling refund for payment account")
+  //     }
+  //   }
+  // )
 
   // Get payment account info
   server.tool(
@@ -150,32 +150,32 @@ export function registerPaymentTools(server: McpServer) {
     }
   )
 
-  // Get payment account related buckets
-  server.tool(
-    "gnfd_get_payment_account_related_buckets",
-    "Get the related buckets for a payment account",
-    {
-      network: networkParam,
-      paymentAddress: z
-        .string()
-        .describe(
-          "The address of the payment account to get related buckets for"
-        ),
-      privateKey: privateKeyParam
-    },
-    async ({ network, paymentAddress, privateKey }) => {
-      try {
-        const result = await services.getPaymentAccountRelatedBuckets(network, {
-          paymentAddress,
-          privateKey: privateKey as Hex
-        })
-        return mcpToolRes.success(result)
-      } catch (error) {
-        return mcpToolRes.error(
-          error,
-          "getting payment account related buckets"
-        )
-      }
-    }
-  )
+  // // Get payment account related buckets
+  // server.tool(
+  //   "gnfd_get_payment_account_related_buckets",
+  //   "Get the related buckets for a payment account",
+  //   {
+  //     network: networkParam,
+  //     paymentAddress: z
+  //       .string()
+  //       .describe(
+  //         "The address of the payment account to get related buckets for"
+  //       ),
+  //     privateKey: privateKeyParam
+  //   },
+  //   async ({ network, paymentAddress, privateKey }) => {
+  //     try {
+  //       const result = await services.getPaymentAccountRelatedBuckets(network, {
+  //         paymentAddress,
+  //         privateKey: privateKey as Hex
+  //       })
+  //       return mcpToolRes.success(result)
+  //     } catch (error) {
+  //       return mcpToolRes.error(
+  //         error,
+  //         "getting payment account related buckets"
+  //       )
+  //     }
+  //   }
+  // )
 }
