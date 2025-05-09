@@ -3,6 +3,7 @@ import type { Hash } from "viem"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
+import { mcpToolRes } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types"
 
 export function registerBlockTools(server: McpServer) {
@@ -17,23 +18,9 @@ export function registerBlockTools(server: McpServer) {
     async ({ network, blockHash }) => {
       try {
         const block = await services.getBlockByHash(blockHash as Hash, network)
-        return {
-          content: [
-            {
-              type: "text",
-              text: services.helpers.formatJson(block)
-            }
-          ]
-        }
+        return mcpToolRes.success(block)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching block with hash: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching block by hash")
       }
     }
   )
@@ -52,23 +39,9 @@ export function registerBlockTools(server: McpServer) {
           parseInt(blockNumber),
           network
         )
-        return {
-          content: [
-            {
-              type: "text",
-              text: services.helpers.formatJson(block)
-            }
-          ]
-        }
+        return mcpToolRes.success(block)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching block: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching block by number")
       }
     }
   )
@@ -83,23 +56,9 @@ export function registerBlockTools(server: McpServer) {
     async ({ network }) => {
       try {
         const block = await services.getLatestBlock(network)
-        return {
-          content: [
-            {
-              type: "text",
-              text: services.helpers.formatJson(block)
-            }
-          ]
-        }
+        return mcpToolRes.success(block)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching latest block: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching latest block")
       }
     }
   )

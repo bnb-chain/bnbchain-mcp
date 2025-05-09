@@ -50,7 +50,7 @@ export const startSSEServer = async () => {
       if (transport) {
         Logger.debug("Handling message", { sessionId, body: req.body })
         try {
-          await transport.handlePostMessage(req, res)
+          await transport.handlePostMessage(req, res, req.body)
         } catch (error) {
           Logger.error("Error handling message", { sessionId, error })
           res.status(500).send("Internal server error")

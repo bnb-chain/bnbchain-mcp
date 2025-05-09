@@ -4,7 +4,7 @@ import { z } from "zod"
 
 import { getRpcUrl, getSupportedNetworks } from "@/evm/chains.js"
 import * as services from "@/evm/services/index.js"
-import { safeStringify } from "@/utils/helper"
+import { mcpToolRes } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types.js"
 
 export function registerNetworkTools(server: McpServer) {
@@ -21,31 +21,14 @@ export function registerNetworkTools(server: McpServer) {
         const blockNumber = await services.getBlockNumber(network)
         const rpcUrl = getRpcUrl(network)
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  network,
-                  chainId,
-                  blockNumber: blockNumber.toString(),
-                  rpcUrl
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success({
+          network,
+          chainId,
+          blockNumber: blockNumber.toString(),
+          rpcUrl
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching chain info: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching chain info")
       }
     }
   )
@@ -58,29 +41,11 @@ export function registerNetworkTools(server: McpServer) {
     async () => {
       try {
         const networks = getSupportedNetworks()
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  supportedNetworks: networks
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success({
+          supportedNetworks: networks
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error fetching supported networks: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        }
+        return mcpToolRes.error(error, "fetching supported networks")
       }
     }
   )
@@ -95,53 +60,16 @@ export function registerNetworkTools(server: McpServer) {
     },
     async ({ ensName, network }) => {
       try {
-        // Validate that the input is an ENS name
-        if (!ensName.includes(".")) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Error: Input "${ensName}" is not a valid ENS name. ENS names must contain a dot (e.g., 'name.eth').`
-              }
-            ],
-            isError: true
-          }
-        }
-
-        // Normalize the ENS name
-        const normalizedEns = normalize(ensName)
-
-        // Resolve the ENS name to an address
-        const address = await services.resolveAddress(ensName, network)
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  ensName: ensName,
-                  normalizedName: normalizedEns,
-                  resolvedAddress: address,
-                  network
-                },
-                2
-              )
-            }
-          ]
-        }
+        const normalizedName = normalize(ensName)
+        const address = await services.resolveAddress(normalizedName, network)
+        return mcpToolRes.success({
+          ensName,
+          normalizedName,
+          resolvedAddress: address,
+          network
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error resolving ENS name: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "resolving ENS name")
       }
     }
   )
