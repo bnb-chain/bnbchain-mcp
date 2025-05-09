@@ -1,75 +1,11 @@
-import { formatUnits, getContract, type Address } from "viem"
+import { formatUnits, getContract, parseUnits, type Address } from "viem"
 
-import { getPublicClient } from "./clients.js"
+import Logger from "@/utils/logger.js"
+import { ERC20_ABI, ERC20_BYTECODE } from "./abi/erc20.js"
+import { ERC721_ABI } from "./abi/erc721.js"
+import { ERC1155_ABI } from "./abi/erc1155.js"
+import { getPublicClient, getWalletClient } from "./clients.js"
 import { isContract } from "./contracts.js"
-
-// Standard ERC20 ABI (minimal for reading)
-const erc20Abi = [
-  {
-    inputs: [],
-    name: "name",
-    outputs: [{ type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "symbol",
-    outputs: [{ type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "decimals",
-    outputs: [{ type: "uint8" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "totalSupply",
-    outputs: [{ type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  }
-] as const
-
-// Standard ERC721 ABI (minimal for reading)
-const erc721Abi = [
-  {
-    inputs: [],
-    name: "name",
-    outputs: [{ type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "symbol",
-    outputs: [{ type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [{ type: "uint256", name: "tokenId" }],
-    name: "tokenURI",
-    outputs: [{ type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  }
-] as const
-
-// Standard ERC1155 ABI (minimal for reading)
-const erc1155Abi = [
-  {
-    inputs: [{ type: "uint256", name: "id" }],
-    name: "uri",
-    outputs: [{ type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  }
-] as const
 
 /**
  * Get ERC20 token information
@@ -92,15 +28,15 @@ export async function getERC20TokenInfo(
 
   const contract = getContract({
     address: tokenAddress,
-    abi: erc20Abi,
+    abi: ERC20_ABI,
     client: publicClient
   })
 
   const [name, symbol, decimals, totalSupply] = await Promise.all([
-    contract.read.name(),
-    contract.read.symbol(),
-    contract.read.decimals(),
-    contract.read.totalSupply()
+    contract.read.name() as Promise<string>,
+    contract.read.symbol() as Promise<string>,
+    contract.read.decimals() as Promise<number>,
+    contract.read.totalSupply() as Promise<bigint>
   ])
 
   return {
@@ -120,9 +56,14 @@ export async function getERC721TokenMetadata(
   tokenId: bigint,
   network: string = "ethereum"
 ): Promise<{
+  id: bigint
   name: string
   symbol: string
   tokenURI: string
+  owner: Address
+  totalSupply: bigint
+  network: string
+  contractAddress: Address
 }> {
   const publicClient = getPublicClient(network)
   const isContractAddr = await isContract(tokenAddress, network)
@@ -132,31 +73,44 @@ export async function getERC721TokenMetadata(
 
   const contract = getContract({
     address: tokenAddress,
-    abi: erc721Abi,
+    abi: ERC721_ABI,
     client: publicClient
   })
 
-  const [name, symbol, tokenURI] = await Promise.all([
-    contract.read.name(),
-    contract.read.symbol(),
-    contract.read.tokenURI([tokenId])
+  const [name, symbol, tokenURI, owner, totalSupply] = await Promise.all([
+    contract.read.name() as Promise<string>,
+    contract.read.symbol() as Promise<string>,
+    contract.read.tokenURI([tokenId]) as Promise<string>,
+    contract.read.ownerOf([tokenId]) as Promise<Address>,
+    contract.read.totalSupply() as Promise<bigint>
   ])
 
   return {
+    id: tokenId,
     name,
     symbol,
-    tokenURI
+    tokenURI,
+    owner,
+    totalSupply,
+    network,
+    contractAddress: tokenAddress
   }
 }
 
 /**
  * Get ERC1155 token URI
  */
-export async function getERC1155TokenURI(
+export async function getERC1155TokenMetadata(
   tokenAddress: Address,
   tokenId: bigint,
   network: string = "ethereum"
-): Promise<string> {
+): Promise<{
+  id: bigint
+  name: string
+  tokenURI: string
+  network: string
+  contractAddress: Address
+}> {
   const publicClient = getPublicClient(network)
   const isContractAddr = await isContract(tokenAddress, network)
   if (!isContractAddr) {
@@ -165,9 +119,62 @@ export async function getERC1155TokenURI(
 
   const contract = getContract({
     address: tokenAddress,
-    abi: erc1155Abi,
+    abi: ERC1155_ABI,
     client: publicClient
   })
 
-  return contract.read.uri([tokenId])
+  const [name, uri] = await Promise.all([
+    contract.read.name() as Promise<string>,
+    contract.read.uri([tokenId]) as Promise<string>
+  ])
+
+  return {
+    id: tokenId,
+    name,
+    tokenURI: uri,
+    network,
+    contractAddress: tokenAddress
+  }
+}
+
+/**
+ * Create a new ERC20 token
+ * @param name The name of the token
+ * @param symbol The symbol/ticker of the token
+ * @param privateKey The private key of the deployer account
+ * @param network The network to deploy on (default: "bsc")
+ * @param totalSupply The total supply of tokens to mint (default: "1000000000")
+ * @returns {Promise<{hash: string, name: string, symbol: string, owner: string, totalSupply: bigint}>} The transaction hash, token details and owner address
+ */
+export const createERC20Token = async ({
+  name,
+  symbol,
+  privateKey,
+  totalSupply = "1000000000", // default 1 billion
+  network = "bsc"
+}: {
+  name: string
+  symbol: string
+  privateKey: `0x${string}`
+  network: string
+  totalSupply?: string
+}) => {
+  const client = getWalletClient(privateKey, network)
+  const supply = BigInt(totalSupply)
+  const hash = await client.deployContract({
+    abi: ERC20_ABI,
+    bytecode: ERC20_BYTECODE,
+    args: [name, symbol, supply],
+    account: client.account!,
+    chain: client.chain
+  })
+
+  Logger.info(`Deployed new ERC20 token (${name} - ${symbol}): ${hash}`)
+  return {
+    hash,
+    name,
+    symbol,
+    totalSupply: supply,
+    owner: client.account!.address
+  }
 }

@@ -4,7 +4,7 @@ import { z } from "zod"
 
 import { defaultNetworkParam } from "@/evm/modules/common/types.js"
 import * as services from "@/evm/services/index.js"
-import { safeStringify } from "@/utils/helper"
+import { mcpToolRes } from "@/utils/helper"
 
 export function registerContractTools(server: McpServer) {
   // Check if address is contract
@@ -22,34 +22,14 @@ export function registerContractTools(server: McpServer) {
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  address,
-                  network,
-                  isContract,
-                  type: isContract ? "Contract" : "EOA"
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success({
+          address,
+          network,
+          isContract,
+          type: isContract ? "Contract" : "EOA"
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error checking contract status: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "checking contract status")
       }
     }
   )
@@ -88,26 +68,9 @@ export function registerContractTools(server: McpServer) {
 
         const result = await services.readContract(params, network)
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: services.helpers.formatJson(result)
-            }
-          ]
-        }
+        return mcpToolRes.success(result)
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error reading contract: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "reading contract")
       }
     }
   )
@@ -160,35 +123,15 @@ export function registerContractTools(server: McpServer) {
           network
         )
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: safeStringify(
-                {
-                  contractAddress,
-                  functionName,
-                  args,
-                  transactionHash: txHash,
-                  message: "Contract write transaction sent successfully"
-                },
-                2
-              )
-            }
-          ]
-        }
+        return mcpToolRes.success({
+          contractAddress,
+          functionName,
+          args,
+          transactionHash: txHash,
+          message: "Contract write transaction sent successfully"
+        })
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error writing to contract: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            }
-          ],
-          isError: true
-        }
+        return mcpToolRes.error(error, "writing to contract")
       }
     }
   )

@@ -4,7 +4,7 @@ import type { Hex } from "viem"
 import { z } from "zod"
 
 import * as services from "@/gnfd/services"
-import { helpers } from "@/gnfd/util"
+import { mcpToolRes } from "@/utils/helper"
 
 // Get default private key from environment variables, use sample key if not set
 const DEFAULT_PRIVATE_KEY = process.env.PRIVATE_KEY || ""
@@ -36,30 +36,6 @@ export function registerGnfdTools(server: McpServer) {
       "The bucket name to use. If not provided, will use default 'created-by-bnbchain-mcp'"
     )
 
-  // Unified error handling
-  const handleError = (error: unknown, operation: string) => {
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: `Error ${operation}: ${error instanceof Error ? error.message : String(error)}`
-        }
-      ]
-    }
-  }
-
-  // Unified response formatting
-  const formatResponse = (data: unknown) => {
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: helpers.formatJson(data)
-        }
-      ]
-    }
-  }
-
   // 1. Get account balance
   server.tool(
     "gnfd_get_account_balance",
@@ -74,9 +50,9 @@ export function registerGnfdTools(server: McpServer) {
           network,
           privateKey as Hex
         )
-        return formatResponse(balance)
+        return mcpToolRes.success(balance)
       } catch (error) {
-        return handleError(error, "fetching account balance")
+        return mcpToolRes.error(error, "fetching account balance")
       }
     }
   )
@@ -91,9 +67,9 @@ export function registerGnfdTools(server: McpServer) {
     async ({ network }) => {
       try {
         const moduleAccounts = await services.getModuleAccounts(network)
-        return formatResponse(moduleAccounts)
+        return mcpToolRes.success(moduleAccounts.accounts)
       } catch (error) {
-        return handleError(error, "fetching module accounts")
+        return mcpToolRes.error(error, "fetching module accounts")
       }
     }
   )
@@ -108,9 +84,9 @@ export function registerGnfdTools(server: McpServer) {
     async ({ network }) => {
       try {
         const sps = await services.getAllSps(network)
-        return formatResponse(sps)
+        return mcpToolRes.success(sps)
       } catch (error) {
-        return handleError(error, "fetching storage providers")
+        return mcpToolRes.error(error, "fetching storage providers")
       }
     }
   )
@@ -130,9 +106,9 @@ export function registerGnfdTools(server: McpServer) {
           privateKey: privateKey as Hex,
           bucketName
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "creating bucket")
+        return mcpToolRes.error(error, "creating bucket")
       }
     }
   )
@@ -168,9 +144,9 @@ export function registerGnfdTools(server: McpServer) {
           filePath: absoluteFilePath,
           bucketName
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "creating file")
+        return mcpToolRes.error(error, "creating file")
       }
     }
   )
@@ -196,9 +172,9 @@ export function registerGnfdTools(server: McpServer) {
           folderName,
           bucketName
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "creating folder")
+        return mcpToolRes.error(error, "creating folder")
       }
     }
   )
@@ -221,9 +197,9 @@ export function registerGnfdTools(server: McpServer) {
           privateKey: privateKey as Hex,
           address: address as string
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "listing buckets")
+        return mcpToolRes.error(error, "listing buckets")
       }
     }
   )
@@ -239,9 +215,9 @@ export function registerGnfdTools(server: McpServer) {
     async ({ network, bucketName }) => {
       try {
         const result = await services.listObjects(network, bucketName)
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "listing objects")
+        return mcpToolRes.error(error, "listing objects")
       }
     }
   )
@@ -263,9 +239,9 @@ export function registerGnfdTools(server: McpServer) {
           bucketName,
           objectName
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "deleting object")
+        return mcpToolRes.error(error, "deleting object")
       }
     }
   )
@@ -285,9 +261,9 @@ export function registerGnfdTools(server: McpServer) {
           privateKey: privateKey as Hex,
           bucketName
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "deleting bucket")
+        return mcpToolRes.error(error, "deleting bucket")
       }
     }
   )
@@ -303,9 +279,9 @@ export function registerGnfdTools(server: McpServer) {
     async ({ network, bucketName }) => {
       try {
         const result = await services.getBucketInfo(network, bucketName)
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "getting bucket info")
+        return mcpToolRes.error(error, "getting bucket info")
       }
     }
   )
@@ -325,9 +301,9 @@ export function registerGnfdTools(server: McpServer) {
           bucketName,
           objectName
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "getting object info")
+        return mcpToolRes.error(error, "getting object info")
       }
     }
   )
@@ -353,9 +329,9 @@ export function registerGnfdTools(server: McpServer) {
           targetPath,
           privateKey: privateKey as Hex
         })
-        return formatResponse(result)
+        return mcpToolRes.success(result)
       } catch (error) {
-        return handleError(error, "downloading object")
+        return mcpToolRes.error(error, "downloading object")
       }
     }
   )
