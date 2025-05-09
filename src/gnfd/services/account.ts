@@ -23,25 +23,38 @@ export const getAccount = async (
 
 export const getAccountBalance = async (
   network: "testnet" | "mainnet",
-  privateKey: Hex
+  {
+    privateKey,
+    address
+  }: {
+    privateKey?: Hex
+    address?: string
+  }
 ) => {
   const client = getClient(network)
   const account = await client.account.getAccountBalance({
-    address: getAddressFromPrivateKey(privateKey),
+    address: address || getAddressFromPrivateKey(privateKey as Hex),
     denom: "BNB"
   })
-  return account
+  return account.balance
 }
 
-export const getModuleAccounts = async (network: "testnet" | "mainnet") => {
-  try {
-    const client = getClient(network)
-    const moduleAccounts = await client.account.getModuleAccounts()
-
-    Logger.debug("moduleAccounts: ", moduleAccounts)
-    return moduleAccounts
-  } catch (error) {
-    Logger.error("Error fetching module accounts: ", error)
-    throw error
+export const getPaymentAccounts = async (
+  network: "testnet" | "mainnet",
+  {
+    address,
+    privateKey
+  }: {
+    address?: string
+    privateKey?: Hex
   }
+) => {
+  const client = getClient(network)
+  return (
+    (
+      await client.payment.getPaymentAccountsByOwner({
+        owner: address || getAddressFromPrivateKey(privateKey as Hex)
+      })
+    ).paymentAccounts || []
+  )
 }

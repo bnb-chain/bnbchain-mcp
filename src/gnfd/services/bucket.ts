@@ -1,4 +1,4 @@
-import { Long, VisibilityType } from "@bnb-chain/greenfield-js-sdk"
+import { IQuotaProps, Long, VisibilityType } from "@bnb-chain/greenfield-js-sdk"
 import { BucketInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import type { Hex } from "viem"
 
@@ -25,6 +25,66 @@ export const getBucketInfo = async (
   } catch (error) {
     Logger.error(`Get bucket info operation failed: ${error}`)
     return response.fail(`Get bucket info operation failed: ${error}`)
+  }
+}
+
+/**
+ * Get a bucket's full info in Greenfield
+ */
+export const getBucketFullInfo = async (
+  network: "testnet" | "mainnet",
+  bucketName: string,
+  privateKey: Hex
+): Promise<
+  ApiResponse<
+    BucketInfo & {
+      quotaDetail: IQuotaProps
+      remainQuota: { value: bigint; unit: string }
+    }
+  >
+> => {
+  try {
+    const client = getClient(network)
+    const bucketInfoRes = await getBucketInfo(network, bucketName)
+
+    if (bucketInfoRes.status !== "success") {
+      return response.fail("Bucket does not exist")
+    }
+
+    const quotaRes = await client.bucket.getBucketReadQuota(
+      {
+        bucketName
+      },
+      {
+        type: "ECDSA",
+        privateKey: privateKey
+      }
+    )
+
+    if (quotaRes.code === 0) {
+      const bucketInfo = bucketInfoRes.data as {} as BucketInfo
+      const quota = quotaRes.body as IQuotaProps
+      const remainQuotaValue =
+        BigInt(quota.freeQuota) +
+        BigInt(quota.readQuota) +
+        BigInt(quota.monthlyFreeQuota) -
+        BigInt(quota.consumedQuota) -
+        BigInt(quota.monthlyQuotaConsumedSize)
+
+      return response.success({
+        ...bucketInfo,
+        quotaDetail: quota,
+        remainQuota: {
+          value: remainQuotaValue,
+          unit: "bytes"
+        }
+      })
+    } else {
+      return response.fail("Get bucket full info operation failed")
+    }
+  } catch (error) {
+    Logger.error(`Get bucket full info operation failed: ${error}`)
+    return response.fail(`Get bucket full info operation failed: ${error}`)
   }
 }
 
@@ -70,25 +130,17 @@ export const createBucket = async (
       primarySpAddress: spInfo.primarySpAddress
     })
 
-    const createBucketTxSimulateInfo = await createBucketTx.simulate({
-      denom: "BNB"
-    })
-
-    const createBucketTxRes = await createBucketTx.broadcast({
-      denom: "BNB",
-      gasLimit: Number(createBucketTxSimulateInfo?.gasLimit),
-      gasPrice: createBucketTxSimulateInfo?.gasPrice || "5000000000",
-      payer: account.address,
-      granter: "",
-      privateKey: privateKey
-    })
-
-    if (createBucketTxRes.code === 0) {
+    const tx = await executeTransaction<{ bucketName: string }>(
+      createBucketTx,
+      account,
+      privateKey,
+      "Create bucket",
+      _bucketName
+    )
+    if (tx.status === "success") {
       return response.success({ bucketName: _bucketName })
     } else {
-      return response.fail(
-        `Create bucket failed: ${JSON.stringify(createBucketTxRes)}`
-      )
+      return tx
     }
   } catch (error) {
     return response.fail(`Create bucket failed: ${error}`)

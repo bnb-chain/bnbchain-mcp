@@ -39,8 +39,8 @@ export function registerNftTools(server: McpServer) {
 
   // Add tool for getting ERC1155 token URI
   server.tool(
-    "get_erc1155_token_uri",
-    "Get the metadata URI for an ERC1155 token (multi-token standard used for both fungible and non-fungible tokens). The URI typically points to JSON metadata about the token.",
+    "get_erc1155_token_metadata",
+    "Get the metadata for an ERC1155 token (multi-token standard used for both fungible and non-fungible tokens). The metadata typically points to JSON metadata about the token.",
     {
       tokenAddress: z
         .string()

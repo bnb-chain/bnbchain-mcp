@@ -5,93 +5,10 @@ import { z } from "zod"
 
 import * as services from "@/gnfd/services"
 import { mcpToolRes } from "@/utils/helper"
+import { bucketNameParam, networkParam, privateKeyParam } from "./common"
 
-// Get default private key from environment variables, use sample key if not set
-const DEFAULT_PRIVATE_KEY = process.env.PRIVATE_KEY || ""
-
-/**
- * Register all Greenfield-related tools
- */
-export function registerGnfdTools(server: McpServer) {
-  // Common parameters
-  const networkParam = z
-    .enum(["testnet", "mainnet"])
-    .optional()
-    .default("testnet")
-    .describe("Network name (e.g. 'testnet', 'mainnet'). Defaults to testnet.")
-
-  const privateKeyParam = z
-    .string()
-    .optional()
-    .default(DEFAULT_PRIVATE_KEY)
-    .describe(
-      "Private key of the account in hex format. SECURITY: This is used only for transaction signing."
-    )
-
-  const bucketNameParam = z
-    .string()
-    .optional()
-    .default("created-by-bnbchain-mcp")
-    .describe(
-      "The bucket name to use. If not provided, will use default 'created-by-bnbchain-mcp'"
-    )
-
-  // 1. Get account balance
-  server.tool(
-    "gnfd_get_account_balance",
-    "Get the account balance for a Greenfield address",
-    {
-      network: networkParam,
-      privateKey: privateKeyParam
-    },
-    async ({ network, privateKey }) => {
-      try {
-        const balance = await services.getAccountBalance(
-          network,
-          privateKey as Hex
-        )
-        return mcpToolRes.success(balance)
-      } catch (error) {
-        return mcpToolRes.error(error, "fetching account balance")
-      }
-    }
-  )
-
-  // 2. Get module accounts list
-  server.tool(
-    "gnfd_get_module_accounts",
-    "Get a list of all module accounts and their information in Greenfield",
-    {
-      network: networkParam
-    },
-    async ({ network }) => {
-      try {
-        const moduleAccounts = await services.getModuleAccounts(network)
-        return mcpToolRes.success(moduleAccounts.accounts)
-      } catch (error) {
-        return mcpToolRes.error(error, "fetching module accounts")
-      }
-    }
-  )
-
-  // 3. Get all storage providers
-  server.tool(
-    "gnfd_get_all_sps",
-    "Get a list of all storage providers in the Greenfield network",
-    {
-      network: networkParam
-    },
-    async ({ network }) => {
-      try {
-        const sps = await services.getAllSps(network)
-        return mcpToolRes.success(sps)
-      } catch (error) {
-        return mcpToolRes.error(error, "fetching storage providers")
-      }
-    }
-  )
-
-  // 4. Create bucket
+export function registerStorageTools(server: McpServer) {
+  // Create bucket
   server.tool(
     "gnfd_create_bucket",
     "Create a new bucket in Greenfield storage",
@@ -113,7 +30,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 5. Create file
+  // Create file
   server.tool(
     "gnfd_create_file",
     "Upload a file to a Greenfield bucket",
@@ -151,7 +68,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 6. Create folder
+  // Create folder
   server.tool(
     "gnfd_create_folder",
     "Create a folder in a Greenfield bucket",
@@ -179,7 +96,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 7. List buckets
+  // List buckets
   server.tool(
     "gnfd_list_buckets",
     "List all buckets owned by the account",
@@ -204,7 +121,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 8. List objects
+  // List objects
   server.tool(
     "gnfd_list_objects",
     "List all objects in a bucket",
@@ -222,7 +139,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 9. Delete object
+  // Delete object
   server.tool(
     "gnfd_delete_object",
     "Delete an object from a bucket",
@@ -246,7 +163,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 10. Delete bucket
+  // Delete bucket
   server.tool(
     "gnfd_delete_bucket",
     "Delete a bucket",
@@ -268,7 +185,7 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 11. Get bucket info
+  // Get bucket info
   server.tool(
     "gnfd_get_bucket_info",
     "Get detailed information about a bucket",
@@ -286,7 +203,30 @@ export function registerGnfdTools(server: McpServer) {
     }
   )
 
-  // 12. Get object info
+  // Get bucket full info
+  server.tool(
+    "gnfd_get_bucket_full_info",
+    "Get bucket basic information and quota usage",
+    {
+      network: networkParam,
+      bucketName: bucketNameParam,
+      privateKey: privateKeyParam
+    },
+    async ({ network, bucketName, privateKey }) => {
+      try {
+        const result = await services.getBucketFullInfo(
+          network,
+          bucketName,
+          privateKey as Hex
+        )
+        return mcpToolRes.success(result)
+      } catch (error) {
+        return mcpToolRes.error(error, "getting bucket full info")
+      }
+    }
+  )
+
+  // Get object info
   server.tool(
     "gnfd_get_object_info",
     "Get detailed information about an object in a bucket",
@@ -307,7 +247,8 @@ export function registerGnfdTools(server: McpServer) {
       }
     }
   )
-  // 13. Download object
+
+  // Download object
   server.tool(
     "gnfd_download_object",
     "Download an object from a bucket",
