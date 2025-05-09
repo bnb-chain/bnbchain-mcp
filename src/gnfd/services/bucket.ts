@@ -1,4 +1,4 @@
-import { Long, VisibilityType } from "@bnb-chain/greenfield-js-sdk"
+import { IQuotaProps, Long, VisibilityType } from "@bnb-chain/greenfield-js-sdk"
 import { BucketInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import type { Hex } from "viem"
 
@@ -25,6 +25,49 @@ export const getBucketInfo = async (
   } catch (error) {
     Logger.error(`Get bucket info operation failed: ${error}`)
     return response.fail(`Get bucket info operation failed: ${error}`)
+  }
+}
+
+/**
+ * Get a bucket's quota in Greenfield
+ */
+export const getBucketQuota = async (
+  network: "testnet" | "mainnet",
+  bucketName: string,
+  privateKey: Hex
+): Promise<ApiResponse<IQuotaProps>> => {
+  try {
+    const client = getClient(network)
+    const bucketInfo = await client.bucket.getBucketReadQuota({
+      bucketName,
+    }, {
+      type: "ECDSA",
+      privateKey: privateKey
+    })
+    return response.success(bucketInfo.body)
+  } catch (error) {
+    Logger.error(`Get bucket remaining quota operation failed: ${error}`)
+    return response.fail(`Get bucket remaining quota operation failed: ${error}`)
+  }
+}
+
+/**
+ * Get a bucket's full info in Greenfield
+ */
+export const getBucketFullInfo = async (
+  network: "testnet" | "mainnet",
+  bucketName: string,
+  privateKey: Hex
+): Promise<ApiResponse<BucketInfo & IQuotaProps>> => {
+  const bucketInfo = await getBucketInfo(network, bucketName)
+  const quota = await getBucketQuota(network, bucketName, privateKey)
+  if (bucketInfo.status === "success" && quota.status === "success") {
+    return response.success({
+      ...bucketInfo.data,
+      ...quota.data
+    } as BucketInfo & IQuotaProps)
+  } else {
+    return response.fail("Get bucket full info operation failed")
   }
 }
 
