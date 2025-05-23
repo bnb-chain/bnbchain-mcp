@@ -250,6 +250,23 @@ bun run test
 
 Supports BSC, opBNB, Greenfield, Ethereum, and other major EVM-compatible networks. For more details, see [`src/evm/chains.ts`](src/evm/chains.ts).
 
+
+## Resources 
+
+### Open MCP Marketplace API Support 
+![MCP Marketplace User Review Rating Badge](http://www.deepnlp.org/api/marketplace/svg?bnb-chain/bnbchain-mcp)|[GitHub](https://github.com/AI-Agent-Hub/mcp-marketplace)|[Doc](http://www.deepnlp.org/doc/mcp_marketplace)|[MCP Marketplace](http://www.deepnlp.org/store/ai-agent/mcp-server)
+Allow AI App/Agent/LLM to find this MCP Server via common python/typescript API, search and explore relevant servers and tools
+
+***Example: Search Server and Tools***
+```python
+    import anthropic
+    import mcp_marketplace as mcpm
+    result_q = mcpm.search(query="bnbchain mcp", mode="list", page_id=0, count_per_page=100, config_name="deepnlp") # search server by category choose various endpoint
+    result_id = mcpm.search(id="bnb-chain/bnbchain-mcp", mode="list", page_id=0, count_per_page=100, config_name="deepnlp")      # search server by id choose various endpoint 
+    tools = mcpm.list_tools(id="bnb-chain/bnbchain-mcp", config_name="deepnlp_tool")
+    # Call Claude to Choose Tools Function Calls 
+```
+
 ## Contributing
 
 We welcome contributions to BNBChain MCP! Here's how you can help:
