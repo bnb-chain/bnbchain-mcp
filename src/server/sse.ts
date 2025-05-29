@@ -22,6 +22,8 @@ export const startSSEServer = async () => {
     const transports: { [sessionId: string]: SSEServerTransport } = {}
 
     app.get("/sse", async (_: Request, res: Response) => {
+      res.write("data: connected\n\n");
+
       const transport = new SSEServerTransport("/messages", res)
       transports[transport.sessionId] = transport
       Logger.info("New SSE connection established", {
