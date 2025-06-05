@@ -7,6 +7,8 @@ import {
   // Mainnets
   bsc,
   bscTestnet,
+  iotex,
+  iotexTestnet,
   mainnet,
   opBNB,
   opBNBTestnet,
@@ -32,6 +34,7 @@ export const chainMap: Record<number, Chain> = {
   137: polygon,
   56: bsc,
   204: opBNB,
+  4689: iotex,
   // Testnets
   11155111: sepolia,
   11155420: optimismSepolia,
@@ -39,7 +42,8 @@ export const chainMap: Record<number, Chain> = {
   84532: baseSepolia,
   80002: polygonAmoy,
   97: bscTestnet,
-  5611: opBNBTestnet
+  5611: opBNBTestnet,
+  4690: iotexTestnet
 }
 
 // Map network names to chain IDs for easier reference
@@ -58,6 +62,7 @@ export const networkNameMap: Record<string, number> = {
   binance: 56,
   bsc: 56,
   opbnb: 204,
+  iotex: 4689,
 
   // Testnets
   sepolia: 11155111,
@@ -72,7 +77,9 @@ export const networkNameMap: Record<string, number> = {
   "bsc-testnet": 97,
   bsctestnet: 97,
   "opbnb-testnet": 5611,
-  opbnbtestnet: 5611
+  opbnbtestnet: 5611,
+  "iotex-testnet": 4690,
+  iotextestnet: 4690
 }
 
 // Map chain IDs to RPC URLs
@@ -85,6 +92,7 @@ export const rpcUrlMap: Record<number, string> = {
   137: "https://polygon-rpc.com",
   56: "https://bsc-dataseed.binance.org",
   204: "https://opbnb-mainnet-rpc.bnbchain.org",
+  4689: "https://babel-api.mainnet.iotex.io",
   // Testnets
   11155111: "https://eth-sepolia.g.alchemy.com/v2/demo",
   11155420: "https://sepolia.optimism.io",
@@ -92,7 +100,8 @@ export const rpcUrlMap: Record<number, string> = {
   84532: "https://sepolia.base.org",
   80002: "https://polygon-amoy.infura.io",
   97: "https://data-seed-prebsc-1-s1.binance.org:8545",
-  5611: "https://opbnb-testnet-rpc.bnbchain.org"
+  5611: "https://opbnb-testnet-rpc.bnbchain.org",
+  4690: "https://babel-api.testnet.iotex.io"
 }
 
 /**
