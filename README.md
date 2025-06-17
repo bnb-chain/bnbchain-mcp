@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/bnb-chain-bnbchain-mcp-badge.png)](https://mseep.ai/app/bnb-chain-bnbchain-mcp)
+
 # BNBChain MCP (Model Context Protocol)
 
 A powerful toolkit for interacting with BNB Chain and other EVM-compatible networks through natural language processing and AI assistance.
