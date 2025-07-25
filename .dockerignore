@@ -1,0 +1,68 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Development files
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Test files
+e2e/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# Environment files
+.env*
+!.env.example
+
+# Documentation
+README.md
+*.md
+docs/
+
+# License
+LICENSE*
+
+# Config files (keep necessary ones)
+# .prettierrc*
+# .eslintrc*
+.husky/
+
+# Temporary files
+tmp/
+temp/ 

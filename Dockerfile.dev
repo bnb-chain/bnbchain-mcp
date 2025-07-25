@@ -1,0 +1,31 @@
+# Development environment Dockerfile
+FROM oven/bun:1
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Copy package.json and lock file
+COPY package.json bun.lockb ./
+
+# Install all dependencies (including dev dependencies)
+RUN bun install --frozen-lockfile
+
+# Copy source code (mounted via volumes in docker-compose, here for build completeness)
+COPY . .
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Default command to start development server
+CMD ["bun", "run", "dev:sse"] 
