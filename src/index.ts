@@ -26,7 +26,7 @@ async function main() {
   }
 
   const handleShutdown = async () => {
-    await server.close()
+    await server?.close()
     process.exit(0)
   }
   // Handle process termination

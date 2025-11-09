@@ -34,14 +34,14 @@ To connect to the MCP server from Cursor:
 3. Click "Add new global MCP server"
 4. Enter the following details:
 
-**Default mode (stdio)**
+**Streamable HTTP mode (Recommended)**
 
 ```json
 {
   "mcpServers": {
     "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp@latest"],
+      "args": ["-y", "@bnb-chain/mcp@latest", "--http"],
       "env": {
         "PRIVATE_KEY": "your_private_key_here (optional)"
       }
@@ -50,32 +50,14 @@ To connect to the MCP server from Cursor:
 }
 ```
 
-**HTTP mode (Streamable HTTP - Recommended)**
-
-First, run the server locally:
-```bash
-npx -y @bnb-chain/mcp@latest --http
-```
-
-Then configure Cursor to connect via HTTP:
-```json
-{
-  "mcpServers": {
-    "bnbchain-mcp": {
-      "url": "http://localhost:3001/mcp"
-    }
-  }
-}
-```
-
-**SSE mode (Deprecated - backward compatibility)**
+**stdio mode (Alternative)**
 
 ```json
 {
   "mcpServers": {
     "bnbchain-mcp": {
       "command": "npx",
-      "args": ["-y", "@bnb-chain/mcp@latest", "--sse"],
+      "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
         "PRIVATE_KEY": "your_private_key_here (optional)"
       }
@@ -93,7 +75,23 @@ To connect to the MCP server from Claude Desktop:
 3. Click the "Edit Config" Button
 4. Add the following configuration to the `claude_desktop_config.json` file:
 
-**Default mode (stdio)**
+**Streamable HTTP mode (Recommended)**
+
+```json
+{
+  "mcpServers": {
+    "bnbchain-mcp": {
+      "command": "npx",
+      "args": ["-y", "@bnb-chain/mcp@latest", "--http"],
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here (optional)"
+      }
+    }
+  }
+}
+```
+
+**stdio mode (Alternative)**
 
 ```json
 {
@@ -121,30 +119,25 @@ Once connected, you can use all the MCP prompts and tools directly in your Claud
 
 To connect to the MCP server from Claude Code:
 
-**HTTP mode (Streamable HTTP - Recommended)**
+**Streamable HTTP mode (Recommended)**
 
-1. Start the server locally:
 ```bash
-npx -y @bnb-chain/mcp@latest --http
-```
+# Add the server (it will auto-start when needed)
+claude mcp add bnb-chain npx -y @bnb-chain/mcp@latest --http
 
-2. Add the server using the CLI:
-```bash
-claude mcp add --transport http bnb-chain http://localhost:3001/mcp
-```
-
-3. Verify the connection:
-```bash
+# Verify the connection
 claude mcp list
 ```
 
-**stdio mode**
+The server will automatically start on `http://localhost:3001/mcp` when Claude Code needs it.
+
+**stdio mode (Alternative)**
 
 ```bash
 claude mcp add bnb-chain npx -y @bnb-chain/mcp@latest
 ```
 
-To set a private key for write operations, you can use environment variables or configure it in your `.env` file.
+**Note:** To set a private key for write operations (transfers, contract writes, etc.), set the `PRIVATE_KEY` environment variable before starting Claude Code.
 
 ## Integration with Other Clients
 

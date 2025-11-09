@@ -19,7 +19,6 @@ describe("HTTP Transport Test", async () => {
       }
     })
 
-    // Wait for server to start
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Create client and connect
@@ -66,7 +65,8 @@ describe("HTTP Transport Test", async () => {
 
     expect(result).toBeDefined()
     expect(result.content).toBeArray()
-    expect(result.content.length).toBeGreaterThan(0)
+    expect(result.content).toEqual(expect.any(Array));
+    expect(result.content).not.toHaveLength(0)
   })
 
   it("should list prompts via HTTP", async () => {

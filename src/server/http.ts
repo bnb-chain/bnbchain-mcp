@@ -37,7 +37,7 @@ export const startHTTPServer = async () => {
       for (const sid of Object.keys(transports)) {
         if (now - (lastSeen[sid] || 0) > 15 * 60_000) {
           Logger.info(`Cleaning up idle session ${sid}`)
-          transports[sid].close?.()
+          transports[sid]?.close?.()
           delete transports[sid]
           delete lastSeen[sid]
         }
@@ -48,13 +48,12 @@ export const startHTTPServer = async () => {
     // STREAMABLE HTTP TRANSPORT (PROTOCOL VERSION 2025-03-26)
     //=============================================================================
     app.all("/mcp", async (req: Request, res: Response) => {
-      // Guard methods
+
       if (!["GET", "POST", "OPTIONS"].includes(req.method)) {
         res.setHeader("Allow", "GET, POST, OPTIONS")
         return res.status(405).end()
       }
 
-      // Validate Accept header
       const accept = String(req.headers["accept"] || "")
       if (!accept.includes("application/json") && !accept.includes("text/event-stream") && !accept.includes("*/*")) {
         return res.status(406).json({
