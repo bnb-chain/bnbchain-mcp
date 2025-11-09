@@ -192,10 +192,10 @@ Edit `.env` file with your configuration:
 # Install project dependencies
 bun install
 
-# Start the development server with Streamable HTTP (recommended)
+# Start with Streamable HTTP transport (recommended, protocol 2025-03-26)
 bun dev:http
 
-# OR start with both Streamable HTTP + SSE (backward compatible)
+# OR start with SSE transport (deprecated, protocol 2024-11-05)
 bun dev:sse
 
 # OR start with stdio mode (for local MCP clients)
@@ -204,7 +204,7 @@ bun dev
 
 ### Testing with MCP Clients
 
-**For Streamable HTTP (`bun dev:http` or `bun dev:sse`):**
+**For Streamable HTTP (`bun dev:http`):**
 
 ```json
 {
@@ -221,7 +221,7 @@ Or using Claude Code CLI:
 claude mcp add --transport http bnbchain-mcp http://localhost:3001/mcp
 ```
 
-**For SSE mode (deprecated, `bun dev:sse` only):**
+**For SSE mode (`bun dev:sse`):**
 
 ```json
 {
@@ -259,9 +259,9 @@ bun run test
 
 ### Available Scripts
 
-- `bun dev:http`: Start development server with Streamable HTTP transport (recommended)
-- `bun dev:sse`: Start development server with both Streamable HTTP and SSE transports
-- `bun dev`: Start development server with stdio transport
+- `bun dev:http`: Start server with Streamable HTTP transport (recommended, protocol 2025-03-26)
+- `bun dev:sse`: Start server with SSE transport (deprecated, protocol 2024-11-05)
+- `bun dev`: Start server with stdio transport
 - `bun build`: Build the project
 - `bun test`: Run test suite with MCP inspector
 - `bun e2e`: Run end-to-end tests

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
 
+import { startHTTPServer } from "./server/http"
 import { startSSEServer } from "./server/sse"
 import { startStdioServer } from "./server/stdio"
 import logger from "./utils/logger"
@@ -12,9 +13,9 @@ const sseMode = args.includes("--sse") || args.includes("-s")
 async function main() {
   let server: McpServer | undefined
   if (httpMode) {
-    server = await startSSEServer(true) // HTTP only (Streamable HTTP)
+    server = await startHTTPServer() // Streamable HTTP only
   } else if (sseMode) {
-    server = await startSSEServer(false) // Both HTTP and SSE
+    server = await startSSEServer() // SSE (deprecated)
   } else {
     server = await startStdioServer()
   }
