@@ -34,7 +34,7 @@ To connect to the MCP server from Cursor:
 3. Click "Add new global MCP server"
 4. Enter the following details:
 
-Default mode
+**Default mode (stdio)**
 
 ```json
 {
@@ -43,14 +43,32 @@ Default mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here. (optional)"
+        "PRIVATE_KEY": "your_private_key_here (optional)"
       }
     }
   }
 }
 ```
 
-SSE mode
+**HTTP mode (Streamable HTTP - Recommended)**
+
+First, run the server locally:
+```bash
+npx -y @bnb-chain/mcp@latest --http
+```
+
+Then configure Cursor to connect via HTTP:
+```json
+{
+  "mcpServers": {
+    "bnbchain-mcp": {
+      "url": "http://localhost:3001/mcp"
+    }
+  }
+}
+```
+
+**SSE mode (Deprecated - backward compatibility)**
 
 ```json
 {
@@ -59,7 +77,7 @@ SSE mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest", "--sse"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here. (optional)"
+        "PRIVATE_KEY": "your_private_key_here (optional)"
       }
     }
   }
@@ -75,6 +93,8 @@ To connect to the MCP server from Claude Desktop:
 3. Click the "Edit Config" Button
 4. Add the following configuration to the `claude_desktop_config.json` file:
 
+**Default mode (stdio)**
+
 ```json
 {
   "mcpServers": {
@@ -82,7 +102,7 @@ To connect to the MCP server from Claude Desktop:
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here"
+        "PRIVATE_KEY": "your_private_key_here (optional)"
       }
     }
   }
@@ -96,6 +116,35 @@ Once connected, you can use all the MCP prompts and tools directly in your Claud
 - "Analyze this address: 0x123..."
 - "Explain the EVM concept of gas"
 - "Check the latest block on BSC"
+
+## Integration with Claude Code
+
+To connect to the MCP server from Claude Code:
+
+**HTTP mode (Streamable HTTP - Recommended)**
+
+1. Start the server locally:
+```bash
+npx -y @bnb-chain/mcp@latest --http
+```
+
+2. Add the server using the CLI:
+```bash
+claude mcp add --transport http bnb-chain http://localhost:3001/mcp
+```
+
+3. Verify the connection:
+```bash
+claude mcp list
+```
+
+**stdio mode**
+
+```bash
+claude mcp add bnb-chain npx -y @bnb-chain/mcp@latest
+```
+
+To set a private key for write operations, you can use environment variables or configure it in your `.env` file.
 
 ## Integration with Other Clients
 
@@ -143,21 +192,57 @@ Edit `.env` file with your configuration:
 # Install project dependencies
 bun install
 
-# Start the development server
+# Start the development server with Streamable HTTP (recommended)
+bun dev:http
+
+# OR start with both Streamable HTTP + SSE (backward compatible)
 bun dev:sse
+
+# OR start with stdio mode (for local MCP clients)
+bun dev
 ```
 
 ### Testing with MCP Clients
 
-Configure the local server in your MCP clients using this template:
+**For Streamable HTTP (`bun dev:http` or `bun dev:sse`):**
 
 ```json
 {
   "mcpServers": {
     "bnbchain-mcp": {
-      "url": "http://localhost:3001/sse",
+      "url": "http://localhost:3001/mcp"
+    }
+  }
+}
+```
+
+Or using Claude Code CLI:
+```bash
+claude mcp add --transport http bnbchain-mcp http://localhost:3001/mcp
+```
+
+**For SSE mode (deprecated, `bun dev:sse` only):**
+
+```json
+{
+  "mcpServers": {
+    "bnbchain-mcp": {
+      "url": "http://localhost:3001/sse"
+    }
+  }
+}
+```
+
+**For stdio mode (`bun dev`):**
+
+```json
+{
+  "mcpServers": {
+    "bnbchain-mcp": {
+      "command": "bun",
+      "args": ["run", "dev"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here"
+        "PRIVATE_KEY": "your_private_key_here (optional)"
       }
     }
   }
@@ -174,9 +259,12 @@ bun run test
 
 ### Available Scripts
 
-- `bun dev:sse`: Start development server with hot reload
+- `bun dev:http`: Start development server with Streamable HTTP transport (recommended)
+- `bun dev:sse`: Start development server with both Streamable HTTP and SSE transports
+- `bun dev`: Start development server with stdio transport
 - `bun build`: Build the project
-- `bun test`: Run test suite
+- `bun test`: Run test suite with MCP inspector
+- `bun e2e`: Run end-to-end tests
 
 ## Available Prompts and Tools
 

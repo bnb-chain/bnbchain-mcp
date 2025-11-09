@@ -6,12 +6,15 @@ import { startStdioServer } from "./server/stdio"
 import logger from "./utils/logger"
 
 const args = process.argv.slice(2)
+const httpMode = args.includes("--http") || args.includes("-h")
 const sseMode = args.includes("--sse") || args.includes("-s")
 
 async function main() {
   let server: McpServer | undefined
-  if (sseMode) {
-    server = await startSSEServer()
+  if (httpMode) {
+    server = await startSSEServer(true) // HTTP only (Streamable HTTP)
+  } else if (sseMode) {
+    server = await startSSEServer(false) // Both HTTP and SSE
   } else {
     server = await startStdioServer()
   }
