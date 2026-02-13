@@ -24,6 +24,7 @@ The project is organized into several core modules:
 - **Common**: Shared utilities and types
 - **Greenfield**: Support file management operations on Greenfield network including, uploading, downloading, and managing files and buckets
 - Additional features coming soon (Greenfield, Swap, Bridge, etc.)
+- **Agents (ERC-8004)**: Register and resolve on-chain AI agent identities (ERC-8004 Trustless Agents) on BSC and BSC Testnet
 
 ## Integration with Cursor
 
@@ -190,7 +191,8 @@ bun run test
 | interact_with_contract | Get guidance on interacting with a smart contract                   |
 | explain_evm_concept    | Get an explanation of an EVM concept                                |
 | compare_networks       | Compare different EVM-compatible networks                           |
-| analyze_token          | Analyze an ERC20 or NFT token                                       |
+| analyze_token                         | Analyze an ERC20 or NFT token                                       |
+| how_to_register_mcp_as_erc8004_agent  | Get guidance on registering an MCP server as an ERC-8004 agent       |
 
 ### Tools
 
@@ -223,6 +225,17 @@ bun run test
 | get_nft_balance              | Get the total number of NFTs owned by an address from a specific collection  |
 | get_erc1155_balance          | Get the balance of a specific ERC1155 token ID owned by an address           |
 
+### ERC-8004 Agent tools
+
+Register and resolve AI agents on the [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) Identity Registry (Trustless Agents). Supported networks: BSC (56), BSC Testnet (97), Ethereum, Base, Polygon, and their testnets where the [official registry](https://github.com/erc-8004/erc-8004-contracts) is deployed. The `agentURI` should point to a JSON metadata file following the [Agent Metadata Profile](https://best-practices.8004scan.io/docs/01-agent-metadata-standard.html) (name, description, image, and `services` such as MCP endpoint).
+
+| Name                    | Description                                                                 |
+| ----------------------- | --------------------------------------------------------------------------- |
+| register_erc8004_agent  | Register an agent on the ERC-8004 Identity Registry; returns agent ID    |
+| set_erc8004_agent_uri   | Update the metadata URI for an existing ERC-8004 agent (owner only)        |
+| get_erc8004_agent       | Get agent info (owner and tokenURI) from the Identity Registry              |
+| get_erc8004_agent_wallet| Get the verified payment wallet for an agent (for x402 / payments)           |
+
 ### Greenfield tools
 
 | Name                          | Description                                         |
@@ -249,6 +262,8 @@ bun run test
 ## Supported Networks
 
 Supports BSC, opBNB, Greenfield, Ethereum, and other major EVM-compatible networks. For more details, see [`src/evm/chains.ts`](src/evm/chains.ts).
+
+**ERC-8004 agent registration** is available on chains where the official registry is deployed: BSC (56), BSC Testnet (97), Ethereum (1), Sepolia (11155111), Base (8453), Base Sepolia (84532), Polygon (137), Polygon Amoy (80002), Arbitrum (42161), Arbitrum Sepolia (421614). Private key is used only to sign the registration or update transaction and is not stored or logged.
 
 ## Contributing
 
