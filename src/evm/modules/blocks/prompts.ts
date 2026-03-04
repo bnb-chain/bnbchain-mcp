@@ -17,7 +17,7 @@ export function registerBlockPrompts(server: McpServer) {
         ),
       network: networkSchema
     },
-    ({ blockNumber, network = "bsc" }) => ({
+    ({ blockNumber, network = "bsc-testnet" }) => ({
       messages: [
         {
           role: "user",

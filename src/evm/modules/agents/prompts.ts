@@ -16,7 +16,7 @@ export function registerAgentsPrompts(server: McpServer) {
         ),
       network: networkSchema
     },
-    ({ mcpEndpoint, network = "bsc" }) => ({
+    ({ mcpEndpoint, network = "bsc-testnet" }) => ({
       messages: [
         {
           role: "user",

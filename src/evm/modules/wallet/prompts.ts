@@ -12,7 +12,7 @@ export function registerWaletPrompts(server: McpServer) {
       address: z.string().describe("Ethereum address to analyze"),
       network: networkSchema
     },
-    ({ address, network = "bsc" }) => ({
+    ({ address, network = "bsc-testnet" }) => ({
       messages: [
         {
           role: "user",

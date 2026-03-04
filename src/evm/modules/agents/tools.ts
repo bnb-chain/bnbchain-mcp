@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { defaultNetworkParam, privateKeyParam } from "../common/types.js"
+import { defaultNetworkParam, privateKeyParam, requiredNetworkParam } from "../common/types.js"
 
 export function registerAgentsTools(server: McpServer) {
   server.tool(
@@ -16,7 +16,7 @@ export function registerAgentsTools(server: McpServer) {
         .describe(
           "URI of the agent metadata (e.g. ipfs://..., https://..., or data:application/json,...). Should follow ERC-8004 registration format with type, name, description, image, and services."
         ),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({ privateKey, agentURI, network }) => {
       try {
@@ -47,7 +47,7 @@ export function registerAgentsTools(server: McpServer) {
       newURI: z
         .string()
         .describe("New URI for the agent metadata (AgentURI format)"),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({ privateKey, agentId, newURI, network }) => {
       try {

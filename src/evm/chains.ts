@@ -111,6 +111,10 @@ export const rpcUrlMap: Record<number, string> = {
  */
 export function resolveChainId(chainIdentifier: number | string): number {
   if (typeof chainIdentifier === "number") {
+    if (!chainMap[chainIdentifier]) {
+      throw new Error(`Unsupported chain ID: ${chainIdentifier}`)
+    }
+
     return chainIdentifier
   }
 
@@ -124,12 +128,13 @@ export function resolveChainId(chainIdentifier: number | string): number {
 
   // Try parsing as a number
   const parsedId = parseInt(networkName)
-  if (!isNaN(parsedId)) {
+  if (!isNaN(parsedId) && networkNameMap[parsedId]) {
     return parsedId
   }
 
-  // Default to mainnet if not found
-  return DEFAULT_CHAIN_ID
+  throw new Error(
+    `Unsupported network: ${chainIdentifier}, Use get_supported_networks() tool to get a list of supported networks`
+  )
 }
 
 /**

@@ -12,7 +12,7 @@ export function registerTransactionPrompts(server: McpServer) {
       txHash: z.string().describe("Transaction hash to analyze"),
       network: networkSchema
     },
-    ({ txHash, network = "bsc" }) => ({
+    ({ txHash, network = "bsc-testnet" }) => ({
       messages: [
         {
           role: "user",
