@@ -4,7 +4,7 @@ import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { defaultNetworkParam, privateKeyParam } from "../common/types"
+import { privateKeyParam, requiredNetworkParam } from "../common/types"
 
 export function registerWalletTools(server: McpServer) {
   // Get address from private key
@@ -48,7 +48,7 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "Amount to send in BNB (or the native token of the network), as a string (e.g., '0.1')"
         ),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({ privateKey, toAddress, amount, network }) => {
       try {
@@ -93,7 +93,7 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "The amount of tokens to approve in token units, not wei (e.g., '1000' to approve spending 1000 tokens). Use a very large number for unlimited approval."
         ),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({ privateKey, tokenAddress, spenderAddress, amount, network }) => {
       try {
@@ -141,7 +141,7 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."
         ),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({ privateKey, tokenAddress, toAddress, amount, network }) => {
       try {

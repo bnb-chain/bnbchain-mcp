@@ -10,7 +10,6 @@ describe("Wallet Test", async () => {
   const client = await getClient()
 
   const RECIPIENT = ADDRESS
-  const vUSDT_ADDRESS = "0x3121384A8087198326339253AED958b38D07c003"
   const NETWORK = "bsc-testnet"
 
   it("get address from private key", async () => {
@@ -44,6 +43,25 @@ describe("Wallet Test", async () => {
     expect(obj.txHash).toStartWith("0x")
   })
 
+  // it("create ERC20 token", async () => {
+  //   const res = await client.callTool({
+  //     name: "create_erc20_token",
+  //     arguments: {
+  //       name: "Test USDT Token",
+  //       symbol: "vUSDT",
+  //       network: NETWORK,
+  //       privateKey: TEST_PRIVATE_KEY
+  //     }
+  //   })
+  //   const text = res.content?.[0]?.text
+  //   const obj = parseText<{
+  //     hash: string
+  //   }>(text)
+  //   console.log("create ERC20 token result: ", res)
+  //   expect(obj.hash).toStartWith("0x")
+  // })
+
+  const vUSDT_ADDRESS = "0x6e156e494db756cdcc02965efbc73afffa8648ae"
   it("approve token spending", async () => {
     const res = await client.callTool({
       name: "approve_token_spending",
@@ -77,6 +95,7 @@ describe("Wallet Test", async () => {
     const obj = parseText<{
       txHash: string
     }>(text)
+    console.log("transfer ERC20 token result: ", res)
     expect(obj.txHash).toStartWith("0x")
   })
 })

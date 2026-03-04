@@ -22,7 +22,12 @@ export function registerTokenPrompts(server: McpServer) {
         .optional()
         .describe("Token ID (required for NFT analysis)")
     },
-    ({ tokenAddress, tokenType = "auto", tokenId, network = "bsc" }) => {
+    ({
+      tokenAddress,
+      tokenType = "auto",
+      tokenId,
+      network = "bsc-testnet"
+    }) => {
       let promptText = ""
 
       if (tokenType === "erc20" || tokenType === "auto") {

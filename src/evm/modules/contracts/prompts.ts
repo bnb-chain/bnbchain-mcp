@@ -16,7 +16,7 @@ export function registerContractPrompts(server: McpServer) {
         .describe("The contract ABI as a JSON string"),
       network: networkSchema
     },
-    ({ contractAddress, abiJson, network = "bsc" }) => ({
+    ({ contractAddress, abiJson, network = "bsc-testnet" }) => ({
       messages: [
         {
           role: "user",

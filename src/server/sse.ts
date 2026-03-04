@@ -48,7 +48,7 @@ export const startSSEServer = async () => {
       const transport = transports[sessionId]
 
       if (transport) {
-        Logger.debug("Handling message", { sessionId, body: req.body })
+        Logger.debug("Handling message", { sessionId })
         try {
           await transport.handlePostMessage(req, res, req.body)
         } catch (error) {

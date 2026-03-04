@@ -4,7 +4,7 @@ import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { defaultNetworkParam } from "../common/types"
+import { defaultNetworkParam, requiredNetworkParam } from "../common/types"
 
 export function registerNftTools(server: McpServer) {
   // Get NFT (ERC721) information
@@ -91,7 +91,7 @@ export function registerNftTools(server: McpServer) {
       toAddress: z
         .string()
         .describe("The recipient address that will receive the NFT"),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({ privateKey, tokenAddress, tokenId, toAddress, network }) => {
       try {
@@ -146,7 +146,7 @@ export function registerNftTools(server: McpServer) {
       toAddress: z
         .string()
         .describe("The recipient wallet address that will receive the tokens"),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({
       privateKey,

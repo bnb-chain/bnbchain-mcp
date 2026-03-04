@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Address, Hex } from "viem"
 import { z } from "zod"
 
-import { defaultNetworkParam } from "@/evm/modules/common/types.js"
+import { defaultNetworkParam, requiredNetworkParam } from "@/evm/modules/common/types.js"
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
 
@@ -96,7 +96,7 @@ export function registerContractTools(server: McpServer) {
           "Private key of the sending account. Used only for transaction signing."
         )
         .default(process.env.PRIVATE_KEY as string),
-      network: defaultNetworkParam
+      network: requiredNetworkParam
     },
     async ({
       contractAddress,
@@ -104,7 +104,7 @@ export function registerContractTools(server: McpServer) {
       functionName,
       args,
       privateKey,
-      network = "bsc"
+      network
     }) => {
       try {
         // Parse ABI if it's a string
