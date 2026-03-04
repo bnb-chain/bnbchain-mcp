@@ -26,6 +26,10 @@ The project is organized into several core modules:
 - Additional features coming soon (Greenfield, Swap, Bridge, etc.)
 - **Agents (ERC-8004)**: Register and resolve on-chain AI agent identities (ERC-8004 Trustless Agents) on BSC and BSC Testnet
 
+## Important Notes
+
+**We do not recommend deploying this MCP Server on the public internet.** (1) The SSE endpoint has **no authentication**—anyone who can reach it can use the server. (2) There is **no centralized service** that custodies private keys or funds; keys and signing are the responsibility of the client. If you still need to deploy it publicly, add an **authentication layer** in front (e.g. API keys, JWT, or a reverse proxy with auth), or deploy a **keyless version** that only exposes read-only or non-sensitive tools.
+
 ## Integration with Cursor
 
 To connect to the MCP server from Cursor:

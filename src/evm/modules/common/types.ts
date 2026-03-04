@@ -3,14 +3,20 @@ import { z } from "zod"
 export const defaultNetworkParam = z
   .string()
   .describe(
-    "Network name (e.g. 'bsc', 'opbnb', 'ethereum', 'base', etc.) or chain ID. Supports others main popular networks. Defaults to BSC mainnet."
+    "Network name (e.g. 'bsc', 'bsc-testnet', 'opbnb', 'opbnb-testnet', 'ethereum', 'base', etc.) or chain ID. Supports others main popular networks. Defaults to BSC testnet."
   )
   .default("bsc")
+
+export const requiredNetworkParam = z
+  .string()
+  .describe(
+    "Network name (e.g. 'bsc', 'bsc-testnet', 'opbnb', 'opbnb-testnet', 'ethereum', 'base', etc.) or chain ID. Required for all write operations (transfers, deploys, contract writes, etc.); must be explicitly provided—no default."
+  )
 
 export const networkSchema = z
   .string()
   .describe(
-    "Network name (e.g. 'bsc', 'opbnb', 'ethereum', 'base', etc.) or chain ID. Supports others main popular networks. Defaults to BSC mainnet."
+    "Network name (e.g. 'bsc', 'bsc-testnet', 'opbnb', 'opbnb-testnet', 'ethereum', 'base', etc.) or chain ID. Supports others main popular networks. Defaults to BSC testnet."
   )
   .optional()
 

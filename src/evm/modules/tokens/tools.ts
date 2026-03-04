@@ -5,7 +5,7 @@ import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { defaultNetworkParam, privateKeyParam } from "../common/types"
+import { defaultNetworkParam, privateKeyParam, requiredNetworkParam } from "../common/types"
 
 export function registerTokenTools(server: McpServer) {
   // Get ERC20 token info
@@ -88,7 +88,7 @@ export function registerTokenTools(server: McpServer) {
     {
       name: z.string().describe("The name of the token"),
       symbol: z.string().describe("The symbol of the token"),
-      network: defaultNetworkParam,
+      network: requiredNetworkParam,
       privateKey: privateKeyParam
     },
     async ({ network, name, symbol, privateKey }) => {
