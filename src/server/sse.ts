@@ -12,7 +12,7 @@ export const startSSEServer = async () => {
   try {
     const app = express()
     const server = startServer()
-    app.use(cors())
+    app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:*' }))
 
     // Log the current log level on startup
     Logger.info(`Starting sse server with log level: ${Logger.getLevel()}`)
