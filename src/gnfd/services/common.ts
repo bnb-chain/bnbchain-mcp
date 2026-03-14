@@ -28,10 +28,12 @@ export const executeTransaction = async <T = void>(
       denom
     })
 
-    // Broadcast transaction
+    // Broadcast transaction with safe gasLimit conversion
+    const rawGas = simulateTx?.gasLimit ? Number(simulateTx.gasLimit) : 0;
+    const gasLimit = Math.ceil(rawGas * 1.2); // 20% buffer for estimation variance
     const txRes = await tx.broadcast({
       denom,
-      gasLimit: Number(simulateTx?.gasLimit),
+      gasLimit,
       gasPrice: simulateTx?.gasPrice || "5000000000",
       payer: account.address,
       granter: "",
