@@ -14,7 +14,7 @@ import { resolveAddress } from "./ens.js"
  */
 export async function readContract(
   params: ReadContractParameters,
-  network = "ethereum"
+  network = "bsc-testnet"
 ) {
   const client = getPublicClient(network)
   return await client.readContract(params)
@@ -26,7 +26,7 @@ export async function readContract(
 export async function writeContract(
   privateKey: Hex,
   params: Record<string, any>,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<Hash> {
   const client = getWalletClient(privateKey, network)
   return await client.writeContract(params as any)
@@ -37,7 +37,7 @@ export async function writeContract(
  */
 export async function getLogs(
   params: GetLogsParameters,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<Log[]> {
   const client = getPublicClient(network)
   return await client.getLogs(params)
@@ -51,7 +51,7 @@ export async function getLogs(
  */
 export async function isContract(
   addressOrEns: string,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<boolean> {
   // Resolve ENS name to address if needed
   const address = await resolveAddress(addressOrEns, network)

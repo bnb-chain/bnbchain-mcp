@@ -12,7 +12,7 @@ import { isContract } from "./contracts.js"
  */
 export async function getERC20TokenInfo(
   tokenAddress: Address,
-  network: string = "ethereum"
+  network: string = "bsc-testnet"
 ): Promise<{
   name: string
   symbol: string
@@ -54,7 +54,7 @@ export async function getERC20TokenInfo(
 export async function getERC721TokenMetadata(
   tokenAddress: Address,
   tokenId: bigint,
-  network: string = "ethereum"
+  network: string = "bsc-testnet"
 ): Promise<{
   id: bigint
   name: string
@@ -103,7 +103,7 @@ export async function getERC721TokenMetadata(
 export async function getERC1155TokenMetadata(
   tokenAddress: Address,
   tokenId: bigint,
-  network: string = "ethereum"
+  network: string = "bsc-testnet"
 ): Promise<{
   id: bigint
   name: string

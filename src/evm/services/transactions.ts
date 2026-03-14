@@ -10,7 +10,7 @@ import { getPublicClient } from "./clients.js"
 /**
  * Get a transaction by hash for a specific network
  */
-export async function getTransaction(hash: Hash, network = "ethereum") {
+export async function getTransaction(hash: Hash, network = "bsc-testnet") {
   const client = getPublicClient(network)
   return await client.getTransaction({ hash })
 }
@@ -20,7 +20,7 @@ export async function getTransaction(hash: Hash, network = "ethereum") {
  */
 export async function getTransactionReceipt(
   hash: Hash,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<TransactionReceipt> {
   const client = getPublicClient(network)
   return await client.getTransactionReceipt({ hash })
@@ -31,7 +31,7 @@ export async function getTransactionReceipt(
  */
 export async function getTransactionCount(
   address: Address,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<number> {
   const client = getPublicClient(network)
   const count = await client.getTransactionCount({ address })
@@ -43,7 +43,7 @@ export async function getTransactionCount(
  */
 export async function estimateGas(
   params: EstimateGasParameters,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<bigint> {
   const client = getPublicClient(network)
   return await client.estimateGas(params)
@@ -52,7 +52,7 @@ export async function estimateGas(
 /**
  * Get the chain ID for a specific network
  */
-export async function getChainId(network = "ethereum"): Promise<number> {
+export async function getChainId(network = "bsc-testnet"): Promise<number> {
   const client = getPublicClient(network)
   const chainId = await client.getChainId()
   return Number(chainId)

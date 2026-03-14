@@ -17,7 +17,7 @@ const clientCache = new Map<string, PublicClient>()
 /**
  * Get a public client for a specific network
  */
-export function getPublicClient(network = "ethereum"): PublicClient {
+export function getPublicClient(network = "bsc-testnet"): PublicClient {
   const cacheKey = String(network)
 
   // Return cached client if available
@@ -45,7 +45,7 @@ export function getPublicClient(network = "ethereum"): PublicClient {
  */
 export function getWalletClient(
   privateKey: Hex,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): WalletClient {
   const chain = getChain(network)
   const rpcUrl = getRpcUrl(network)

@@ -46,7 +46,7 @@ export async function getNativeBalance(
 export async function getERC20Balance(
   tokenAddressOrEns: string,
   ownerAddressOrEns: string,
-  network = "ethereum"
+  network = "bsc-testnet"
 ): Promise<{
   raw: bigint
   formatted: string
