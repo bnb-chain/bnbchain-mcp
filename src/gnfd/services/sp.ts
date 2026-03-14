@@ -33,6 +33,13 @@ export const selectSp = async (network: "testnet" | "mainnet") => {
     )
   }
 
+  if (allActiveSps.length === 0) {
+    allActiveSps = finalSps.filter((sp) => sp.endpoint && !sp.endpoint.includes('deprecated'))
+  }
+  if (allActiveSps.length === 0) {
+    throw new Error('No active storage providers available')
+  }
+
   const selectIndex = Math.floor(Math.random() * allActiveSps.length)
   const selectedSp = allActiveSps[selectIndex]
   if (!selectedSp) {
