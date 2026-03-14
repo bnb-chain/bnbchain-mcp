@@ -25,4 +25,4 @@ export const privateKeyParam = z
   .describe(
     "Private key in hex format (with or without 0x prefix). SECURITY: This is used only for address derivation and is not stored. The private key will not be logged or displayed in chat history."
   )
-  .default(process.env.PRIVATE_KEY as string)
+  .default(process.env.PRIVATE_KEY ?? "")
