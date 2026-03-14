@@ -7,6 +7,17 @@ import {
   type Hex
 } from "viem"
 
+/**
+ * Validate and format a private key to ensure it has 0x prefix and is 64 hex chars
+ */
+function validateAndFormatKey(key: string): `0x${string}` {
+  const cleaned = key.startsWith('0x') ? key.slice(2) : key;
+  if (!/^[0-9a-fA-F]{64}$/.test(cleaned)) {
+    throw new Error('Invalid private key format. Must be 64 hex characters.');
+  }
+  return `0x${cleaned}` as `0x${string}`;
+}
+
 import { ERC20_ABI } from "./abi/erc20.js"
 import { ERC721_ABI } from "./abi/erc721.js"
 import { ERC1155_ABI } from "./abi/erc1155.js"
@@ -30,11 +41,7 @@ export async function transferETH(
   // Resolve ENS name to address if needed
   const toAddress = await resolveAddress(toAddressOrEns, network)
 
-  // Ensure the private key has 0x prefix
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as Hex)
-      : (privateKey as Hex)
+  const formattedKey = validateAndFormatKey(privateKey as string)
 
   const client = getWalletClient(formattedKey, network)
   const amountWei = parseEther(amount)
@@ -80,11 +87,7 @@ export async function transferERC20(
   )) as Address
   const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
-  // Ensure the private key has 0x prefix
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
+  const formattedKey = validateAndFormatKey(privateKey as string)
 
   // Get token details
   const publicClient = getPublicClient(network)
@@ -163,11 +166,7 @@ export async function approveERC20(
     network
   )) as Address
 
-  // Ensure the private key has 0x prefix
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
+  const formattedKey = validateAndFormatKey(privateKey as string)
 
   // Get token details
   const publicClient = getPublicClient(network)
@@ -240,11 +239,7 @@ export async function transferERC721(
   )) as Address
   const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
-  // Ensure the private key has 0x prefix
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
+  const formattedKey = validateAndFormatKey(privateKey as string)
 
   // Get token details
   const publicClient = getPublicClient(network)
@@ -310,11 +305,7 @@ export async function transferERC1155(
   )) as Address
   const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
-  // Ensure the private key has 0x prefix
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
+  const formattedKey = validateAndFormatKey(privateKey as string)
 
   // Create wallet client for sending the transaction
   const walletClient = getWalletClient(formattedKey, network)
