@@ -20,12 +20,15 @@ export function registerNetworkTools(server: McpServer) {
         const chainId = await services.getChainId(network)
         const blockNumber = await services.getBlockNumber(network)
         const rpcUrl = getRpcUrl(network)
+        const maskedRpcUrl = rpcUrl
+          .replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')
+          .replace(/[?&](key|apikey|api_key|api-key)=[^&]+/gi, '')
 
         return mcpToolRes.success({
           network,
           chainId,
           blockNumber: blockNumber.toString(),
-          rpcUrl
+          rpcUrl: maskedRpcUrl
         })
       } catch (error) {
         return mcpToolRes.error(error, "fetching chain info")
