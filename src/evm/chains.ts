@@ -150,7 +150,7 @@ export function getChain(
     const networkName = chainIdentifier.toLowerCase()
     // Try to get from direct network name mapping first
     if (networkNameMap[networkName]) {
-      return chainMap[networkNameMap[networkName]] || mainnet
+      return chainMap[networkNameMap[networkName]]
     }
 
     // If not found, throw an error
@@ -158,7 +158,11 @@ export function getChain(
   }
 
   // If it's a number, return the chain from chainMap
-  return chainMap[chainIdentifier] || mainnet
+  const chain = chainMap[chainIdentifier]
+  if (!chain) {
+    throw new Error(`Unsupported chain ID: ${chainIdentifier}. Use a valid chain ID or network name.`)
+  }
+  return chain
 }
 
 /**
