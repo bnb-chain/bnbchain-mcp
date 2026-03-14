@@ -128,7 +128,7 @@ export function resolveChainId(chainIdentifier: number | string): number {
 
   // Try parsing as a number
   const parsedId = parseInt(networkName)
-  if (!isNaN(parsedId) && networkNameMap[parsedId]) {
+  if (!isNaN(parsedId) && chainMap[parsedId]) {
     return parsedId
   }
 
