@@ -14,7 +14,7 @@ class Logger {
 
   private static getLogLevelFromEnv(): LogLevel {
     const envLevel = (
-      process.env.LOG_LEVEL || "INFO"
+      process.env.LOG_LEVEL || process.env.LOGLEVEL || "INFO"
     ).toUpperCase() as LogLevelStrings
     return LogLevel[envLevel] ?? LogLevel.INFO
   }
