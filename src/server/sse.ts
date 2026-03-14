@@ -61,6 +61,16 @@ export const startSSEServer = async () => {
       }
     })
 
+    // Cleanup stale transports every 5 minutes
+    setInterval(() => {
+      for (const [id, transport] of Object.entries(transports)) {
+        if (!(transport as any).res || (transport as any).res.writableEnded) {
+          Logger.info("Cleaning up stale transport", { sessionId: id })
+          delete transports[id]
+        }
+      }
+    }, 300000)
+
     const PORT = process.env.PORT || 3001
     app.listen(PORT, () => {
       Logger.info(
