@@ -35,8 +35,12 @@ export function registerBlockTools(server: McpServer) {
     },
     async ({ network, blockNumber }) => {
       try {
+        const parsed = Number(blockNumber);
+        if (!Number.isInteger(parsed) || parsed < 0) {
+          throw new Error(`Invalid block number: "${blockNumber}". Must be a non-negative integer.`);
+        }
         const block = await services.getBlockByNumber(
-          parseInt(blockNumber),
+          parsed,
           network
         )
         return mcpToolRes.success(block)
