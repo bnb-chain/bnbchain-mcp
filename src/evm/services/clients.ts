@@ -18,7 +18,7 @@ const clientCache = new Map<string, PublicClient>()
  * Get a public client for a specific network
  */
 export function getPublicClient(network = "ethereum"): PublicClient {
-  const cacheKey = String(network)
+  const cacheKey = String(network).toLowerCase()
 
   // Return cached client if available
   if (clientCache.has(cacheKey)) {
@@ -33,6 +33,12 @@ export function getPublicClient(network = "ethereum"): PublicClient {
     chain,
     transport: http(rpcUrl)
   })
+
+  // Evict oldest entry if cache exceeds size limit
+  if (clientCache.size > 50) {
+    const firstKey = clientCache.keys().next().value
+    if (firstKey) clientCache.delete(firstKey)
+  }
 
   // Cache the client
   clientCache.set(cacheKey, client)
