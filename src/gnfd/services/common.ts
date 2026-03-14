@@ -50,7 +50,8 @@ export const executeTransaction = async <T = void>(
       ) as ApiResponse<T>
     }
   } catch (error) {
-    Logger.error(`${operationName} failed: ${error}`)
-    return response.fail(`${operationName} failed: ${error}`) as ApiResponse<T>
+    const sanitizedError = String(error).replace(/[0-9a-fA-F]{64}/g, '[REDACTED]');
+    Logger.error(`${operationName} failed: ${sanitizedError}`)
+    return response.fail(`${operationName} failed: ${sanitizedError}`) as ApiResponse<T>
   }
 }
