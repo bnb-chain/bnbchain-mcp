@@ -187,14 +187,11 @@ bun run test
 
 ### Prompts
 
-| Name                   | Description                                                         |
-| ---------------------- | ------------------------------------------------------------------- |
-| analyze_block          | Analyze a block and provide detailed information about its contents |
-| analyze_transaction    | Analyze a specific transaction                                      |
-| analyze_address        | Analyze an EVM address                                              |
-| interact_with_contract | Get guidance on interacting with a smart contract                   |
-| explain_evm_concept    | Get an explanation of an EVM concept                                |
-| compare_networks       | Compare different EVM-compatible networks                           |
+| Name                                  | Description                                                         |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| analyze_block                         | Analyze a block and provide detailed information about its contents |
+| analyze_address                       | Analyze an EVM address                                              |
+| interact_with_contract                | Get guidance on interacting with a smart contract                   |
 | analyze_token                         | Analyze an ERC20 or NFT token                                       |
 | how_to_register_mcp_as_erc8004_agent  | Get guidance on registering an MCP server as an ERC-8004 agent       |
 
@@ -206,7 +203,6 @@ bun run test
 | get_block_by_number          | Get a block by number                                                        |
 | get_latest_block             | Get the latest block                                                         |
 | get_transaction              | Get detailed information about a specific transaction by its hash            |
-| get_transaction_receipt      | Get a transaction receipt by its hash                                        |
 | estimate_gas                 | Estimate the gas cost for a transaction                                      |
 | transfer_native_token        | Transfer native tokens (BNB, ETH, MATIC, etc.) to an address                 |
 | approve_token_spending       | Approve another address to spend your ERC20 tokens                           |
@@ -216,7 +212,6 @@ bun run test
 | get_address_from_private_key | Get the EVM address derived from a private key                               |
 | get_chain_info               | Get chain information for a specific network                                 |
 | get_supported_networks       | Get list of supported networks                                               |
-| resolve_ens                  | Resolve an ENS name to an EVM address                                        |
 | is_contract                  | Check if an address is a smart contract or an externally owned account (EOA) |
 | read_contract                | Read data from a smart contract by calling a view/pure function              |
 | write_contract               | Write data to a smart contract by calling a state-changing function          |
@@ -224,10 +219,7 @@ bun run test
 | get_native_balance           | Get native token balance for an address                                      |
 | get_erc20_balance            | Get ERC20 token balance for an address                                       |
 | get_nft_info                 | Get detailed information about a specific NFT                                |
-| check_nft_ownership          | Check if an address owns a specific NFT                                      |
 | get_erc1155_token_metadata   | Get the metadata for an ERC1155 token                                        |
-| get_nft_balance              | Get the total number of NFTs owned by an address from a specific collection  |
-| get_erc1155_balance          | Get the balance of a specific ERC1155 token ID owned by an address           |
 
 ### ERC-8004 Agent tools
 
@@ -250,18 +242,16 @@ Register and resolve AI agents on the [ERC-8004](https://eips.ethereum.org/EIPS/
 | gnfd_delete_bucket            | Delete a bucket                                     |
 | gnfd_get_object_info          | Get detailed information about a specific object    |
 | gnfd_list_objects             | List all objects in a bucket                        |
-| gnfd_upload_object            | Upload an object to a bucket                        |
+| gnfd_create_file              | Upload a file to a bucket                           |
 | gnfd_download_object          | Download an object from a bucket                    |
 | gnfd_delete_object            | Delete an object from a bucket                      |
 | gnfd_create_folder            | Create a folder in a bucket                         |
 | gnfd_get_account_balance      | Get the balance for an account                      |
 | gnfd_deposit_to_payment       | Deposit funds into a payment account                |
 | gnfd_withdraw_from_payment    | Withdraw funds from a payment account               |
-| gnfd_disable_refund           | Disable refund for a payment account (IRREVERSIBLE) |
 | gnfd_get_payment_accounts     | List all payment accounts owned by an address       |
 | gnfd_get_payment_account_info | Get detailed information about a payment account    |
-| gnfd_create_payment           | Create a new payment account                        |
-| gnfd_get_payment_balance      | Get payment account balance                         |
+| gnfd_create_payment_account   | Create a new payment account                        |
 
 ## Supported Networks
 
