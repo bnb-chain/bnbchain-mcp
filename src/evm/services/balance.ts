@@ -29,7 +29,7 @@ export async function getNativeBalance(
 
   return {
     raw: balance,
-    formatted: formatEther(balance),
+    formatted: formatUnits(balance, nativeCurrency?.decimals ?? 18),
     network,
     symbol: nativeCurrency?.symbol ?? "Unknown",
     decimals: nativeCurrency?.decimals ?? 18
