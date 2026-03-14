@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import { networkSchema } from "../common/types.js"
 
-export function registerWaletPrompts(server: McpServer) {
+export function registerWalletPrompts(server: McpServer) {
   // Address analysis prompt
   server.prompt(
     "analyze_address",
