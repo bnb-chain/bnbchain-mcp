@@ -265,7 +265,7 @@ export async function transferERC721(
   const hash = await walletClient.writeContract({
     address: tokenAddress,
     abi: ERC721_ABI,
-    functionName: "transferFrom",
+    functionName: "safeTransferFrom",
     args: [walletClient.account!.address, toAddress, tokenId],
     account: walletClient.account!,
     chain: walletClient.chain
