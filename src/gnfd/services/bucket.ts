@@ -106,6 +106,11 @@ export const createBucket = async (
 
   const _bucketName = bucketName || "created-by-bnbchain-mcp"
 
+  const nameRegex = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
+  if (!nameRegex.test(_bucketName)) {
+    return response.fail(`Invalid bucket name: "${_bucketName}". Must be 3-63 chars, lowercase, alphanumeric and hyphens only.`);
+  }
+
   try {
     // Try to check if the bucket already exists
     try {
