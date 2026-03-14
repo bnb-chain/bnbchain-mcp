@@ -51,8 +51,7 @@ export function registerAgentsTools(server: McpServer) {
     },
     async ({ privateKey, agentId, newURI, network }) => {
       try {
-        const id =
-          typeof agentId === "string" ? BigInt(agentId) : BigInt(agentId)
+        const id = BigInt(agentId)
         const result = await services.setAgentURI(
           privateKey,
           id,
@@ -82,8 +81,7 @@ export function registerAgentsTools(server: McpServer) {
     },
     async ({ agentId, network }) => {
       try {
-        const id =
-          typeof agentId === "string" ? BigInt(agentId) : BigInt(agentId)
+        const id = BigInt(agentId)
         const result = await services.getAgent(id, network)
         return mcpToolRes.success({
           agentId: agentId.toString(),
@@ -108,8 +106,7 @@ export function registerAgentsTools(server: McpServer) {
     },
     async ({ agentId, network }) => {
       try {
-        const id =
-          typeof agentId === "string" ? BigInt(agentId) : BigInt(agentId)
+        const id = BigInt(agentId)
         const wallet = await services.getAgentWallet(id, network)
         return mcpToolRes.success({
           agentId: agentId.toString(),
