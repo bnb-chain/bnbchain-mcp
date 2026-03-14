@@ -1,6 +1,4 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { normalize } from "viem/ens"
-import { z } from "zod"
 
 import { getRpcUrl, getSupportedNetworks } from "@/evm/chains.js"
 import * as services from "@/evm/services/index.js"
@@ -50,27 +48,4 @@ export function registerNetworkTools(server: McpServer) {
     }
   )
 
-  // // Resolve ENS name to address
-  // server.tool(
-  //   "resolve_ens",
-  //   "Resolve an ENS name to an EVM address (not supported on BSC)",
-  //   {
-  //     ensName: z.string().describe("ENS name to resolve (e.g., 'vitalik.eth')"),
-  //     network: defaultNetworkParam.default("eth")
-  //   },
-  //   async ({ ensName, network }) => {
-  //     try {
-  //       const normalizedName = normalize(ensName)
-  //       const address = await services.resolveAddress(normalizedName, network)
-  //       return mcpToolRes.success({
-  //         ensName,
-  //         normalizedName,
-  //         resolvedAddress: address,
-  //         network
-  //       })
-  //     } catch (error) {
-  //       return mcpToolRes.error(error, "resolving ENS name")
-  //     }
-  //   }
-  // )
 }
