@@ -160,6 +160,7 @@ export const createERC20Token = async ({
   totalSupply?: string
 }) => {
   const client = getWalletClient(privateKey, network)
+  const publicClient = getPublicClient(network)
   const supply = BigInt(totalSupply)
   const hash = await client.deployContract({
     abi: ERC20_ABI,
@@ -169,9 +170,13 @@ export const createERC20Token = async ({
     chain: client.chain
   })
 
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
   Logger.info(`Deployed new ERC20 token (${name} - ${symbol}): ${hash}`)
   return {
     hash,
+    contractAddress: receipt.contractAddress,
+    blockNumber: Number(receipt.blockNumber),
     name,
     symbol,
     totalSupply: supply,
