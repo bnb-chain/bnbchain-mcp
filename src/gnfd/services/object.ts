@@ -62,12 +62,13 @@ export const createFile = async (
   }
 ): Promise<ApiResponse<FileData>> => {
   try {
-    // Ensure the file exists
+    // Ensure the file exists and check size before reading into memory
     const objectName = path.basename(filePath)
-    const fileObj = createFileObject(filePath)
-    if (fileObj.size > 1024 * 1024 * 1024) {
+    const fileStats = statSync(filePath)
+    if (fileStats.size > 1024 * 1024 * 1024) {
       return response.fail("File size must be less than 1GB")
     }
+    const fileObj = createFileObject(filePath)
 
     const rs = new NodeAdapterReedSolomon()
     const expectCheckSums = await rs.encodeInSubWorker(
