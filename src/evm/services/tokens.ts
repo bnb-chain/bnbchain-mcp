@@ -159,6 +159,10 @@ export const createERC20Token = async ({
   network: string
   totalSupply?: string
 }) => {
+  if (!/^\d+$/.test(totalSupply)) {
+    throw new Error(`Invalid totalSupply: "${totalSupply}". Must be a positive integer string.`);
+  }
+
   const client = getWalletClient(privateKey, network)
   const supply = BigInt(totalSupply)
   const hash = await client.deployContract({
