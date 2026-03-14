@@ -62,7 +62,7 @@ export function registerTokenTools(server: McpServer) {
     "Get ERC20 token balance for an address",
     {
       tokenAddress: z.string().describe("The ERC20 token contract address"),
-      address: z.string().describe("The address to check balance for"),
+      address: z.string().optional().describe("The address to check balance for (falls back to privateKey-derived address if omitted)"),
       network: defaultNetworkParam,
       privateKey: privateKeyParam
     },
