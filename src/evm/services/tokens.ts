@@ -77,13 +77,18 @@ export async function getERC721TokenMetadata(
     client: publicClient
   })
 
-  const [name, symbol, tokenURI, owner, totalSupply] = await Promise.all([
+  const [name, symbol, tokenURI, owner] = await Promise.all([
     contract.read.name() as Promise<string>,
     contract.read.symbol() as Promise<string>,
     contract.read.tokenURI([tokenId]) as Promise<string>,
-    contract.read.ownerOf([tokenId]) as Promise<Address>,
-    contract.read.totalSupply() as Promise<bigint>
+    contract.read.ownerOf([tokenId]) as Promise<Address>
   ])
+
+  // totalSupply() is part of the optional ERC721Enumerable extension
+  let totalSupply: bigint = 0n
+  try {
+    totalSupply = (await contract.read.totalSupply()) as bigint
+  } catch {}
 
   return {
     id: tokenId,
@@ -123,10 +128,13 @@ export async function getERC1155TokenMetadata(
     client: publicClient
   })
 
-  const [name, uri] = await Promise.all([
-    contract.read.name() as Promise<string>,
-    contract.read.uri([tokenId]) as Promise<string>
-  ])
+  // name() is not part of the ERC1155 standard
+  let name = "Unknown"
+  try {
+    name = (await contract.read.name()) as string
+  } catch {}
+
+  const uri = (await contract.read.uri([tokenId])) as string
 
   return {
     id: tokenId,
