@@ -1,3 +1,5 @@
+import Logger from "@/utils/logger"
+
 /**
  * Custom replacer function for JSON.stringify that handles BigInt
  * @param _key The current key being processed
@@ -24,7 +26,7 @@ export const safeStringify = (value: any, space?: number): string => {
     return JSON.stringify(value, bigIntReplacer, space)
   } catch (error) {
     // If there's still an error, return a fallback string
-    console.error("Error in safeStringify:", error)
+    Logger.error("Error in safeStringify:", error)
     return JSON.stringify({ error: "Unable to stringify value" })
   }
 }
@@ -38,7 +40,7 @@ export const safeParse = (text: string): any => {
   try {
     return JSON.parse(text)
   } catch (error) {
-    console.error("Error in safeParse:", error)
+    Logger.error("Error in safeParse:", error)
     return null
   }
 }
