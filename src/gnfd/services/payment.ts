@@ -325,13 +325,11 @@ export const getPaymentAccountRelatedBuckets = async (
           Number(streamRecord.settleTimestamp) * 1000
         ).toISOString(),
         netflowRateInSeconds: _estimateStoreNetflowRate(
-          // @ts-ignore
-          bucket.StorageSize,
+          (bucket as any).StorageSize ?? (bucket as any).storageSize ?? 0,
           storeFeeConfig
         ),
         netflowRateInDays:
-          // @ts-ignore
-          _estimateStoreNetflowRate(bucket.StorageSize, storeFeeConfig) * 86400
+          _estimateStoreNetflowRate((bucket as any).StorageSize ?? (bucket as any).storageSize ?? 0, storeFeeConfig) * 86400
       }))
 
     return response.success(relatedBuckets)
