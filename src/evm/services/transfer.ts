@@ -187,6 +187,25 @@ export async function approveERC20(
   // Create wallet client for sending the transaction
   const walletClient = getWalletClient(formattedKey, network)
 
+  // Check current allowance to prevent approval front-running attack
+  const currentAllowance = await publicClient.readContract({
+    address: tokenAddress,
+    abi: ERC20_ABI,
+    functionName: 'allowance',
+    args: [walletClient.account!.address, spenderAddress],
+  }) as bigint;
+  if (currentAllowance > 0n && rawAmount > 0n) {
+    // Reset to 0 first to prevent front-running attack (ERC20 approve race condition)
+    await walletClient.writeContract({
+      address: tokenAddress,
+      abi: ERC20_ABI,
+      functionName: 'approve',
+      args: [spenderAddress, 0n],
+      account: walletClient.account!,
+      chain: walletClient.chain
+    });
+  }
+
   // Send the transaction
   const hash = await walletClient.writeContract({
     address: tokenAddress,
