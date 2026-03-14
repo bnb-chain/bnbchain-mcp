@@ -104,6 +104,17 @@ export async function transferERC20(
   // Create wallet client for sending the transaction
   const walletClient = getWalletClient(formattedKey, network)
 
+  // Verify sender has sufficient token balance
+  const balance = await publicClient.readContract({
+    address: tokenAddress,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: [walletClient.account!.address],
+  });
+  if ((balance as bigint) < rawAmount) {
+    throw new Error(`Insufficient token balance. Have: ${balance}, Need: ${rawAmount}`);
+  }
+
   // Send the transaction
   const hash = await walletClient.writeContract({
     address: tokenAddress,
