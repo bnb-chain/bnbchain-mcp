@@ -372,7 +372,7 @@ export const downloadObject = async (
       // add tmp prefix to avoid file name conflict
       filePath = path.join(process.cwd(), "tmp-" + objectName)
     } else {
-      filePath = path.join(targetPath, objectName)
+      filePath = path.join(targetPath, path.basename(objectName))
     }
 
     const client = getClient(network)
