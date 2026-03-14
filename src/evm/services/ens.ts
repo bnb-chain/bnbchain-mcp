@@ -20,6 +20,11 @@ export async function resolveAddress(
 
   // If it looks like an ENS name (contains a dot), try to resolve it
   if (addressOrEns.includes(".")) {
+    const ensNetworks = ['ethereum', 'sepolia', 'goerli', '1', '11155111', '5'];
+    if (!ensNetworks.includes(String(network).toLowerCase())) {
+      throw new Error(`ENS resolution is only supported on Ethereum networks. Current: ${network}`);
+    }
+
     try {
       // Normalize the ENS name first
       const normalizedEns = normalize(addressOrEns)
