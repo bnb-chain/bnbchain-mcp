@@ -26,7 +26,7 @@ export async function transferETH(
   toAddressOrEns: string,
   amount: string, // in ether
   network = "ethereum"
-): Promise<Hash> {
+): Promise<{ hash: Hash; status: string; blockNumber: number }> {
   // Resolve ENS name to address if needed
   const toAddress = await resolveAddress(toAddressOrEns, network)
 
@@ -37,14 +37,17 @@ export async function transferETH(
       : (privateKey as Hex)
 
   const client = getWalletClient(formattedKey, network)
+  const publicClient = getPublicClient(network)
   const amountWei = parseEther(amount)
 
-  return client.sendTransaction({
+  const hash = await client.sendTransaction({
     to: toAddress,
     value: amountWei,
     account: client.account!,
     chain: client.chain
   })
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+  return { hash, status: receipt.status, blockNumber: Number(receipt.blockNumber) }
 }
 
 /**
@@ -114,8 +117,12 @@ export async function transferERC20(
     chain: walletClient.chain
   })
 
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
   return {
     txHash: hash,
+    status: receipt.status,
+    blockNumber: Number(receipt.blockNumber),
     amount: {
       raw: rawAmount,
       formatted: amount
@@ -197,8 +204,12 @@ export async function approveERC20(
     chain: walletClient.chain
   })
 
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
   return {
     txHash: hash,
+    status: receipt.status,
+    blockNumber: Number(receipt.blockNumber),
     amount: {
       raw: rawAmount,
       formatted: amount
