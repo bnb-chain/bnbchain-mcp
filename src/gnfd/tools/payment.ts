@@ -55,7 +55,7 @@ export function registerPaymentTools(server: McpServer) {
           const result = await services.createPaymentAccount(net, privateKey as Hex)
           return mcpToolRes.success(result)
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "gnfd_create_payment_account",
           params: {},
           network: net
@@ -63,6 +63,7 @@ export function registerPaymentTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { network: net, action: "Create payment account" },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute."
         })
@@ -94,7 +95,7 @@ export function registerPaymentTools(server: McpServer) {
           })
           return mcpToolRes.success(result)
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "gnfd_deposit_to_payment",
           params: { to, amount },
           network: net
@@ -102,6 +103,7 @@ export function registerPaymentTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { to, amount, network: net },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute."
         })
@@ -133,7 +135,7 @@ export function registerPaymentTools(server: McpServer) {
           })
           return mcpToolRes.success(result)
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "gnfd_withdraw_from_payment",
           params: { from, amount },
           network: net
@@ -141,6 +143,7 @@ export function registerPaymentTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { from, amount, network: net },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute."
         })

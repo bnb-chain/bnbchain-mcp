@@ -127,7 +127,7 @@ export function registerNftTools(server: McpServer) {
             symbol: result.token.symbol
           })
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "transfer_nft",
           params: { tokenAddress, toAddress, tokenId },
           network
@@ -135,6 +135,7 @@ export function registerNftTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { tokenAddress, toAddress, tokenId, network },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })
@@ -203,7 +204,7 @@ export function registerNftTools(server: McpServer) {
             recipient: toAddress
           })
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "transfer_erc1155",
           params: { tokenAddress, toAddress, tokenId, amount },
           network
@@ -211,6 +212,7 @@ export function registerNftTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { tokenAddress, toAddress, tokenId, amount, network },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })

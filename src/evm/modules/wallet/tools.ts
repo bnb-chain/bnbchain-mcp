@@ -75,7 +75,7 @@ export function registerWalletTools(server: McpServer) {
             network
           })
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "transfer_native_token",
           params: { toAddress, amount },
           network
@@ -83,6 +83,7 @@ export function registerWalletTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { toAddress, amount, network },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })
@@ -143,7 +144,7 @@ export function registerWalletTools(server: McpServer) {
             network
           })
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "approve_token_spending",
           params: { tokenAddress, spenderAddress, amount },
           network
@@ -151,6 +152,7 @@ export function registerWalletTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { tokenAddress, spenderAddress, amount, network },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute the approval."
         })
@@ -209,7 +211,7 @@ export function registerWalletTools(server: McpServer) {
             network
           })
         }
-        const confirmToken = createPendingIntent({
+        const { token: confirmToken, expiresAt } = createPendingIntent({
           type: "transfer_erc20",
           params: { tokenAddress, toAddress, amount },
           network
@@ -217,6 +219,7 @@ export function registerWalletTools(server: McpServer) {
         return mcpToolRes.success({
           preview: { tokenAddress, toAddress, amount, network },
           confirmToken,
+          expiresAt,
           message:
             "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })

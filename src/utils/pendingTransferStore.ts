@@ -34,11 +34,16 @@ function pruneExpired(): void {
   }
 }
 
+export type PendingIntentResult = {
+  token: string
+  expiresAt: string
+}
+
 /**
- * Store an intent and return a one-time confirm token.
+ * Store an intent and return a one-time confirm token with its expiry time.
  * Enforces a max number of pending intents to prevent memory exhaustion.
  */
-export function createPendingIntent(intent: Omit<PendingIntent, "createdAt">): string {
+export function createPendingIntent(intent: Omit<PendingIntent, "createdAt">): PendingIntentResult {
   pruneExpired()
   if (store.size >= MAX_PENDING_INTENTS) {
     const oldest = [...store.entries()].sort(
@@ -47,8 +52,9 @@ export function createPendingIntent(intent: Omit<PendingIntent, "createdAt">): s
     if (oldest) store.delete(oldest[0])
   }
   const token = randomToken()
-  store.set(token, { ...intent, createdAt: Date.now() })
-  return token
+  const createdAt = Date.now()
+  store.set(token, { ...intent, createdAt })
+  return { token, expiresAt: new Date(createdAt + TTL_MS).toISOString() }
 }
 
 /**
