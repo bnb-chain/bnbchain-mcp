@@ -34,10 +34,12 @@ export function registerContractTools(server: McpServer) {
     }
   )
 
+  const DEFAULT_MAX_RESPONSE_BYTES = 4096
+
   // Read contract data
   server.tool(
     "read_contract",
-    "Read data from a smart contract by calling a view/pure function",
+    "Read data from a smart contract by calling a view/pure function. Response is truncated if it exceeds maxResponseSize bytes.",
     {
       contractAddress: z
         .string()
@@ -52,11 +54,26 @@ export function registerContractTools(server: McpServer) {
         .array(z.any())
         .optional()
         .describe("The arguments to pass to the function"),
-      network: defaultNetworkParam
+      network: defaultNetworkParam,
+      maxResponseSize: z
+        .number()
+        .min(256)
+        .max(1024 * 1024)
+        .optional()
+        .default(DEFAULT_MAX_RESPONSE_BYTES)
+        .describe(
+          "Max response size in bytes (default 4096). Larger responses are truncated with truncated: true."
+        )
     },
-    async ({ contractAddress, abi, functionName, args = [], network }) => {
+    async ({
+      contractAddress,
+      abi,
+      functionName,
+      args = [],
+      network,
+      maxResponseSize
+    }) => {
       try {
-        // Parse ABI if it's a string
         const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi
 
         const params = {
@@ -68,7 +85,23 @@ export function registerContractTools(server: McpServer) {
 
         const result = await services.readContract(params, network)
 
-        return mcpToolRes.success(result)
+        const jsonStr = JSON.stringify(
+          result,
+          (_, v) => (typeof v === "bigint" ? v.toString() : v),
+          2
+        )
+        const byteLength = Buffer.byteLength(jsonStr, "utf8")
+        if (byteLength <= maxResponseSize) {
+          return mcpToolRes.success(result)
+        }
+        const truncated = jsonStr.slice(0, maxResponseSize)
+        return mcpToolRes.success({
+          value: truncated,
+          truncated: true,
+          originalByteSize: byteLength,
+          message:
+            "Response exceeded maxResponseSize and was truncated. Increase maxResponseSize or query a smaller range."
+        })
       } catch (error) {
         return mcpToolRes.error(error, "reading contract")
       }

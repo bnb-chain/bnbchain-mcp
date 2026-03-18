@@ -4,7 +4,16 @@ import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { privateKeyParam, requiredNetworkParam } from "../common/types"
+import { createPendingIntent } from "@/utils/pendingTransferStore.js"
+import {
+  isSkipTransferConfirmation,
+  skipConfirmationParam
+} from "@/utils/transferConfirmation.js"
+import {
+  positiveAmountParam,
+  privateKeyParam,
+  requiredNetworkParam
+} from "../common/types"
 
 export function registerWalletTools(server: McpServer) {
   // Get address from private key
@@ -35,7 +44,7 @@ export function registerWalletTools(server: McpServer) {
   // Transfer native token
   server.tool(
     "transfer_native_token",
-    "Transfer native tokens (BNB, ETH, MATIC, etc.) to an address",
+    "Transfer native tokens (BNB, ETH, MATIC, etc.) to an address. By default returns a preview and confirmToken—call confirm_transfer with the token to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       privateKey: privateKeyParam,
       toAddress: z
@@ -43,28 +52,39 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "The recipient address or ENS name (e.g., '0x1234...' or 'vitalik.eth')"
         ),
-      amount: z
-        .string()
-        .describe(
-          "Amount to send in BNB (or the native token of the network), as a string (e.g., '0.1')"
-        ),
-      network: requiredNetworkParam
+      amount: positiveAmountParam.describe(
+        "Amount to send in BNB (or the native token of the network), e.g. '0.1'"
+      ),
+      network: requiredNetworkParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ privateKey, toAddress, amount, network }) => {
+    async ({ privateKey, toAddress, amount, network, skipConfirmation }) => {
       try {
-        const hash = await services.transferETH(
-          privateKey,
-          toAddress,
-          amount,
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const hash = await services.transferETH(
+            privateKey,
+            toAddress,
+            amount,
+            network
+          )
+          return mcpToolRes.success({
+            success: true,
+            txHash: hash,
+            toAddress,
+            amount,
+            network
+          })
+        }
+        const confirmToken = createPendingIntent({
+          type: "transfer_native_token",
+          params: { toAddress, amount },
           network
-        )
-
+        })
         return mcpToolRes.success({
-          success: true,
-          txHash: hash,
-          toAddress,
-          amount,
-          network
+          preview: { toAddress, amount, network },
+          confirmToken,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })
       } catch (error) {
         return mcpToolRes.error(error, "transferring native token")
@@ -75,7 +95,7 @@ export function registerWalletTools(server: McpServer) {
   // Approve ERC20 token spending
   server.tool(
     "approve_token_spending",
-    "Approve another address (like a DeFi protocol or exchange) to spend your ERC20 tokens. This is often required before interacting with DeFi protocols.",
+    "Approve another address (e.g. a DeFi protocol or exchange) to spend your ERC20 tokens. Use the exact amount needed. WARNING: Large or unlimited approvals increase risk. By default returns a preview—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       privateKey: privateKeyParam,
       tokenAddress: z
@@ -88,31 +108,51 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "The contract address being approved to spend your tokens (e.g., a DEX or lending protocol)"
         ),
-      amount: z
-        .string()
-        .describe(
-          "The amount of tokens to approve in token units, not wei (e.g., '1000' to approve spending 1000 tokens). Use a very large number for unlimited approval."
-        ),
-      network: requiredNetworkParam
+      amount: positiveAmountParam.describe(
+        "Exact amount of tokens to approve, in token units (e.g. '100'). Use only the amount needed; avoid very large values."
+      ),
+      network: requiredNetworkParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ privateKey, tokenAddress, spenderAddress, amount, network }) => {
+    async ({
+      privateKey,
+      tokenAddress,
+      spenderAddress,
+      amount,
+      network,
+      skipConfirmation
+    }) => {
       try {
-        const result = await services.approveERC20(
-          tokenAddress,
-          spenderAddress,
-          amount,
-          privateKey,
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.approveERC20(
+            tokenAddress,
+            spenderAddress,
+            amount,
+            privateKey,
+            network
+          )
+          return mcpToolRes.success({
+            success: true,
+            approvalDetails: {
+              token: tokenAddress,
+              spender: spenderAddress,
+              amount: result.amount.formatted,
+              symbol: result.token.symbol
+            },
+            txHash: result.txHash,
+            network
+          })
+        }
+        const confirmToken = createPendingIntent({
+          type: "approve_token_spending",
+          params: { tokenAddress, spenderAddress, amount },
           network
-        )
-
+        })
         return mcpToolRes.success({
-          success: true,
-          txHash: result.txHash,
-          tokenAddress,
-          spenderAddress,
-          amount: result.amount.formatted,
-          symbol: result.token.symbol,
-          network
+          preview: { tokenAddress, spenderAddress, amount, network },
+          confirmToken,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute the approval."
         })
       } catch (error) {
         return mcpToolRes.error(error, "approving token spending")
@@ -123,7 +163,7 @@ export function registerWalletTools(server: McpServer) {
   // Transfer ERC20 tokens
   server.tool(
     "transfer_erc20",
-    "Transfer ERC20 tokens to an address",
+    "Transfer ERC20 tokens to an address. By default returns a preview and confirmToken—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       privateKey: privateKeyParam,
       tokenAddress: z
@@ -136,31 +176,49 @@ export function registerWalletTools(server: McpServer) {
         .describe(
           "The recipient address or ENS name that will receive the tokens (e.g., '0x1234...' or 'vitalik.eth')"
         ),
-      amount: z
-        .string()
-        .describe(
-          "Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."
-        ),
-      network: requiredNetworkParam
+      amount: positiveAmountParam.describe(
+        "Amount of tokens to send (e.g. '100'). Adjusted for the token's decimals."
+      ),
+      network: requiredNetworkParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ privateKey, tokenAddress, toAddress, amount, network }) => {
+    async ({
+      privateKey,
+      tokenAddress,
+      toAddress,
+      amount,
+      network,
+      skipConfirmation
+    }) => {
       try {
-        const result = await services.transferERC20(
-          tokenAddress,
-          toAddress,
-          amount,
-          privateKey,
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.transferERC20(
+            tokenAddress,
+            toAddress,
+            amount,
+            privateKey,
+            network
+          )
+          return mcpToolRes.success({
+            success: true,
+            txHash: result.txHash,
+            tokenAddress,
+            toAddress,
+            amount: result.amount.formatted,
+            symbol: result.token.symbol,
+            network
+          })
+        }
+        const confirmToken = createPendingIntent({
+          type: "transfer_erc20",
+          params: { tokenAddress, toAddress, amount },
           network
-        )
-
+        })
         return mcpToolRes.success({
-          success: true,
-          txHash: result.txHash,
-          tokenAddress,
-          toAddress,
-          amount: result.amount.formatted,
-          symbol: result.token.symbol,
-          network
+          preview: { tokenAddress, toAddress, amount, network },
+          confirmToken,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })
       } catch (error) {
         return mcpToolRes.error(error, "transferring tokens")

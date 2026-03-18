@@ -1,5 +1,30 @@
 import { formatEther, parseEther } from "viem"
 
+/** Matches a positive decimal string (e.g. "0.1", "100"). */
+const POSITIVE_DECIMAL_REGEX = /^\d+(\.\d+)?$/
+
+/**
+ * Validates that a string is a positive decimal amount. Throws with a clear error if not.
+ * Use before parseEther/parseUnits to avoid unexpected behavior or stack traces.
+ */
+export function validatePositiveAmount(
+  amount: string,
+  label = "Amount"
+): void {
+  if (typeof amount !== "string" || amount.trim() === "") {
+    throw new Error(`${label} must be a non-empty string`)
+  }
+  if (!POSITIVE_DECIMAL_REGEX.test(amount.trim())) {
+    throw new Error(
+      `${label} must be a positive number (e.g. "0.1" or "100"). Got: ${amount.slice(0, 50)}`
+    )
+  }
+  const n = Number(amount)
+  if (!Number.isFinite(n) || n <= 0) {
+    throw new Error(`${label} must be greater than zero. Got: ${amount}`)
+  }
+}
+
 /**
  * Utility functions for formatting and parsing values
  */

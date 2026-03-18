@@ -12,6 +12,7 @@ import { ERC721_ABI } from "./abi/erc721.js"
 import { ERC1155_ABI } from "./abi/erc1155.js"
 import { getPublicClient, getWalletClient } from "./clients.js"
 import { resolveAddress } from "./ens.js"
+import { validatePositiveAmount } from "./utils.js"
 
 /**
  * Transfer ETH to an address
@@ -27,10 +28,10 @@ export async function transferETH(
   amount: string, // in ether
   network = "ethereum"
 ): Promise<Hash> {
-  // Resolve ENS name to address if needed
+  validatePositiveAmount(amount, "Transfer amount")
+
   const toAddress = await resolveAddress(toAddressOrEns, network)
 
-  // Ensure the private key has 0x prefix
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as Hex)
@@ -38,6 +39,16 @@ export async function transferETH(
 
   const client = getWalletClient(formattedKey, network)
   const amountWei = parseEther(amount)
+
+  const publicClient = getPublicClient(network)
+  const balance = await publicClient.getBalance({
+    address: client.account!.address
+  })
+  if (balance < amountWei) {
+    throw new Error(
+      `Insufficient balance. Current: ${balance.toString()} wei; required: ${amountWei.toString()} wei (${amount} native token). Consider gas fees.`
+    )
+  }
 
   return client.sendTransaction({
     to: toAddress,
@@ -80,13 +91,13 @@ export async function transferERC20(
   )) as Address
   const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
-  // Ensure the private key has 0x prefix
+  validatePositiveAmount(amount, "Transfer amount")
+
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as `0x${string}`)
       : (privateKey as `0x${string}`)
 
-  // Get token details
   const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
@@ -94,17 +105,21 @@ export async function transferERC20(
     client: publicClient
   })
 
-  // Get token decimals and symbol
   const decimals = (await contract.read.decimals()) as number
   const symbol = (await contract.read.symbol()) as string
 
-  // Parse the amount with the correct number of decimals
   const rawAmount = parseUnits(amount, decimals)
 
-  // Create wallet client for sending the transaction
   const walletClient = getWalletClient(formattedKey, network)
+  const balance = await contract.read.balanceOf([
+    walletClient.account!.address
+  ])
+  if (balance < rawAmount) {
+    throw new Error(
+      `Insufficient token balance. Have: ${balance.toString()} (raw); required: ${rawAmount.toString()} (${amount} ${symbol}).`
+    )
+  }
 
-  // Send the transaction
   const hash = await walletClient.writeContract({
     address: tokenAddress,
     abi: ERC20_ABI,
@@ -163,7 +178,8 @@ export async function approveERC20(
     network
   )) as Address
 
-  // Ensure the private key has 0x prefix
+  validatePositiveAmount(amount, "Approval amount")
+
   const formattedKey =
     typeof privateKey === "string" && !privateKey.startsWith("0x")
       ? (`0x${privateKey}` as `0x${string}`)

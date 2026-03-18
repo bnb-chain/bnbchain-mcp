@@ -194,24 +194,36 @@ export const deleteBucket = async (
   }
 }
 
+const DEFAULT_LIST_LIMIT = 20
+const MAX_LIST_LIMIT = 100
+
 /**
- * List buckets for an account in Greenfield
+ * List buckets for an account in Greenfield with pagination.
  * @param network Greenfield network (testnet or mainnet)
  * @param address User address to list buckets for
  * @param privateKey Private key of the account (optional if address is provided)
- * @returns List of buckets
+ * @param limit Max items to return (default 20, max 100)
+ * @param offset Number of items to skip (default 0)
  */
 export const listBuckets = async (
   network: "testnet" | "mainnet",
   {
     address,
-    privateKey
+    privateKey,
+    limit = DEFAULT_LIST_LIMIT,
+    offset = 0
   }: {
     address?: string
     privateKey?: Hex
+    limit?: number
+    offset?: number
   }
 ): Promise<
-  ApiResponse<{ buckets: Array<{ bucketName: string; createAt: number }> }>
+  ApiResponse<{
+    buckets: Array<{ bucketName: string; createAt: number }>
+    totalCount: number
+    hasMore: boolean
+  }>
 > => {
   try {
     const client = getClient(network)
@@ -223,7 +235,6 @@ export const listBuckets = async (
       : (address as string)
 
     const sp = await selectSp(network)
-    // Request list of buckets owned by the account
     const bucketListResponse = await client.bucket.listBuckets({
       address: _address,
       endpoint: sp.endpoint
@@ -234,13 +245,17 @@ export const listBuckets = async (
         `Failed to list buckets: ${JSON.stringify(bucketListResponse)}`
       )
     }
-    // Get detailed info for each bucket
-    const bucketsWithInfo = (bucketListResponse.body || []).map((it) => ({
+    const all = (bucketListResponse.body || []).map((it) => ({
       bucketName: it.BucketInfo.BucketName,
       createAt: it.BucketInfo.CreateAt
     }))
+    const capped = Math.min(Math.max(1, limit), MAX_LIST_LIMIT)
+    const start = Math.max(0, offset)
+    const buckets = all.slice(start, start + capped)
+    const totalCount = all.length
+    const hasMore = start + buckets.length < totalCount
 
-    return response.success({ buckets: bucketsWithInfo })
+    return response.success({ buckets, totalCount, hasMore })
   } catch (error) {
     Logger.error(`List buckets operation failed: ${error}`)
     return response.fail(`List buckets operation failed: ${error}`)

@@ -4,6 +4,12 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
+const defaultEnv = {
+  PRIVATE_KEY: process.env.PRIVATE_KEY || "",
+  LOGLEVEL: process.env.LOGLEVEL || "debug",
+  BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION: "true"
+}
+
 export class MCPClient {
   private mcp: Client
 
@@ -14,15 +20,13 @@ export class MCPClient {
     })
   }
 
-  async connect() {
+  async connect(envOverrides: Record<string, string> = {}) {
     try {
+      const env = { ...defaultEnv, ...envOverrides }
       const transport = new StdioClientTransport({
-        command: process.env.NODE as string,
+        command: process.env.NODE || "node",
         args: ["dist/index.js"],
-        env: {
-          PRIVATE_KEY: process.env.PRIVATE_KEY || "",
-          LOGLEVEL: "debug"
-        }
+        env
       })
       await this.mcp.connect(transport)
       return this.mcp
@@ -41,6 +45,12 @@ export const getClient = async () => {
     client = await mcp.connect()
   }
   return client
+}
+
+/** Use for tests that need the preview/confirm flow (skip confirmation disabled). */
+export const getClientWithConfirmFlow = async (): Promise<Client> => {
+  const mcp = new MCPClient()
+  return mcp.connect({ BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION: "false" })
 }
 
 export const parseText = <T>(text: string): T => {

@@ -1,21 +1,27 @@
-import { type Address } from "viem"
+import { getAddress, type Address } from "viem"
 import { normalize } from "viem/ens"
 
 import { getPublicClient } from "./clients.js"
 
 /**
- * Resolves an ENS name to an Ethereum address or returns the original address if it's already valid
+ * Resolves an ENS name to an Ethereum address or validates and returns the EIP-55 checksummed address.
+ * Rejects addresses that fail EIP-55 checksum validation (e.g. typos, phishing-style mixed case).
  * @param addressOrEns An Ethereum address or ENS name
  * @param network The network to use for ENS resolution (defaults to Ethereum mainnet)
- * @returns The resolved Ethereum address
+ * @returns The resolved or validated Ethereum address (EIP-55 checksummed)
  */
 export async function resolveAddress(
   addressOrEns: string,
   network = "ethereum"
 ): Promise<Address> {
-  // If it's already a valid Ethereum address (0x followed by 40 hex chars), return it
   if (/^0x[a-fA-F0-9]{40}$/.test(addressOrEns)) {
-    return addressOrEns as Address
+    try {
+      return getAddress(addressOrEns)
+    } catch {
+      throw new Error(
+        `Invalid address checksum (EIP-55). Please verify the address and resubmit. Got: ${addressOrEns.slice(0, 10)}...`
+      )
+    }
   }
 
   // If it looks like an ENS name (contains a dot), try to resolve it

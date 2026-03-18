@@ -38,7 +38,7 @@ export const startSSEServer = async () => {
       } catch (error) {
         Logger.error("Error connecting transport", {
           sessionId: transport.sessionId,
-          error
+          errorMessage: error instanceof Error ? error.message : String(error)
         })
       }
     })
@@ -52,7 +52,10 @@ export const startSSEServer = async () => {
         try {
           await transport.handlePostMessage(req, res, req.body)
         } catch (error) {
-          Logger.error("Error handling message", { sessionId, error })
+          Logger.error("Error handling message", {
+            sessionId,
+            errorMessage: error instanceof Error ? error.message : String(error)
+          })
           res.status(500).send("Internal server error")
         }
       } else {
