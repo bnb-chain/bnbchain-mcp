@@ -94,11 +94,11 @@ export const rpcUrlMap: Record<number, string> = {
   204: "https://opbnb-mainnet-rpc.bnbchain.org",
   4689: "https://babel-api.mainnet.iotex.io",
   // Testnets
-  11155111: "https://eth-sepolia.g.alchemy.com/v2/demo",
+  11155111: "https://rpc.sepolia.org",
   11155420: "https://sepolia.optimism.io",
   421614: "https://sepolia-rollup.arbitrum.io/rpc",
   84532: "https://sepolia.base.org",
-  80002: "https://polygon-amoy.infura.io",
+  80002: "https://rpc-amoy.polygon.technology",
   97: "https://data-seed-prebsc-1-s1.binance.org:8545",
   5611: "https://opbnb-testnet-rpc.bnbchain.org",
   4690: "https://babel-api.testnet.iotex.io"
