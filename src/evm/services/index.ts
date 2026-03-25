@@ -8,6 +8,7 @@ export * from "./blocks.js"
 export * from "./tokens.js"
 export * from "./transactions.js"
 export * from "./transfer.js"
+export * from "./risk-scanner.js"
 export { utils as helpers } from "./utils.js"
 
 // Re-export common types for convenience
