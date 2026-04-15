@@ -12,7 +12,9 @@ type LogLevelStrings = keyof typeof LogLevel
 let currentLevel: LogLevel = getLogLevelFromEnv()
 
 function getLogLevelFromEnv(): LogLevel {
-  const envLevel = (process.env.LOG_LEVEL || "INFO").toUpperCase() as LogLevelStrings
+  const envLevel = (
+    process.env.LOG_LEVEL || "INFO"
+  ).toUpperCase() as LogLevelStrings
   return LogLevel[envLevel] ?? LogLevel.INFO
 }
 
@@ -20,10 +22,16 @@ function shouldLog(level: LogLevel): boolean {
   return level >= currentLevel
 }
 
-function formatMessage(level: LogLevelStrings, message: string, meta?: unknown): string {
+function formatMessage(
+  level: LogLevelStrings,
+  message: string,
+  meta?: unknown
+): string {
   const timestamp = new Date().toISOString()
   const metaStr =
-    meta !== undefined ? ` ${util.inspect(meta, { depth: 5, colors: true })}` : ""
+    meta !== undefined
+      ? ` ${util.inspect(meta, { depth: 5, colors: true })}`
+      : ""
   return `[${timestamp}] ${level}: ${message}${metaStr}`
 }
 

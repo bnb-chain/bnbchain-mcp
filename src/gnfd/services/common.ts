@@ -44,10 +44,10 @@ export const executeTransaction = async <T = void>(
         txHash: txRes.transactionHash
       } as T)
     }
-      Logger.error(`${operationName} failed: ${JSON.stringify(txRes)}`)
-      return response.fail(
-        `${operationName} failed: code=${txRes.code}, hash=${txRes.transactionHash}`
-      ) as ApiResponse<T>
+    Logger.error(`${operationName} failed: ${JSON.stringify(txRes)}`)
+    return response.fail(
+      `${operationName} failed: code=${txRes.code}, hash=${txRes.transactionHash}`
+    ) as ApiResponse<T>
   } catch (error) {
     Logger.error(`${operationName} failed: ${error}`)
     return response.fail(`${operationName} failed: ${error}`) as ApiResponse<T>

@@ -144,7 +144,7 @@ export const createFile = async (
         objectName
       })
     }
-      return response.fail(`Create file failed: ${JSON.stringify(uploadRes)}`)
+    return response.fail(`Create file failed: ${JSON.stringify(uploadRes)}`)
   } catch (error) {
     Logger.error(`Create file operation failed: ${error}`)
     return response.fail(`Create file operation failed: ${error}`)

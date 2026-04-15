@@ -1,3 +1,4 @@
+import readline from "node:readline/promises"
 import { Anthropic } from "@anthropic-ai/sdk"
 import type {
   MessageParam,
@@ -6,7 +7,6 @@ import type {
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import dotenv from "dotenv"
-import readline from "node:readline/promises"
 
 dotenv.config()
 

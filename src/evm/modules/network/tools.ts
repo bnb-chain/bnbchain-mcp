@@ -1,5 +1,4 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { normalize } from "viem/ens"
 import { z } from "zod"
 
 import { getRpcUrl, getSupportedNetworks } from "@/evm/chains.js"
@@ -34,10 +33,9 @@ export function registerNetworkTools(server: McpServer) {
   )
 
   // Get supported networks
-  // .update({ paramsSchema: {} }) is needed because the MCP SDK's isZodRawShape()
-  // returns false for empty objects, causing {} to be misidentified as annotations.
-  // Calling update() bypasses that check and sets z.object({}) directly,
-  // which generates { type: "object", properties: {} } for OpenAI-compatible validators.
+  // z.object({}) cannot be passed directly — SDK overloads accept ZodRawShape, not
+  // ZodObject, and isZodRawShape({}) returns false for empty objects. .update() is
+  // the only way to force { type: "object", properties: {} } for OpenAI-compatible validators.
   const getSupportedNetworksTool = server.tool(
     "get_supported_networks",
     "Get list of supported networks",
@@ -53,28 +51,4 @@ export function registerNetworkTools(server: McpServer) {
     }
   )
   getSupportedNetworksTool.update({ paramsSchema: {} })
-
-  // // Resolve ENS name to address
-  // server.tool(
-  //   "resolve_ens",
-  //   "Resolve an ENS name to an EVM address (not supported on BSC)",
-  //   {
-  //     ensName: z.string().describe("ENS name to resolve (e.g., 'vitalik.eth')"),
-  //     network: defaultNetworkParam.default("eth")
-  //   },
-  //   async ({ ensName, network }) => {
-  //     try {
-  //       const normalizedName = normalize(ensName)
-  //       const address = await services.resolveAddress(normalizedName, network)
-  //       return mcpToolRes.success({
-  //         ensName,
-  //         normalizedName,
-  //         resolvedAddress: address,
-  //         network
-  //       })
-  //     } catch (error) {
-  //       return mcpToolRes.error(error, "resolving ENS name")
-  //     }
-  //   }
-  // )
 }

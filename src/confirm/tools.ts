@@ -1,8 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Hex } from "viem"
+import type { Address, Hex } from "viem"
 import { z } from "zod"
 
 import { privateKeyParam } from "@/evm/modules/common/types.js"
+import type { WriteContractInput } from "@/evm/services/contracts.js"
 import * as evmServices from "@/evm/services/index.js"
 import * as gnfdServices from "@/gnfd/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
@@ -195,6 +196,26 @@ export function registerConfirmTools(server: McpServer) {
               txHash: (result.data as { txHash?: string })?.txHash,
               message: "Payment account created",
               network: gnfdNetwork
+            })
+          }
+          case "write_contract": {
+            const contractParams: WriteContractInput = {
+              address: params.contractAddress as Address,
+              abi: intent.params.abi as readonly unknown[],
+              functionName: req("functionName"),
+              args: intent.params.args as readonly unknown[]
+            }
+            const txHash = await evmServices.writeContract(
+              key,
+              contractParams,
+              network
+            )
+            return mcpToolRes.success({
+              success: true,
+              transactionHash: txHash,
+              contractAddress: req("contractAddress"),
+              functionName: req("functionName"),
+              network
             })
           }
           default:

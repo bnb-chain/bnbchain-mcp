@@ -45,7 +45,9 @@ export const createPaymentAccount = async (
 
     return tx
   } catch (error: unknown) {
-    return response.fail(`Failed to create payment account: ${error instanceof Error ? error.message : String(error)}`)
+    return response.fail(
+      `Failed to create payment account: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -88,7 +90,9 @@ export const depositToPaymentAccount = async (
 
     return tx
   } catch (error: unknown) {
-    return response.fail(`Failed to deposit funds: ${error instanceof Error ? error.message : String(error)}`)
+    return response.fail(
+      `Failed to deposit funds: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -131,7 +135,9 @@ export const withdrawFromPaymentAccount = async (
 
     return tx
   } catch (error: unknown) {
-    return response.fail(`Failed to withdraw funds: ${error instanceof Error ? error.message : String(error)}`)
+    return response.fail(
+      `Failed to withdraw funds: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -170,7 +176,9 @@ export const disableRefundForPaymentAccount = async (
 
     return tx
   } catch (error: unknown) {
-    return response.fail(`Failed to disable refund: ${error instanceof Error ? error.message : String(error)}`)
+    return response.fail(
+      `Failed to disable refund: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -210,7 +218,9 @@ export const getPaymentAccountInfo = async (
     }
     return response.success(formattedStreamRecord)
   } catch (error: unknown) {
-    return response.fail(`Failed to get payment account info: ${error instanceof Error ? error.message : String(error)}`)
+    return response.fail(
+      `Failed to get payment account info: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -239,7 +249,7 @@ const _getStoreFeeConfig = async (
     minChargeSize = new Long(0),
     redundantDataChunkNum = 0,
     redundantParityChunkNum = 0
-  } = (storageParams?.versionedParams) || {}
+  } = storageParams?.versionedParams || {}
 
   const { reserveTime, validatorTaxRate } = paymentParams?.versionedParams || {}
 

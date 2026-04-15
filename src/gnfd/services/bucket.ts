@@ -84,7 +84,7 @@ export const getBucketFullInfo = async (
         }
       })
     }
-      return response.fail("Get bucket full info operation failed")
+    return response.fail("Get bucket full info operation failed")
   } catch (error) {
     Logger.error(`Get bucket full info operation failed: ${error}`)
     return response.fail(`Get bucket full info operation failed: ${error}`)
@@ -143,7 +143,7 @@ export const createBucket = async (
     if (tx.status === "success") {
       return response.success({ bucketName: _bucketName })
     }
-      return tx
+    return tx
   } catch (error) {
     return response.fail(`Create bucket failed: ${error}`)
   }
