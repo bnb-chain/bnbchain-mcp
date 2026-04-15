@@ -10,16 +10,15 @@
     "build": "bun build src/*.ts --outdir dist --target node --format cjs",
     "test": "npx @modelcontextprotocol/inspector bun dev",
     "e2e": "LOGLEVEL=debug bun test e2e --coverage --timeout 50000",
-    "prepare": "husky",
-    "format": "prettier --write ."
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
   },
   "main": "dist/index.js",
   "bin": {
     "bnbchain-mcp": "./dist/index.js"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },
@@ -36,30 +35,13 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
-    "@ianvs/prettier-plugin-sort-imports": "4.1.1",
+    "@biomejs/biome": "^1.9.4",
     "@types/bun": "^1.2.12",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.0.0",
-    "husky": "^9.1.7",
-    "prettier": "3.2.4",
     "typescript": "^5.0.0"
   },
   "license": "MIT",
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ],
-    "rules": {
-      "subject-case": [
-        2,
-        "always",
-        [
-          "sentence-case"
-        ]
-      ]
-    }
-  }
+  "trustedDependencies": ["@biomejs/biome"]
 }

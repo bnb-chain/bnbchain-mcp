@@ -1,10 +1,10 @@
 import {
-  getContract,
-  parseEther,
-  parseUnits,
   type Address,
   type Hash,
-  type Hex
+  type Hex,
+  getContract,
+  parseEther,
+  parseUnits
 } from "viem"
 
 import { ERC20_ABI } from "./abi/erc20.js"
@@ -42,7 +42,7 @@ export async function transferETH(
 
   const publicClient = getPublicClient(network)
   const balance = await publicClient.getBalance({
-    address: client.account!.address
+    address: client.account.address
   })
   if (balance < amountWei) {
     throw new Error(
@@ -53,7 +53,7 @@ export async function transferETH(
   return client.sendTransaction({
     to: toAddress,
     value: amountWei,
-    account: client.account!,
+    account: client.account,
     chain: client.chain
   })
 }
@@ -72,7 +72,7 @@ export async function transferERC20(
   toAddressOrEns: string,
   amount: string,
   privateKey: string | `0x${string}`,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   txHash: Hash
   amount: {
@@ -111,9 +111,7 @@ export async function transferERC20(
   const rawAmount = parseUnits(amount, decimals)
 
   const walletClient = getWalletClient(formattedKey, network)
-  const balance = await contract.read.balanceOf([
-    walletClient.account!.address
-  ])
+  const balance = await contract.read.balanceOf([walletClient.account.address])
   if (balance < rawAmount) {
     throw new Error(
       `Insufficient token balance. Have: ${balance.toString()} (raw); required: ${rawAmount.toString()} (${amount} ${symbol}).`
@@ -125,7 +123,7 @@ export async function transferERC20(
     abi: ERC20_ABI,
     functionName: "transfer",
     args: [toAddress, rawAmount],
-    account: walletClient.account!,
+    account: walletClient.account,
     chain: walletClient.chain
   })
 
@@ -156,7 +154,7 @@ export async function approveERC20(
   spenderAddressOrEns: string,
   amount: string,
   privateKey: string | `0x${string}`,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   txHash: Hash
   amount: {
@@ -209,7 +207,7 @@ export async function approveERC20(
     abi: ERC20_ABI,
     functionName: "approve",
     args: [spenderAddress, rawAmount],
-    account: walletClient.account!,
+    account: walletClient.account,
     chain: walletClient.chain
   })
 
@@ -240,7 +238,7 @@ export async function transferERC721(
   toAddressOrEns: string,
   tokenId: bigint,
   privateKey: string | `0x${string}`,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   txHash: Hash
   tokenId: string
@@ -282,8 +280,8 @@ export async function transferERC721(
     address: tokenAddress,
     abi: ERC721_ABI,
     functionName: "transferFrom",
-    args: [walletClient.account!.address, toAddress, tokenId],
-    account: walletClient.account!,
+    args: [walletClient.account.address, toAddress, tokenId],
+    account: walletClient.account,
     chain: walletClient.chain
   })
 
@@ -313,7 +311,7 @@ export async function transferERC1155(
   tokenId: bigint,
   amount: string,
   privateKey: string | `0x${string}`,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   txHash: Hash
   tokenId: string
@@ -341,13 +339,13 @@ export async function transferERC1155(
     abi: ERC1155_ABI,
     functionName: "safeTransferFrom",
     args: [
-      walletClient.account!.address,
+      walletClient.account.address,
       toAddress,
       tokenId,
       BigInt(amount),
       "0x" as `0x${string}`
     ],
-    account: walletClient.account!,
+    account: walletClient.account,
     chain: walletClient.chain
   })
 

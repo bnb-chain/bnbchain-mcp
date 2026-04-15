@@ -1,0 +1,93 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    # Auto-run on PR events; also run when someone comments "@claude" on a PR
+    if: |
+      github.event_name == 'pull_request' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        contains(github.event.comment.body, '@claude')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-opus-4-5-20251101
+          direct_prompt: |
+            You are reviewing a pull request for **bnbchain-mcp** — a Model Context Protocol (MCP) server that exposes BNB Chain blockchain operations (EVM chains + Greenfield storage) as AI-callable tools.
+
+            Review the diff and leave inline comments or a summary comment on the PR. Be specific, actionable, and concise. Do not praise trivially correct code.
+
+            ---
+
+            ## Project Context
+
+            - **Runtime**: Bun. Source is ESM; build output is CJS.
+            - **Formatter/Linter**: Biome (double quotes, no semicolons, no trailing commas, 2-space indent).
+            - **Validation**: Zod at every MCP tool boundary.
+            - **Blockchain**: `viem` for EVM chains; `@bnb-chain/greenfield-js-sdk` for Greenfield.
+            - **Internal alias**: `@/*` maps to `src/*`.
+            - **Key modules**: `src/evm/` (blocks, tokens, nft, transactions, wallet, contracts, network, agents), `src/gnfd/` (account, storage, payment), `src/confirm/` (transfer confirmation flow).
+
+            ---
+
+            ## Review Checklist
+
+            ### Security (highest priority)
+            - [ ] No private keys, mnemonics, or signed transactions logged anywhere.
+            - [ ] No secrets or API keys hardcoded — only read from `process.env`.
+            - [ ] No `.env` files committed.
+            - [ ] SSE mode: no new unauthenticated endpoints added without noting the risk.
+            - [ ] Write operations (transfers, contract calls) must go through the preview → `confirm_transfer` flow unless `BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true`.
+
+            ### Correctness
+            - [ ] Zod schema at the tool input boundary — every new MCP tool must validate its inputs.
+            - [ ] viem clients are fetched from `src/evm/services/clients.ts` cache — never instantiated ad-hoc.
+            - [ ] Chain lookup uses `chainMap` / `networkNameMap` from `src/evm/chains.ts` — no hardcoded chain IDs.
+            - [ ] Greenfield client uses `src/gnfd/services/client.ts` — not created inline.
+            - [ ] Async errors are caught and logged; MCP tools must return a structured error response, not throw.
+            - [ ] `pendingTransferStore` TTL (5 min) is respected — no store entries created without expiry.
+
+            ### MCP Tool Patterns
+            - [ ] New tools are registered via the module's `register*` function called in `src/server/base.ts`.
+            - [ ] Tool names follow `snake_case` and are namespaced (e.g. `gnfd_upload_file`, `transfer_erc20`).
+            - [ ] Tool descriptions are clear and specific enough for an LLM to choose the right tool.
+            - [ ] Read-only tools do not trigger the confirmation flow.
+
+            ### Code Quality
+            - [ ] No dead code, commented-out blocks, or unused imports.
+            - [ ] No copy-pasted logic — shared helpers go in `src/utils/` or the module's `services/` layer.
+            - [ ] Functions are small and single-purpose; no god functions.
+            - [ ] Naming is self-explanatory without needing inline comments.
+            - [ ] Comments explain *why*, never *what*.
+
+            ### Style (Biome)
+            - [ ] Double quotes, no semicolons, no trailing commas.
+            - [ ] Import order: built-ins → third-party → `@/*` → relative.
+            - [ ] No `any` types unless unavoidable and justified with a comment.
+
+            ### Tests
+            - [ ] New tools or services have a corresponding test in `e2e/<module>.test.ts`.
+            - [ ] Tests use `MCPClient` from `e2e/util.ts` — no raw process spawning.
+
+            ---
+
+            Start with a one-paragraph overall assessment, then list findings grouped by severity: **Critical** → **Major** → **Minor** → **Nit**.
+            Skip sections with no findings. For each finding include the file + line reference and a concrete suggestion.

@@ -1,13 +1,13 @@
-import { randomUUID } from "crypto"
-import { existsSync, unlinkSync } from "fs"
-import path from "path"
 import { describe, expect, it } from "bun:test"
+import { randomUUID } from "node:crypto"
+import { existsSync, unlinkSync } from "node:fs"
+import path from "node:path"
 
 import { getClient, parseText } from "../util"
 
 describe("Greenfield Storage Test", async () => {
   const client = await getClient()
-  const TEST_BUCKET_NAME = "created-by-mcp-test-" + randomUUID()
+  const TEST_BUCKET_NAME = `created-by-mcp-test-${randomUUID()}`
   const fileName = __filename
   const objectName = path.basename(fileName)
 

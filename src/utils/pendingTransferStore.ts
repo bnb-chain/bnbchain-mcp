@@ -22,7 +22,8 @@ function randomToken(): string {
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     crypto.getRandomValues(bytes)
   } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256)
+    for (let i = 0; i < bytes.length; i++)
+      bytes[i] = Math.floor(Math.random() * 256)
   }
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
 }
@@ -43,7 +44,9 @@ export type PendingIntentResult = {
  * Store an intent and return a one-time confirm token with its expiry time.
  * Enforces a max number of pending intents to prevent memory exhaustion.
  */
-export function createPendingIntent(intent: Omit<PendingIntent, "createdAt">): PendingIntentResult {
+export function createPendingIntent(
+  intent: Omit<PendingIntent, "createdAt">
+): PendingIntentResult {
   pruneExpired()
   if (store.size >= MAX_PENDING_INTENTS) {
     const oldest = [...store.entries()].sort(

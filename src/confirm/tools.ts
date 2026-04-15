@@ -1,12 +1,12 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Hex } from "viem"
 import { z } from "zod"
 
+import { privateKeyParam } from "@/evm/modules/common/types.js"
 import * as evmServices from "@/evm/services/index.js"
 import * as gnfdServices from "@/gnfd/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
 import { getAndConsumeIntent } from "@/utils/pendingTransferStore.js"
-import { privateKeyParam } from "@/evm/modules/common/types.js"
 
 export function registerConfirmTools(server: McpServer) {
   server.tool(
@@ -25,7 +25,9 @@ export function registerConfirmTools(server: McpServer) {
         const intent = getAndConsumeIntent(confirmToken)
         if (!intent) {
           return mcpToolRes.error(
-            new Error("Invalid or expired confirmation token. Request a new preview."),
+            new Error(
+              "Invalid or expired confirmation token. Request a new preview."
+            ),
             "confirm_transfer"
           )
         }
@@ -39,7 +41,8 @@ export function registerConfirmTools(server: McpServer) {
 
         const req = (k: string): string => {
           const v = params[k]
-          if (v === undefined || v === null) throw new Error(`Missing param: ${k}`)
+          if (v === undefined || v === null)
+            throw new Error(`Missing param: ${k}`)
           return String(v)
         }
 

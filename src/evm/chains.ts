@@ -1,4 +1,4 @@
-import { type Chain } from "viem"
+import type { Chain } from "viem"
 import {
   arbitrum,
   arbitrumSepolia,
@@ -127,8 +127,8 @@ export function resolveChainId(chainIdentifier: number | string): number {
   }
 
   // Try parsing as a number
-  const parsedId = parseInt(networkName)
-  if (!isNaN(parsedId) && networkNameMap[parsedId]) {
+  const parsedId = Number.parseInt(networkName)
+  if (!Number.isNaN(parsedId) && networkNameMap[parsedId]) {
     return parsedId
   }
 

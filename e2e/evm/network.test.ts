@@ -5,6 +5,14 @@ import { getClient, parseText } from "../util"
 describe("EVM Network Test", async () => {
   const client = await getClient()
 
+  it("get_supported_networks schema is OpenAI-compatible (has properties field)", async () => {
+    const { tools } = await client.listTools()
+    const tool = tools.find((t) => t.name === "get_supported_networks")
+    expect(tool).toBeDefined()
+    // OpenAI-compatible validators require object schemas to have a properties field
+    expect(tool?.inputSchema).toHaveProperty("properties")
+  })
+
   it("get chain info for BSC", async () => {
     const res = await client.callTool({
       name: "get_chain_info",

@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { normalize } from "viem/ens"
 import { z } from "zod"
 
@@ -34,10 +34,13 @@ export function registerNetworkTools(server: McpServer) {
   )
 
   // Get supported networks
-  server.tool(
+  // .update({ paramsSchema: {} }) is needed because the MCP SDK's isZodRawShape()
+  // returns false for empty objects, causing {} to be misidentified as annotations.
+  // Calling update() bypasses that check and sets z.object({}) directly,
+  // which generates { type: "object", properties: {} } for OpenAI-compatible validators.
+  const getSupportedNetworksTool = server.tool(
     "get_supported_networks",
     "Get list of supported networks",
-    {},
     async () => {
       try {
         const networks = getSupportedNetworks()
@@ -49,6 +52,7 @@ export function registerNetworkTools(server: McpServer) {
       }
     }
   )
+  getSupportedNetworksTool.update({ paramsSchema: {} })
 
   // // Resolve ENS name to address
   // server.tool(

@@ -1,10 +1,10 @@
 import { StreamAccountStatus } from "@bnb-chain/greenfield-cosmos-types/greenfield/payment/stream_record"
 import { Long } from "@bnb-chain/greenfield-js-sdk"
-import { Hex, parseEther } from "viem"
+import { type Hex, parseEther } from "viem"
 
 import { validatePositiveAmount } from "@/evm/services/utils.js"
 import { selectSp } from "@/gnfd/services/sp"
-import { ApiResponse, response } from "../util"
+import { type ApiResponse, response } from "../util"
 import { getAccount } from "./account"
 import { getClient } from "./client"
 import { executeTransaction } from "./common"
@@ -44,8 +44,8 @@ export const createPaymentAccount = async (
     )
 
     return tx
-  } catch (error: any) {
-    return response.fail(`Failed to create payment account: ${error.message}`)
+  } catch (error: unknown) {
+    return response.fail(`Failed to create payment account: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -87,8 +87,8 @@ export const depositToPaymentAccount = async (
     )
 
     return tx
-  } catch (error: any) {
-    return response.fail(`Failed to deposit funds: ${error.message}`)
+  } catch (error: unknown) {
+    return response.fail(`Failed to deposit funds: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -130,8 +130,8 @@ export const withdrawFromPaymentAccount = async (
     )
 
     return tx
-  } catch (error: any) {
-    return response.fail(`Failed to withdraw funds: ${error.message}`)
+  } catch (error: unknown) {
+    return response.fail(`Failed to withdraw funds: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -169,8 +169,8 @@ export const disableRefundForPaymentAccount = async (
     )
 
     return tx
-  } catch (error: any) {
-    return response.fail(`Failed to disable refund: ${error.message}`)
+  } catch (error: unknown) {
+    return response.fail(`Failed to disable refund: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -209,8 +209,8 @@ export const getPaymentAccountInfo = async (
       frozenNetflowRate: streamRecord.frozenNetflowRate
     }
     return response.success(formattedStreamRecord)
-  } catch (error: any) {
-    return response.fail(`Failed to get payment account info: ${error.message}`)
+  } catch (error: unknown) {
+    return response.fail(`Failed to get payment account info: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -239,7 +239,7 @@ const _getStoreFeeConfig = async (
     minChargeSize = new Long(0),
     redundantDataChunkNum = 0,
     redundantParityChunkNum = 0
-  } = (storageParams && storageParams.versionedParams) || {}
+  } = (storageParams?.versionedParams) || {}
 
   const { reserveTime, validatorTaxRate } = paymentParams?.versionedParams || {}
 
@@ -338,9 +338,9 @@ export const getPaymentAccountRelatedBuckets = async (
       }))
 
     return response.success(relatedBuckets)
-  } catch (error: any) {
+  } catch (error: unknown) {
     return response.fail(
-      `Failed to get payment account related buckets: ${error.message}`
+      `Failed to get payment account related buckets: ${error instanceof Error ? error.message : String(error)}`
     )
   }
 }

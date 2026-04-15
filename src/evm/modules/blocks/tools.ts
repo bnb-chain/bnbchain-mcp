@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Hash } from "viem"
 import { z } from "zod"
 
@@ -20,7 +20,9 @@ const blockOptionsSchema = {
     .max(500)
     .optional()
     .default(100)
-    .describe("Max transaction hashes to return when includeTransactionHashes is true")
+    .describe(
+      "Max transaction hashes to return when includeTransactionHashes is true"
+    )
 }
 
 function blockSummaryToJson(summary: services.BlockSummary) {
@@ -49,10 +51,14 @@ export function registerBlockTools(server: McpServer) {
       maxTransactionHashes
     }) => {
       try {
-        const block = await services.getBlockByHash(blockHash as Hash, network, {
-          includeTransactionHashes,
-          maxTransactionHashes
-        })
+        const block = await services.getBlockByHash(
+          blockHash as Hash,
+          network,
+          {
+            includeTransactionHashes,
+            maxTransactionHashes
+          }
+        )
         return mcpToolRes.success(blockSummaryToJson(block))
       } catch (error) {
         return mcpToolRes.error(error, "fetching block by hash")
@@ -76,7 +82,7 @@ export function registerBlockTools(server: McpServer) {
     }) => {
       try {
         const block = await services.getBlockByNumber(
-          parseInt(blockNumber),
+          Number.parseInt(blockNumber),
           network,
           { includeTransactionHashes, maxTransactionHashes }
         )
@@ -94,11 +100,7 @@ export function registerBlockTools(server: McpServer) {
       network: defaultNetworkParam,
       ...blockOptionsSchema
     },
-    async ({
-      network,
-      includeTransactionHashes,
-      maxTransactionHashes
-    }) => {
+    async ({ network, includeTransactionHashes, maxTransactionHashes }) => {
       try {
         const block = await services.getLatestBlock(network, {
           includeTransactionHashes,

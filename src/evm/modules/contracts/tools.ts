@@ -1,8 +1,11 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Address, Hex } from "viem"
 import { z } from "zod"
 
-import { defaultNetworkParam, requiredNetworkParam } from "@/evm/modules/common/types.js"
+import {
+  defaultNetworkParam,
+  requiredNetworkParam
+} from "@/evm/modules/common/types.js"
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
 
@@ -45,13 +48,22 @@ export function registerContractTools(server: McpServer) {
         .string()
         .describe("The address of the smart contract to interact with"),
       abi: z
-        .array(z.any())
+        .array(z.record(z.unknown()))
         .describe("The ABI of the smart contract function, as a JSON array"),
       functionName: z
         .string()
         .describe("The name of the function to call on the contract"),
       args: z
-        .array(z.any())
+        .array(
+          z.union([
+            z.string(),
+            z.number(),
+            z.boolean(),
+            z.null(),
+            z.array(z.unknown()),
+            z.record(z.unknown())
+          ])
+        )
         .optional()
         .describe("The arguments to pass to the function"),
       network: defaultNetworkParam,
@@ -117,12 +129,23 @@ export function registerContractTools(server: McpServer) {
         .string()
         .describe("The address of the smart contract to interact with"),
       abi: z
-        .array(z.any())
+        .array(z.record(z.unknown()))
         .describe("The ABI of the smart contract function, as a JSON array"),
       functionName: z
         .string()
         .describe("The name of the function to call on the contract"),
-      args: z.array(z.any()).describe("The arguments to pass to the function"),
+      args: z
+        .array(
+          z.union([
+            z.string(),
+            z.number(),
+            z.boolean(),
+            z.null(),
+            z.array(z.unknown()),
+            z.record(z.unknown())
+          ])
+        )
+        .describe("The arguments to pass to the function"),
       privateKey: z
         .string()
         .describe(
@@ -143,7 +166,7 @@ export function registerContractTools(server: McpServer) {
         // Parse ABI if it's a string
         const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi
 
-        const contractParams: Record<string, any> = {
+        const contractParams: Record<string, unknown> = {
           address: contractAddress as Address,
           abi: parsedAbi,
           functionName,

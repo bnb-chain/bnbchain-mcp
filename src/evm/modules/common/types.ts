@@ -30,5 +30,8 @@ export const privateKeyParam = z
 /** Positive decimal string for amounts (e.g. '0.1', '100'). Rejects empty, negative, zero, and non-numeric. */
 export const positiveAmountParam = z
   .string()
-  .regex(/^\d+(\.\d+)?$/, "Amount must be a positive number (e.g. '0.1' or '100')")
+  .regex(
+    /^\d+(\.\d+)?$/,
+    "Amount must be a positive number (e.g. '0.1' or '100')"
+  )
   .refine((v) => Number(v) > 0, "Amount must be greater than zero")

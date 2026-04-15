@@ -8,6 +8,25 @@ describe("EVM Contracts Test", async () => {
   // WBNB contract on BSC
   const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
 
+  it("read_contract schema is OpenAI-compatible (abi and args have items)", async () => {
+    const { tools } = await client.listTools()
+    const tool = tools.find((t) => t.name === "read_contract")
+    expect(tool).toBeDefined()
+    const props = tool?.inputSchema?.properties as Record<string, unknown>
+    // OpenAI-compatible validators require array schemas to have an items field
+    expect(props?.abi).toHaveProperty("items")
+    expect(props?.args).toHaveProperty("items")
+  })
+
+  it("write_contract schema is OpenAI-compatible (abi and args have items)", async () => {
+    const { tools } = await client.listTools()
+    const tool = tools.find((t) => t.name === "write_contract")
+    expect(tool).toBeDefined()
+    const props = tool?.inputSchema?.properties as Record<string, unknown>
+    expect(props?.abi).toHaveProperty("items")
+    expect(props?.args).toHaveProperty("items")
+  })
+
   it("check if address is contract", async () => {
     const res = await client.callTool({
       name: "is_contract",

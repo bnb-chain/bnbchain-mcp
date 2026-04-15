@@ -1,9 +1,13 @@
-import { IQuotaProps, Long, VisibilityType } from "@bnb-chain/greenfield-js-sdk"
-import { BucketInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
+import {
+  type IQuotaProps,
+  Long,
+  VisibilityType
+} from "@bnb-chain/greenfield-js-sdk"
+import type { BucketInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
-import { ApiResponse, response } from "../util"
+import { type ApiResponse, response } from "../util"
 import { getAccount } from "./account"
 import { getClient } from "./client"
 import { executeTransaction } from "./common"
@@ -21,7 +25,7 @@ export const getBucketInfo = async (
   try {
     const client = getClient(network)
     const res = await client.bucket.headBucket(bucketName)
-    return response.success(res.bucketInfo as {} as BucketInfo)
+    return response.success(res.bucketInfo as unknown as BucketInfo)
   } catch (error) {
     Logger.error(`Get bucket info operation failed: ${error}`)
     return response.fail(`Get bucket info operation failed: ${error}`)
@@ -62,7 +66,7 @@ export const getBucketFullInfo = async (
     )
 
     if (quotaRes.code === 0) {
-      const bucketInfo = bucketInfoRes.data as {} as BucketInfo
+      const bucketInfo = bucketInfoRes.data as unknown as BucketInfo
       const quota = quotaRes.body as IQuotaProps
       const remainQuotaValue =
         BigInt(quota.freeQuota) +
@@ -79,9 +83,8 @@ export const getBucketFullInfo = async (
           unit: "bytes"
         }
       })
-    } else {
-      return response.fail("Get bucket full info operation failed")
     }
+      return response.fail("Get bucket full info operation failed")
   } catch (error) {
     Logger.error(`Get bucket full info operation failed: ${error}`)
     return response.fail(`Get bucket full info operation failed: ${error}`)
@@ -139,9 +142,8 @@ export const createBucket = async (
     )
     if (tx.status === "success") {
       return response.success({ bucketName: _bucketName })
-    } else {
-      return tx
     }
+      return tx
   } catch (error) {
     return response.fail(`Create bucket failed: ${error}`)
   }

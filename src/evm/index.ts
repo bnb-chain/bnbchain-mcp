@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { registerAgents } from "./modules/agents/index.js"
 import { registerBlocks } from "./modules/blocks/index.js"

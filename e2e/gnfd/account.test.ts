@@ -27,11 +27,12 @@ describe("Greenfield Account Test", async () => {
       }
     })
     const text = res.content?.[0]?.text
-    const obj = parseText<
-      {
-        endpoint: string
-      }[]
-    >(text)
+    const obj =
+      parseText<
+        {
+          endpoint: string
+        }[]
+      >(text)
     expect(obj[0].endpoint).toStartWith("https://")
   })
 })

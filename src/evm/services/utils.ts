@@ -7,10 +7,7 @@ const POSITIVE_DECIMAL_REGEX = /^\d+(\.\d+)?$/
  * Validates that a string is a positive decimal amount. Throws with a clear error if not.
  * Use before parseEther/parseUnits to avoid unexpected behavior or stack traces.
  */
-export function validatePositiveAmount(
-  amount: string,
-  label = "Amount"
-): void {
+export function validatePositiveAmount(amount: string, label = "Amount"): void {
   if (typeof amount !== "string" || amount.trim() === "") {
     throw new Error(`${label} must be a non-empty string`)
   }
@@ -53,11 +50,11 @@ export const utils = {
 
   // Convert a hex string to a number
   hexToNumber: (hex: string): number => {
-    return parseInt(hex, 16)
+    return Number.parseInt(hex, 16)
   },
 
   // Convert a number to a hex string
   numberToHex: (num: number): string => {
-    return "0x" + num.toString(16)
+    return `0x${num.toString(16)}`
   }
 }

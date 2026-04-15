@@ -1,4 +1,4 @@
-import { formatEther, formatUnits, getContract, type Address } from "viem"
+import { type Address, formatEther, formatUnits, getContract } from "viem"
 
 import { ERC20_ABI } from "./abi/erc20.js"
 import { getPublicClient } from "./clients.js"
