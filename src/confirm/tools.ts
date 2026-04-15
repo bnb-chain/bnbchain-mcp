@@ -197,6 +197,19 @@ export function registerConfirmTools(server: McpServer) {
             })
           }
           case "write_contract": {
+            if (!Array.isArray(intent.params.abi)) {
+              throw new Error(
+                "Invalid write_contract intent: abi must be an array"
+              )
+            }
+            if (
+              intent.params.args !== undefined &&
+              !Array.isArray(intent.params.args)
+            ) {
+              throw new Error(
+                "Invalid write_contract intent: args must be an array"
+              )
+            }
             const contractParams: WriteContractInput = {
               address: req("contractAddress") as Address,
               abi: intent.params.abi as Abi,

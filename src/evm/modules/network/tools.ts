@@ -33,12 +33,18 @@ export function registerNetworkTools(server: McpServer) {
   )
 
   // Get supported networks
-  // The SDK's tool() overloads accept ZodRawShape (plain objects), not ZodObject.
-  // Passing {} as ZodRawShape fails at runtime because isZodRawShape({}) returns false
-  // for empty objects — the SDK misidentifies it as ToolAnnotations.
-  // The 3-arg overload (name, description, handler) registers no schema at all.
-  // .update({ paramsSchema: {} }) is the documented public API on RegisteredTool and
-  // is the only way to emit { type: "object", properties: {} } for zero-arg tools.
+  // Why .update({ paramsSchema: {} }) and not server.tool("...", z.object({}), handler):
+  //
+  // The SDK runtime's isZodRawShape check is:
+  //   Object.values(obj).some(v => v instanceof ZodType)
+  // A ZodObject instance has no ZodType values, so it returns false and the argument
+  // is treated as ToolAnnotations — paramsSchema stays undefined, schema is dropped.
+  //
+  // Passing a plain {} also fails: isZodRawShape({}) returns false (no keys at all).
+  // The 3-arg overload (name, description, handler) registers no inputSchema at all.
+  //
+  // update({ paramsSchema: {} }) is the documented RegisteredTool public API and calls
+  // z.object({}) internally, which is the only way to emit { type: "object", properties: {} }.
   const getSupportedNetworksTool = server.tool(
     "get_supported_networks",
     "Get list of supported networks",
