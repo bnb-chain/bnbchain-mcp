@@ -2,6 +2,7 @@ import { StreamAccountStatus } from "@bnb-chain/greenfield-cosmos-types/greenfie
 import { Long } from "@bnb-chain/greenfield-js-sdk"
 import { Hex, parseEther } from "viem"
 
+import { validatePositiveAmount } from "@/evm/services/utils.js"
 import { selectSp } from "@/gnfd/services/sp"
 import { ApiResponse, response } from "../util"
 import { getAccount } from "./account"
@@ -68,6 +69,7 @@ export const depositToPaymentAccount = async (
   }
 ): Promise<ApiResponse<void>> => {
   try {
+    validatePositiveAmount(amount, "Deposit amount")
     const client = getClient(network)
     const account = await getAccount(network, privateKey)
     const depositTx = await client.payment.deposit({
@@ -110,6 +112,7 @@ export const withdrawFromPaymentAccount = async (
   }
 ): Promise<ApiResponse<void>> => {
   try {
+    validatePositiveAmount(amount, "Withdraw amount")
     const client = getClient(network)
     const account = await getAccount(network, privateKey)
     const withdrawTx = await client.payment.withdraw({

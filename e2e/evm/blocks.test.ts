@@ -28,8 +28,12 @@ describe("EVM Blocks Test", async () => {
     })
     const text = res.content?.[0]?.text
     const obj = parseText<{
-      withdrawalsRoot: string
+      hash: string
+      number: string
+      transactionCount: number
     }>(text)
-    expect(obj.withdrawalsRoot).toStartWith("0x")
+    expect(obj.hash).toStartWith("0x")
+    expect(Number(obj.number)).toBeGreaterThan(0)
+    expect(obj.transactionCount).toBeGreaterThanOrEqual(0)
   })
 })

@@ -6,57 +6,105 @@ import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
 import { defaultNetworkParam } from "../common/types"
 
+const blockOptionsSchema = {
+  includeTransactionHashes: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe(
+      "If true, include transaction hashes (not full tx data). Set false for metadata only."
+    ),
+  maxTransactionHashes: z
+    .number()
+    .min(1)
+    .max(500)
+    .optional()
+    .default(100)
+    .describe("Max transaction hashes to return when includeTransactionHashes is true")
+}
+
+function blockSummaryToJson(summary: services.BlockSummary) {
+  return {
+    ...summary,
+    number: summary.number.toString(),
+    timestamp: summary.timestamp.toString(),
+    gasUsed: summary.gasUsed.toString(),
+    gasLimit: summary.gasLimit.toString()
+  }
+}
+
 export function registerBlockTools(server: McpServer) {
-  // Get block by hash for a specific network
   server.tool(
     "get_block_by_hash",
-    "Get a block by hash",
+    "Get block metadata by hash. Returns number, hash, timestamp, gasUsed, transaction count, and optionally transaction hashes (not full tx data).",
     {
       blockHash: z.string().describe("The block hash to look up"),
-      network: defaultNetworkParam
+      network: defaultNetworkParam,
+      ...blockOptionsSchema
     },
-    async ({ network, blockHash }) => {
+    async ({
+      network,
+      blockHash,
+      includeTransactionHashes,
+      maxTransactionHashes
+    }) => {
       try {
-        const block = await services.getBlockByHash(blockHash as Hash, network)
-        return mcpToolRes.success(block)
+        const block = await services.getBlockByHash(blockHash as Hash, network, {
+          includeTransactionHashes,
+          maxTransactionHashes
+        })
+        return mcpToolRes.success(blockSummaryToJson(block))
       } catch (error) {
         return mcpToolRes.error(error, "fetching block by hash")
       }
     }
   )
 
-  // Get block by number for a specific network
   server.tool(
     "get_block_by_number",
-    "Get a block by number",
+    "Get block metadata by number. Returns number, hash, timestamp, gasUsed, transaction count, and optionally transaction hashes (not full tx data).",
     {
       blockNumber: z.string().describe("The block number to look up"),
-      network: defaultNetworkParam
+      network: defaultNetworkParam,
+      ...blockOptionsSchema
     },
-    async ({ network, blockNumber }) => {
+    async ({
+      network,
+      blockNumber,
+      includeTransactionHashes,
+      maxTransactionHashes
+    }) => {
       try {
         const block = await services.getBlockByNumber(
           parseInt(blockNumber),
-          network
+          network,
+          { includeTransactionHashes, maxTransactionHashes }
         )
-        return mcpToolRes.success(block)
+        return mcpToolRes.success(blockSummaryToJson(block))
       } catch (error) {
         return mcpToolRes.error(error, "fetching block by number")
       }
     }
   )
 
-  // Get latest block for a specific network
   server.tool(
     "get_latest_block",
-    "Get the latest block",
+    "Get the latest block metadata. Returns number, hash, timestamp, gasUsed, transaction count, and optionally transaction hashes (not full tx data).",
     {
-      network: defaultNetworkParam
+      network: defaultNetworkParam,
+      ...blockOptionsSchema
     },
-    async ({ network }) => {
+    async ({
+      network,
+      includeTransactionHashes,
+      maxTransactionHashes
+    }) => {
       try {
-        const block = await services.getLatestBlock(network)
-        return mcpToolRes.success(block)
+        const block = await services.getLatestBlock(network, {
+          includeTransactionHashes,
+          maxTransactionHashes
+        })
+        return mcpToolRes.success(blockSummaryToJson(block))
       } catch (error) {
         return mcpToolRes.error(error, "fetching latest block")
       }

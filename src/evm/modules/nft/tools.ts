@@ -4,6 +4,11 @@ import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
+import { createPendingIntent } from "@/utils/pendingTransferStore.js"
+import {
+  isSkipTransferConfirmation,
+  skipConfirmationParam
+} from "@/utils/transferConfirmation.js"
 import { defaultNetworkParam, requiredNetworkParam } from "../common/types"
 
 export function registerNftTools(server: McpServer) {
@@ -72,7 +77,7 @@ export function registerNftTools(server: McpServer) {
   // Transfer NFT
   server.tool(
     "transfer_nft",
-    "Transfer an NFT to an address",
+    "Transfer an NFT to an address. By default returns a preview and confirmToken—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       privateKey: z
         .string()
@@ -91,27 +96,48 @@ export function registerNftTools(server: McpServer) {
       toAddress: z
         .string()
         .describe("The recipient address that will receive the NFT"),
-      network: requiredNetworkParam
+      network: requiredNetworkParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ privateKey, tokenAddress, tokenId, toAddress, network }) => {
+    async ({
+      privateKey,
+      tokenAddress,
+      tokenId,
+      toAddress,
+      network,
+      skipConfirmation
+    }) => {
       try {
-        const result = await services.transferERC721(
-          tokenAddress as Address,
-          toAddress as Address,
-          BigInt(tokenId),
-          privateKey,
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.transferERC721(
+            tokenAddress as Address,
+            toAddress as Address,
+            BigInt(tokenId),
+            privateKey,
+            network
+          )
+          return mcpToolRes.success({
+            success: true,
+            txHash: result.txHash,
+            network,
+            contract: tokenAddress,
+            tokenId: result.tokenId,
+            recipient: toAddress,
+            name: result.token.name,
+            symbol: result.token.symbol
+          })
+        }
+        const { token: confirmToken, expiresAt } = createPendingIntent({
+          type: "transfer_nft",
+          params: { tokenAddress, toAddress, tokenId },
           network
-        )
-
+        })
         return mcpToolRes.success({
-          success: true,
-          txHash: result.txHash,
-          network,
-          contract: tokenAddress,
-          tokenId: result.tokenId,
-          recipient: toAddress,
-          name: result.token.name,
-          symbol: result.token.symbol
+          preview: { tokenAddress, toAddress, tokenId, network },
+          confirmToken,
+          expiresAt,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })
       } catch (error) {
         return mcpToolRes.error(error, "transferring NFT")
@@ -122,7 +148,7 @@ export function registerNftTools(server: McpServer) {
   // Transfer ERC1155 token
   server.tool(
     "transfer_erc1155",
-    "Transfer ERC1155 tokens to another address. ERC1155 is a multi-token standard that can represent both fungible and non-fungible tokens in a single contract.",
+    "Transfer ERC1155 tokens to another address. By default returns a preview and confirmToken—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       privateKey: z
         .string()
@@ -146,7 +172,8 @@ export function registerNftTools(server: McpServer) {
       toAddress: z
         .string()
         .describe("The recipient wallet address that will receive the tokens"),
-      network: requiredNetworkParam
+      network: requiredNetworkParam,
+      skipConfirmation: skipConfirmationParam
     },
     async ({
       privateKey,
@@ -154,26 +181,40 @@ export function registerNftTools(server: McpServer) {
       tokenId,
       amount,
       toAddress,
-      network
+      network,
+      skipConfirmation
     }) => {
       try {
-        const result = await services.transferERC1155(
-          tokenAddress as Address,
-          toAddress as Address,
-          BigInt(tokenId),
-          amount,
-          privateKey,
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.transferERC1155(
+            tokenAddress as Address,
+            toAddress as Address,
+            BigInt(tokenId),
+            amount,
+            privateKey,
+            network
+          )
+          return mcpToolRes.success({
+            success: true,
+            txHash: result.txHash,
+            network,
+            contract: tokenAddress,
+            tokenId: result.tokenId,
+            amount: result.amount,
+            recipient: toAddress
+          })
+        }
+        const { token: confirmToken, expiresAt } = createPendingIntent({
+          type: "transfer_erc1155",
+          params: { tokenAddress, toAddress, tokenId, amount },
           network
-        )
-
+        })
         return mcpToolRes.success({
-          success: true,
-          txHash: result.txHash,
-          network,
-          contract: tokenAddress,
-          tokenId: result.tokenId,
-          amount: result.amount,
-          recipient: toAddress
+          preview: { tokenAddress, toAddress, tokenId, amount, network },
+          confirmToken,
+          expiresAt,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute the transfer."
         })
       } catch (error) {
         return mcpToolRes.error(error, "transferring ERC1155 tokens")

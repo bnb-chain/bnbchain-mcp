@@ -30,6 +30,22 @@ The project is organized into several core modules:
 
 **We do not recommend deploying this MCP Server on the public internet.** (1) The SSE endpoint has **no authentication**—anyone who can reach it can use the server. (2) There is **no centralized service** that custodies private keys or funds; keys and signing are the responsibility of the client. If you still need to deploy it publicly, add an **authentication layer** in front (e.g. API keys, JWT, or a reverse proxy with auth), or deploy a **keyless version** that only exposes read-only or non-sensitive tools.
 
+**Credentials:** Prefer setting `PRIVATE_KEY` in the MCP server environment. Do not pass the private key in tool parameters when avoidable, as it may be stored in conversation history, client logs, or request logs and lead to exposure.
+
+## Transfer and payment confirmation
+
+Transfer and payment tools (e.g. `transfer_native_token`, `transfer_erc20`, `approve_token_spending`, `transfer_nft`, `transfer_erc1155`, `gnfd_deposit_to_payment`, `gnfd_withdraw_from_payment`, `gnfd_create_payment_account`) use a **preview-then-confirm** flow by default so that no funds move until the user explicitly confirms.
+
+- **Default behavior:** Calling a transfer or payment tool returns a **preview** (recipient, amount, network, etc.) and a short-lived **confirmToken**. No transaction is sent. To execute, call the **`confirm_transfer`** tool with that `confirmToken` and your `privateKey`. The token expires after 5 minutes.
+- **Skipping confirmation (per call):** Pass **`skipConfirmation: true`** in the tool arguments when the caller has already confirmed or when running in an automated script. The tool will then execute immediately and return the transaction result.
+- **Skipping confirmation (server-wide):** Set the environment variable **`BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true`** so that all transfer/payment tools execute immediately without returning a preview. Use this for headless or scripted environments where you do not need a confirmation step.
+
+Example flow with confirmation:
+
+1. Call `transfer_native_token` with `toAddress`, `amount`, `network` (and optionally `privateKey`). Do **not** set `skipConfirmation`.
+2. The server returns `{ preview: { toAddress, amount, network }, confirmToken: "...", message: "..." }`.
+3. Review the preview, then call `confirm_transfer` with `confirmToken` and `privateKey` to execute the transfer.
+
 ## Integration with Cursor
 
 To connect to the MCP server from Cursor:
@@ -48,12 +64,16 @@ Default mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here. (optional)"
+        "PRIVATE_KEY": "your_private_key_here. (optional)",
+        "BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION": "false"
       }
     }
   }
 }
 ```
+
+- **PRIVATE_KEY**: Optional. Prefer setting here instead of passing in tool parameters.
+- **BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION**: Optional. Set to `"true"` to make all transfer/payment tools execute immediately (no preview step). Default `"false"` uses the preview-then-confirm flow.
 
 SSE mode
 
@@ -64,7 +84,8 @@ SSE mode
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest", "--sse"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here. (optional)"
+        "PRIVATE_KEY": "your_private_key_here. (optional)",
+        "BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION": "false"
       }
     }
   }
@@ -87,12 +108,15 @@ To connect to the MCP server from Claude Desktop:
       "command": "npx",
       "args": ["-y", "@bnb-chain/mcp@latest"],
       "env": {
-        "PRIVATE_KEY": "your_private_key_here"
+        "PRIVATE_KEY": "your_private_key_here",
+        "BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION": "false"
       }
     }
   }
 }
 ```
+
+Optional env: `BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true` to execute transfers immediately without preview/confirm.
 
 5. Save the file and restart Claude Desktop
 

@@ -99,20 +99,35 @@ export function registerStorageTools(server: McpServer) {
   // List buckets
   server.tool(
     "gnfd_list_buckets",
-    "List all buckets owned by the account",
+    "List buckets owned by the account with pagination. Returns totalCount and hasMore for paging.",
     {
       network: networkParam,
       address: z
         .string()
         .optional()
         .describe("The address of the account to list buckets for"),
-      privateKey: privateKeyParam
+      privateKey: privateKeyParam,
+      limit: z
+        .number()
+        .min(1)
+        .max(100)
+        .optional()
+        .default(20)
+        .describe("Max number of buckets to return (default 20, max 100)"),
+      offset: z
+        .number()
+        .min(0)
+        .optional()
+        .default(0)
+        .describe("Number of buckets to skip for pagination")
     },
-    async ({ network, address, privateKey }) => {
+    async ({ network, address, privateKey, limit, offset }) => {
       try {
         const result = await services.listBuckets(network, {
           privateKey: privateKey as Hex,
-          address: address as string
+          address: address as string,
+          limit,
+          offset
         })
         return mcpToolRes.success(result)
       } catch (error) {
@@ -124,14 +139,32 @@ export function registerStorageTools(server: McpServer) {
   // List objects
   server.tool(
     "gnfd_list_objects",
-    "List all objects in a bucket",
+    "List objects in a bucket with pagination. Returns totalCount and hasMore for paging.",
     {
       network: networkParam,
-      bucketName: bucketNameParam
+      bucketName: bucketNameParam,
+      limit: z
+        .number()
+        .min(1)
+        .max(100)
+        .optional()
+        .default(20)
+        .describe("Max number of objects to return (default 20, max 100)"),
+      offset: z
+        .number()
+        .min(0)
+        .optional()
+        .default(0)
+        .describe("Number of objects to skip for pagination")
     },
-    async ({ network, bucketName }) => {
+    async ({ network, bucketName, limit, offset }) => {
       try {
-        const result = await services.listObjects(network, bucketName)
+        const result = await services.listObjects(
+          network,
+          bucketName ?? "created-by-bnbchain-mcp",
+          limit,
+          offset
+        )
         return mcpToolRes.success(result)
       } catch (error) {
         return mcpToolRes.error(error, "listing objects")

@@ -8,8 +8,9 @@ describe("Basic Test", async () => {
   it("list all mcp tools", async () => {
     const toolResult = await client.listTools()
     const names = toolResult.tools.map((tool) => tool.name)
-    console.log("all MCP tools: ", names)
-
-    expect(names).toBeArray()
+    expect(Array.isArray(names)).toBe(true)
+    expect(names.length).toBeGreaterThan(0)
+    expect(names).toContain("transfer_native_token")
+    expect(names).toContain("confirm_transfer")
   })
 })

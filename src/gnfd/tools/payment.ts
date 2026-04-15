@@ -4,7 +4,12 @@ import { z } from "zod"
 
 import * as services from "@/gnfd/services"
 import { mcpToolRes } from "@/utils/helper"
-import { networkParam, privateKeyParam } from "./common"
+import { createPendingIntent } from "@/utils/pendingTransferStore.js"
+import {
+  isSkipTransferConfirmation,
+  skipConfirmationParam
+} from "@/utils/transferConfirmation.js"
+import { networkParam, positiveAmountParam, privateKeyParam } from "./common"
 
 export function registerPaymentTools(server: McpServer) {
   // get payment account
@@ -37,18 +42,31 @@ export function registerPaymentTools(server: McpServer) {
   // Create payment account
   server.tool(
     "gnfd_create_payment_account",
-    "Create a new payment account",
+    "Create a new payment account. By default returns a preview and confirmToken—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       network: networkParam,
-      privateKey: privateKeyParam
+      privateKey: privateKeyParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ network, privateKey }) => {
+    async ({ network, privateKey, skipConfirmation }) => {
       try {
-        const result = await services.createPaymentAccount(
-          network,
-          privateKey as Hex
-        )
-        return mcpToolRes.success(result)
+        const net = network ?? "testnet"
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.createPaymentAccount(net, privateKey as Hex)
+          return mcpToolRes.success(result)
+        }
+        const { token: confirmToken, expiresAt } = createPendingIntent({
+          type: "gnfd_create_payment_account",
+          params: {},
+          network: net
+        })
+        return mcpToolRes.success({
+          preview: { network: net, action: "Create payment account" },
+          confirmToken,
+          expiresAt,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute."
+        })
       } catch (error) {
         return mcpToolRes.error(error, "creating payment account")
       }
@@ -58,21 +76,37 @@ export function registerPaymentTools(server: McpServer) {
   // Deposit to payment account
   server.tool(
     "gnfd_deposit_to_payment",
-    "Deposit funds into a payment account",
+    "Deposit funds into a payment account. By default returns a preview and confirmToken—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       network: networkParam,
       to: z.string().describe("The payment account address to deposit to"),
-      amount: z.string().describe("The amount to deposit (in BNB)"),
-      privateKey: privateKeyParam
+      amount: positiveAmountParam.describe("The amount to deposit (in BNB)"),
+      privateKey: privateKeyParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ network, to, amount, privateKey }) => {
+    async ({ network, to, amount, privateKey, skipConfirmation }) => {
       try {
-        const result = await services.depositToPaymentAccount(network, {
-          to,
-          amount,
-          privateKey: privateKey as Hex
+        const net = network ?? "testnet"
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.depositToPaymentAccount(net, {
+            to,
+            amount,
+            privateKey: privateKey as Hex
+          })
+          return mcpToolRes.success(result)
+        }
+        const { token: confirmToken, expiresAt } = createPendingIntent({
+          type: "gnfd_deposit_to_payment",
+          params: { to, amount },
+          network: net
         })
-        return mcpToolRes.success(result)
+        return mcpToolRes.success({
+          preview: { to, amount, network: net },
+          confirmToken,
+          expiresAt,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute."
+        })
       } catch (error) {
         return mcpToolRes.error(error, "depositing to payment account")
       }
@@ -82,21 +116,37 @@ export function registerPaymentTools(server: McpServer) {
   // Withdraw from payment account
   server.tool(
     "gnfd_withdraw_from_payment",
-    "Withdraw funds from a payment account",
+    "Withdraw funds from a payment account. By default returns a preview and confirmToken—call confirm_transfer to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       network: networkParam,
       from: z.string().describe("The payment account address to withdraw from"),
-      amount: z.string().describe("The amount to withdraw (in BNB)"),
-      privateKey: privateKeyParam
+      amount: positiveAmountParam.describe("The amount to withdraw (in BNB)"),
+      privateKey: privateKeyParam,
+      skipConfirmation: skipConfirmationParam
     },
-    async ({ network, from, amount, privateKey }) => {
+    async ({ network, from, amount, privateKey, skipConfirmation }) => {
       try {
-        const result = await services.withdrawFromPaymentAccount(network, {
-          from,
-          amount,
-          privateKey: privateKey as Hex
+        const net = network ?? "testnet"
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const result = await services.withdrawFromPaymentAccount(net, {
+            from,
+            amount,
+            privateKey: privateKey as Hex
+          })
+          return mcpToolRes.success(result)
+        }
+        const { token: confirmToken, expiresAt } = createPendingIntent({
+          type: "gnfd_withdraw_from_payment",
+          params: { from, amount },
+          network: net
         })
-        return mcpToolRes.success(result)
+        return mcpToolRes.success({
+          preview: { from, amount, network: net },
+          confirmToken,
+          expiresAt,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute."
+        })
       } catch (error) {
         return mcpToolRes.error(error, "withdrawing from payment account")
       }

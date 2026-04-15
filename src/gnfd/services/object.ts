@@ -12,7 +12,6 @@ import {
   RedundancyType,
   VisibilityType
 } from "@bnb-chain/greenfield-js-sdk"
-import { ObjectInfo } from "@bnb-chain/greenfield-js-sdk/dist/esm/types/sp/Common"
 import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import type { Hex } from "viem"
 
@@ -226,6 +225,41 @@ export const createFolder = async (
   }
 }
 
+const MAX_METADATA_FIELD_BYTES = 512
+
+/**
+ * Sanitize object metadata for safe inclusion in LLM context: essential fields only,
+ * string values truncated to avoid huge user-controlled content (e.g. custom attributes).
+ */
+function sanitizeObjectInfo(raw: unknown): Record<string, unknown> {
+  const obj = raw as Record<string, unknown>
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) {
+      out[key] = value
+      continue
+    }
+    if (typeof value === "string") {
+      const truncated =
+        Buffer.byteLength(value, "utf8") > MAX_METADATA_FIELD_BYTES
+          ? value.slice(0, MAX_METADATA_FIELD_BYTES) + "[truncated]"
+          : value
+      out[key] = truncated
+    } else if (
+      typeof value === "number" ||
+      typeof value === "boolean" ||
+      (typeof value === "object" && Array.isArray(value) && value.length <= 32)
+    ) {
+      out[key] = value
+    } else if (typeof value === "object" && !Array.isArray(value)) {
+      out[key] = sanitizeObjectInfo(value)
+    } else {
+      out[key] = value
+    }
+  }
+  return out
+}
+
 export const getObjectInfo = async (
   network: "testnet" | "mainnet",
   {
@@ -235,12 +269,12 @@ export const getObjectInfo = async (
     bucketName: string
     objectName: string
   }
-): Promise<ApiResponse<ObjectInfo>> => {
+): Promise<ApiResponse<Record<string, unknown>>> => {
   try {
     const client = getClient(network)
     const res = await client.object.headObject(bucketName, objectName)
-
-    return response.success(res.objectInfo as {} as ObjectInfo)
+    const sanitized = sanitizeObjectInfo(res.objectInfo ?? {})
+    return response.success(sanitized)
   } catch (error) {
     Logger.error(`Get object info operation failed: ${error}`)
     return response.fail(`Get object info operation failed: ${error}`)
@@ -301,22 +335,31 @@ export const deleteObject = async (
   }
 }
 
+const DEFAULT_LIST_LIMIT = 20
+const MAX_LIST_LIMIT = 100
+
 /**
- * List objects in a bucket in Greenfield
+ * List objects in a bucket in Greenfield with pagination.
  * @param network Greenfield network (testnet or mainnet)
  * @param bucketName Name of the bucket to list objects from
- * @returns List of objects with their details
+ * @param limit Max items to return (default 20, max 100)
+ * @param offset Number of items to skip (default 0)
  */
 export const listObjects = async (
   network: "testnet" | "mainnet",
-  bucketName: string
+  bucketName: string,
+  limit = DEFAULT_LIST_LIMIT,
+  offset = 0
 ): Promise<
-  ApiResponse<{ objects: Array<{ objectName: string; createAt: number }> }>
+  ApiResponse<{
+    objects: Array<{ objectName: string; createAt: number }>
+    totalCount: number
+    hasMore: boolean
+  }>
 > => {
   try {
     const client = getClient(network)
 
-    // Check if bucket exists first
     try {
       await client.bucket.headBucket(bucketName)
     } catch (error) {
@@ -337,12 +380,17 @@ export const listObjects = async (
 
     const res =
       objectsRes.body?.GfSpListObjectsByBucketNameResponse?.Objects || []
-    const objects = res.map((it) => ({
+    const all = res.map((it) => ({
       objectName: it.ObjectInfo.ObjectName,
       createAt: it.ObjectInfo.CreateAt
     }))
+    const capped = Math.min(Math.max(1, limit), MAX_LIST_LIMIT)
+    const start = Math.max(0, offset)
+    const objects = all.slice(start, start + capped)
+    const totalCount = all.length
+    const hasMore = start + objects.length < totalCount
 
-    return response.success({ objects })
+    return response.success({ objects, totalCount, hasMore })
   } catch (error) {
     Logger.error(`List objects operation failed: ${error}`)
     return response.fail(`List objects operation failed: ${error}`)

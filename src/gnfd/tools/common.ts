@@ -16,7 +16,7 @@ export const privateKeyParam = z
   .optional()
   .default(DEFAULT_PRIVATE_KEY)
   .describe(
-    "Private key of the account in hex format. SECURITY: This is used only for transaction signing."
+    "Private key in hex format. Prefer PRIVATE_KEY in the MCP server environment; do not pass in tool parameters when avoidable, as it may be stored in logs or conversation history."
   )
 
 export const bucketNameParam = z
@@ -26,3 +26,9 @@ export const bucketNameParam = z
   .describe(
     "The bucket name to use. If not provided, will use default 'created-by-bnbchain-mcp'"
   )
+
+/** Positive decimal string for BNB/token amounts (e.g. '0.1', '100'). */
+export const positiveAmountParam = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, "Amount must be a positive number (e.g. '0.1' or '100')")
+  .refine((v) => Number(v) > 0, "Amount must be greater than zero")
