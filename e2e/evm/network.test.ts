@@ -30,9 +30,7 @@ describe("EVM Network Test", async () => {
   it("get supported networks", async () => {
     const res = await client.callTool({
       name: "get_supported_networks",
-      arguments: {
-        random_string: "dummy"
-      }
+      arguments: {}
     })
     const text = res.content?.[0]?.text
     const obj = parseText<{
