@@ -92,5 +92,21 @@ jobs:
 
             ---
 
-            Start with a one-paragraph overall assessment, then list findings grouped by severity: **Critical** → **Major** → **Minor** → **Nit**.
-            Skip sections with no findings. For each finding include the file + line reference and a concrete suggestion.
+            ## Output Format
+
+            ### Summary
+            2–3 sentences: overall assessment, risk level, and whether the PR is ready to merge.
+
+            ### Issues to Fix
+            List **Critical** findings first, then **Major**. For each issue:
+            > `path/to/file:line` — what is wrong and the concrete fix required
+
+            Omit this section if there are no Critical or Major findings.
+
+            ### Suggestions
+            **Minor** and **Nit** items only. Keep each item brief.
+
+            Omit this section if there are no suggestions.
+
+            ---
+            Omit any section that has no content. Developers should be able to act on the review without reading every line — put the most important information first.
