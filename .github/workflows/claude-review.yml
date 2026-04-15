@@ -30,7 +30,9 @@ jobs:
       - uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-opus-4-5-20251101
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          model: claude-sonnet-4-6
+          use_sticky_comment: true
           direct_prompt: |
             You are reviewing a pull request for **bnbchain-mcp** — a Model Context Protocol (MCP) server that exposes BNB Chain blockchain operations (EVM chains + Greenfield storage) as AI-callable tools.
 
