@@ -33,9 +33,12 @@ export function registerNetworkTools(server: McpServer) {
   )
 
   // Get supported networks
-  // z.object({}) cannot be passed directly — SDK overloads accept ZodRawShape, not
-  // ZodObject, and isZodRawShape({}) returns false for empty objects. .update() is
-  // the only way to force { type: "object", properties: {} } for OpenAI-compatible validators.
+  // The SDK's tool() overloads accept ZodRawShape (plain objects), not ZodObject.
+  // Passing {} as ZodRawShape fails at runtime because isZodRawShape({}) returns false
+  // for empty objects — the SDK misidentifies it as ToolAnnotations.
+  // The 3-arg overload (name, description, handler) registers no schema at all.
+  // .update({ paramsSchema: {} }) is the documented public API on RegisteredTool and
+  // is the only way to emit { type: "object", properties: {} } for zero-arg tools.
   const getSupportedNetworksTool = server.tool(
     "get_supported_networks",
     "Get list of supported networks",

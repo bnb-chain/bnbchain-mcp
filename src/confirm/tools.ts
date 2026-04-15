@@ -1,10 +1,11 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Address, Hex } from "viem"
+import type { Abi, Address } from "viem"
 import { z } from "zod"
 
 import { privateKeyParam } from "@/evm/modules/common/types.js"
 import type { WriteContractInput } from "@/evm/services/contracts.js"
 import * as evmServices from "@/evm/services/index.js"
+import { normalizePrivateKey } from "@/evm/services/utils.js"
 import * as gnfdServices from "@/gnfd/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
 import { getAndConsumeIntent } from "@/utils/pendingTransferStore.js"
@@ -33,10 +34,7 @@ export function registerConfirmTools(server: McpServer) {
           )
         }
 
-        const key =
-          typeof privateKey === "string" && !privateKey.startsWith("0x")
-            ? (`0x${privateKey}` as Hex)
-            : (privateKey as Hex)
+        const key = normalizePrivateKey(privateKey)
         const params = intent.params as Record<string, string>
         const network = intent.network
 
@@ -200,8 +198,8 @@ export function registerConfirmTools(server: McpServer) {
           }
           case "write_contract": {
             const contractParams: WriteContractInput = {
-              address: params.contractAddress as Address,
-              abi: intent.params.abi as readonly unknown[],
+              address: req("contractAddress") as Address,
+              abi: intent.params.abi as Abi,
               functionName: req("functionName"),
               args: intent.params.args as readonly unknown[]
             }

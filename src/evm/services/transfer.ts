@@ -12,7 +12,7 @@ import { ERC721_ABI } from "./abi/erc721.js"
 import { ERC1155_ABI } from "./abi/erc1155.js"
 import { getPublicClient, getWalletClient } from "./clients.js"
 import { resolveAddress } from "./ens.js"
-import { validatePositiveAmount } from "./utils.js"
+import { normalizePrivateKey, validatePositiveAmount } from "./utils.js"
 
 export async function transferETH(
   privateKey: string | Hex,
@@ -24,12 +24,7 @@ export async function transferETH(
 
   const toAddress = await resolveAddress(toAddressOrEns, network)
 
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as Hex)
-      : (privateKey as Hex)
-
-  const client = getWalletClient(formattedKey, network)
+  const client = getWalletClient(normalizePrivateKey(privateKey), network)
   const amountWei = parseEther(amount)
 
   const publicClient = getPublicClient(network)
@@ -75,11 +70,6 @@ export async function transferERC20(
 
   validatePositiveAmount(amount, "Transfer amount")
 
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
-
   const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
@@ -92,7 +82,7 @@ export async function transferERC20(
 
   const rawAmount = parseUnits(amount, decimals)
 
-  const walletClient = getWalletClient(formattedKey, network)
+  const walletClient = getWalletClient(normalizePrivateKey(privateKey), network)
   const balance = await contract.read.balanceOf([walletClient.account.address])
   if (balance < rawAmount) {
     throw new Error(
@@ -150,11 +140,6 @@ export async function approveERC20(
 
   validatePositiveAmount(amount, "Approval amount")
 
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
-
   const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
@@ -167,7 +152,7 @@ export async function approveERC20(
 
   const rawAmount = parseUnits(amount, decimals)
 
-  const walletClient = getWalletClient(formattedKey, network)
+  const walletClient = getWalletClient(normalizePrivateKey(privateKey), network)
 
   const hash = await walletClient.writeContract({
     address: tokenAddress,
@@ -211,11 +196,6 @@ export async function transferERC721(
   )) as Address
   const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
-
   const publicClient = getPublicClient(network)
   const contract = getContract({
     address: tokenAddress,
@@ -226,7 +206,7 @@ export async function transferERC721(
   const name = (await contract.read.name()) as string
   const symbol = (await contract.read.symbol()) as string
 
-  const walletClient = getWalletClient(formattedKey, network)
+  const walletClient = getWalletClient(normalizePrivateKey(privateKey), network)
 
   const hash = await walletClient.writeContract({
     address: tokenAddress,
@@ -265,12 +245,7 @@ export async function transferERC1155(
   )) as Address
   const toAddress = (await resolveAddress(toAddressOrEns, network)) as Address
 
-  const formattedKey =
-    typeof privateKey === "string" && !privateKey.startsWith("0x")
-      ? (`0x${privateKey}` as `0x${string}`)
-      : (privateKey as `0x${string}`)
-
-  const walletClient = getWalletClient(formattedKey, network)
+  const walletClient = getWalletClient(normalizePrivateKey(privateKey), network)
 
   const hash = await walletClient.writeContract({
     address: tokenAddress,

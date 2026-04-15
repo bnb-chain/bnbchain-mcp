@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Address, Hex } from "viem"
+import type { Abi, Address, Hex } from "viem"
 import { z } from "zod"
 
 import {
@@ -176,7 +176,7 @@ export function registerContractTools(server: McpServer) {
         if (skipConfirmation || isSkipTransferConfirmation()) {
           const contractParams: WriteContractInput = {
             address: contractAddress as Address,
-            abi: parsedAbi,
+            abi: parsedAbi as Abi,
             functionName,
             args
           }

@@ -1,4 +1,14 @@
-import { formatEther, parseEther } from "viem"
+import { type Hex, formatEther, parseEther } from "viem"
+
+/**
+ * Normalize a private key to a 0x-prefixed hex string expected by viem.
+ * Accepts keys with or without the 0x prefix.
+ */
+export function normalizePrivateKey(privateKey: string | Hex): Hex {
+  return typeof privateKey === "string" && !privateKey.startsWith("0x")
+    ? (`0x${privateKey}` as Hex)
+    : (privateKey as Hex)
+}
 
 /** Matches a positive decimal string (e.g. "0.1", "100"). */
 const POSITIVE_DECIMAL_REGEX = /^\d+(\.\d+)?$/

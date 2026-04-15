@@ -1,11 +1,11 @@
 import type {
+  Abi,
   Address,
   GetLogsParameters,
   Hash,
   Hex,
   Log,
-  ReadContractParameters,
-  WriteContractParameters
+  ReadContractParameters
 } from "viem"
 
 import { getPublicClient, getWalletClient } from "./clients.js"
@@ -21,7 +21,7 @@ export async function readContract(
 
 export type WriteContractInput = {
   address: Address
-  abi: readonly unknown[]
+  abi: Abi
   functionName: string
   args?: readonly unknown[]
 }
@@ -32,7 +32,11 @@ export async function writeContract(
   network = "ethereum"
 ): Promise<Hash> {
   const client = getWalletClient(privateKey, network)
-  return await client.writeContract(params as WriteContractParameters)
+  return await client.writeContract({
+    ...params,
+    account: client.account,
+    chain: client.chain
+  })
 }
 
 export async function getLogs(

@@ -18,13 +18,13 @@ export type PendingIntent = {
 const store = new Map<string, PendingIntent>()
 
 function randomToken(): string {
-  const bytes = new Uint8Array(24)
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-    crypto.getRandomValues(bytes)
-  } else {
-    for (let i = 0; i < bytes.length; i++)
-      bytes[i] = Math.floor(Math.random() * 256)
+  if (typeof crypto === "undefined" || !crypto.getRandomValues) {
+    throw new Error(
+      "crypto.getRandomValues is not available in this environment"
+    )
   }
+  const bytes = new Uint8Array(24)
+  crypto.getRandomValues(bytes)
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
 }
 
