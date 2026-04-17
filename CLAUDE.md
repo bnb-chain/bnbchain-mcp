@@ -1,24 +1,43 @@
-# CLAUDE.md
-
-## LANGUAGE RULE — HIGHEST PRIORITY
-**Always match the user's language.** If the user writes in Chinese, every word of your reply must be in Chinese. If in English, reply in English. This rule overrides everything else and applies to every single response, including plans, summaries, and error messages. Never mix languages mid-response.
-
----
+# bnbchain-mcp
 
 ## Project Overview
 
-**bnbchain-mcp** is a Model Context Protocol (MCP) server that exposes BNB Chain blockchain operations as AI-callable tools.
+BNBChain MCP is a Model Context Protocol server that exposes BNB Chain blockchain operations as AI-callable tools. It supports two transport modes: **stdio** (default — local dev, IDE integrations, Claude Desktop) and **SSE** (HTTP + Server-Sent Events, port 3001). Three top-level modules handle EVM-compatible chains (`evm`), BNB Greenfield storage (`gnfd`), and a transfer preview-then-confirm flow (`confirm`).
 
-**Two transport modes:**
-- **Stdio** (default) — local dev, IDE integrations, Claude Desktop
-- **SSE** — HTTP + Server-Sent Events for remote/cloud deployment (port 3001)
+## Tech Stack
 
-**Three top-level modules:**
-| Module | Path | Description |
-|--------|------|-------------|
-| `evm` | `src/evm/` | EVM-compatible chains (BSC, ETH, Polygon, …) via viem |
-| `gnfd` | `src/gnfd/` | BNB Greenfield storage & payment via greenfield-js-sdk |
-| `confirm` | `src/confirm/` | Transfer preview → confirmation flow |
+- **Runtime:** Bun. Source is ESM; build output is CJS (`bun build --format cjs`).
+- **Language:** TypeScript 5.x
+- **Blockchain:** viem 2.x (EVM), @bnb-chain/greenfield-js-sdk 2.x (Greenfield)
+- **MCP:** @modelcontextprotocol/sdk 1.x
+- **HTTP (SSE mode):** Express 4.x + cors
+- **Validation:** Zod 3.x
+- **Lint/format:** Biome (no Prettier, no ESLint)
+- **Tests:** bun:test (no Jest, no Vitest)
+
+## Architecture
+
+```
+src/
+  evm/          # EVM-compatible chains (BSC, ETH, Polygon, …)
+    chains.ts   # chainMap (by ID) and networkNameMap (by name)
+    modules/    # blocks, contracts, network, nft, tokens, transactions, wallet
+    services/
+      clients.ts  # viem clients cached by chain ID — always reuse, never ad-hoc
+  gnfd/         # BNB Greenfield storage & payment
+  confirm/      # pendingTransferStore (5-min TTL), confirm_transfer tool
+  server/
+    base.ts     # registers all module tools via register*() exports
+  utils/
+  index.ts      # entrypoint; selects stdio or SSE transport
+e2e/            # E2E tests using MCPClient from e2e/util.ts
+```
+
+**Key patterns:**
+- MCP tool registration: each module exports a `register*` function called in `src/server/base.ts`.
+- Transfer confirmation: write tools return a `confirmToken` + preview; `confirm_transfer` executes on approval. Controlled by `BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION`.
+- Chain lookup: use `chainMap` (by chain ID) or `networkNameMap` (by name string) from `src/evm/chains.ts`.
+- Internal path alias: `@/*` → `src/*` (defined in `tsconfig.json`).
 
 **Key environment variables** (see `.env.example`):
 - `PRIVATE_KEY` — wallet private key (optional; required for write ops)
@@ -26,28 +45,46 @@
 - `LOG_LEVEL` — `DEBUG` / `INFO` / `WARN` / `ERROR`
 - `BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION` — skip confirm flow (default: false)
 
-**Internal path alias:** `@/*` → `src/*` (defined in `tsconfig.json`)
+## Common Commands
+
+```bash
+bun dev                          # start dev server (stdio, watch mode)
+bun run dev:sse                  # start dev server (SSE mode, watch mode)
+bun run build                    # build to dist/ (CJS)
+bun run start                    # run built output
+
+bun test e2e --timeout 50000     # run E2E tests (affected module; all if shared logic changed)
+bun run check                    # Biome lint + format
+tsc --noEmit                     # type check
+
+bun run lint                     # lint only
+bun run format                   # format only
+```
+
+**Style:** Double quotes, no semicolons, no trailing commas, 2-space indent.
+**Imports:** `@/*` alias only — never use relative `../../` beyond one level up. Order (auto-sorted by Biome): built-ins → third-party → `@/*` → relative.
 
 ---
 
-## Spec-Driven Workflow — MANDATORY, NO EXCEPTIONS
+## LANGUAGE RULE — HIGHEST PRIORITY
 
-You MUST follow these steps in strict order for every code change request.
-If you find yourself about to write code or call Edit/Write/Bash without having completed Step 1 AND received explicit user approval — STOP. Go back to Step 1.
+**Always match the user's language.** If the user writes in Chinese, every word of your reply must be in Chinese. If in English, reply in English. This rule overrides everything else and applies to every single response, including plans, summaries, and error messages. Never mix languages mid-response.
 
 ---
+
+## Spec-Driven Workflow — MANDATORY
+
+Follow these steps in strict order for every code change request. If you are about to call Edit/Write/Bash without completing Step 1 and receiving explicit approval — STOP. Go back to Step 1.
 
 ### Step 0: Research *(new features only — skip for bug fixes)*
 
-Before planning any non-trivial feature:
-- Search for mature open-source libraries that solve the problem (npm, GitHub, etc.).
-- Research best practices and common patterns for this domain.
-- Evaluate trade-offs: proven library vs. custom (maintenance, bundle size, fit).
-- **Only build custom if no suitable library exists or fit is poor.**
+Before planning, surface your understanding:
 
-Summarize findings before writing the Plan.
+- **State assumptions explicitly.** If the request has multiple valid interpretations, list them — don't pick one silently. Ask for clarification before proceeding.
+- Search for mature libraries that solve the problem. Evaluate trade-offs: proven library vs. custom (maintenance, fit, size).
+- **Only build custom if no suitable library exists or the fit is poor.**
 
----
+Summarize findings, then move to Step 1.
 
 ### Step 1: Plan — OUTPUT PLAN, THEN STOP COMPLETELY
 
@@ -56,39 +93,40 @@ Output a plan using this exact format:
 ```
 ## Plan
 **Goal:** <one sentence>
+**Assumptions:** <explicit assumptions; flag any ambiguity>
 **Files:** <list of files to create/modify/delete>
 **Approach:** <how, key decisions, trade-offs, libraries chosen>
+**Verify:** <what success looks like — which test passes, which behavior works>
 **Risk:** <what could break, security implications>
 ```
 
-**HARD RULES for Step 1:**
-- After printing the Plan, your message ENDS. No code. No "I'll start by...". No partial implementations.
+**HARD RULES:**
+- After printing the Plan, your message ENDS. No code. No "I'll start by...".
 - Do NOT call Edit, Write, Bash, or any file-modifying tool in this turn.
-- Do NOT proceed to Step 2 in the same response as the Plan.
-- Wait for the user to explicitly reply. Explicit approval = the user says something like "ok", "go", "approved", "yes", "继续", "好", or equivalent.
-- A user asking a clarifying question is NOT approval — answer it and wait again.
-- If the user approves but asks for changes to the plan, revise the plan and STOP again.
-
-**You are prohibited from starting Step 2 until you receive explicit approval in a separate user message.**
-
----
+- Wait for the user to explicitly reply. Explicit approval = "ok", "go", "yes", "继续", "好", or equivalent.
+- A clarifying question is NOT approval — answer it and wait again.
+- If the user approves but asks for changes, revise the plan and STOP again.
 
 ### Step 2: Execute
 
-Implement the approved plan exactly. If scope needs to change mid-implementation, STOP and re-plan (back to Step 1).
+Implement the approved plan exactly. Rules while executing:
 
----
+- **Surgical changes only.** Every changed line must trace directly to the task. Don't "improve" adjacent code, comments, or formatting.
+- **Minimum code.** No speculative features, no unrequested abstractions, no configurability that wasn't asked for.
+- **Dead code:**
+  - Orphans YOUR changes created → remove immediately.
+  - Pre-existing dead code you notice → mention in Summary, don't delete it.
+- If scope needs to change mid-implementation → STOP, go back to Step 1.
 
 ### Step 3: Verify
 
-- **Every feature must have test cases.** Add or update E2E tests before marking done.
-- Run `bun test e2e --timeout 50000` — target only the affected module's test file.
-- If the change touches shared logic (utils, server, confirm), run `bun test e2e --timeout 50000` (all E2E).
-- Run `bun run check` (Biome lint + format check).
-- Run `tsc --noEmit` for type checking.
-- Fix all failures before proceeding.
+```bash
+bun test e2e --timeout 50000    # affected module only; all if shared logic changed
+bun run check                   # Biome lint + format
+tsc --noEmit                    # type check
+```
 
----
+Fix all failures before proceeding. Confirm the **Verify** criteria from Step 1 are met.
 
 ### Step 4: Summary
 
@@ -96,70 +134,50 @@ Implement the approved plan exactly. If scope needs to change mid-implementation
 ## Summary
 **Changed:** <file list with one-line descriptions>
 **Tests:** <tests added/updated/passed>
-**Notes:** <anything the user should know>
+**Notes:** <dead code noticed, trade-offs made, anything the user should know>
 ```
 
-Check uncommitted changes with `git status` and `git diff`. Then print:
-1. A short description of what the commit contains.
-2. A ready-to-run git command — do NOT execute it:
+Then print a ready-to-run git commit command — do NOT execute it. Use this format:
 
 ```
-git add . && git commit -m "<type>(<scope>): <subject>
+git commit -m "<type>(<scope>): <subject>
 
 - <key change 1>
 - <key change 2>"
 ```
 
-Scopes: `evm`, `gnfd`, `confirm`, `server`, `utils`.
-- Subject line: concise, imperative, ≤72 chars.
-- Bullet body: 3–6 meaningful changes, skip trivial details.
+Types: `feat`, `fix`. Scopes: `evm`, `gnfd`, `confirm`, `server`, `utils`.
 
 ---
 
-## Code Rules
-
-- Bun runtime. Source is ESM; build output is CJS (`bun build --format cjs`).
-- Biome for formatting and linting. No Prettier, no ESLint.
-- `bun:test` for testing. No Jest, no Vitest.
-- Double quotes, no semicolons, no trailing commas, 2-space indent.
-- Internal imports use `@/*` alias (maps to `src/*`). Never use relative `../../` beyond one level up.
-- Import order (auto-sorted by Biome organizeImports): built-ins → third-party → `@/*` → relative.
-- Comments in English only. Explain *why*, never *what*.
-- Add logs for errors always; key lifecycle events where useful. Remove noise-only logs before committing.
-- E2E tests in `e2e/<module>.test.ts`. Use `MCPClient` from `e2e/util.ts`.
-- Commits: `feat(scope): ...`, `fix(scope): ...`.
-
 ## Code Quality
 
-- **No redundant code.** Extract repeated logic.
+- **No redundant code.** Extract repeated logic; never copy-paste.
 - **Single responsibility.** One file = one clear purpose. Split large files proactively.
-- **Encapsulate shared logic** into `src/utils/` — never copy-paste.
-- **No dead code**, no unused imports, no commented-out code.
+- **No abstractions for single-use code.** Three similar lines > a premature abstraction.
+- **No dead code**, no unused imports, no commented-out code (that you wrote).
 - Functions: small, single-purpose, early returns.
 - Naming: self-explanatory — if it needs a comment, rename it.
-- Keep folder structure clean and intentional.
+- No error handling for impossible scenarios. Trust internal guarantees; validate only at system boundaries.
+- Folder structure: clean and intentional.
+- **Comments:** English only. Explain *why*, never *what*.
+- **Logs:** Always log errors; key lifecycle events where useful. Remove noise-only logs before committing.
 
-## Architecture Patterns
+---
 
-- **MCP tool registration:** each module exports a `register*` function called in `src/server/base.ts`.
-- **Transfer confirmation flow:** write tools generate a `confirmToken`, store state in `pendingTransferStore` (5-min TTL), and return a preview. `confirm_transfer` executes on approval. Controlled by `BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION`.
-- **Viem clients:** cached by chain ID in `src/evm/services/clients.ts`. Always reuse; never create ad-hoc clients.
-- **Chain lookup:** use `chainMap` (by chain ID) or `networkNameMap` (by name string) from `src/evm/chains.ts`.
-- **Zod schemas:** define input schemas at the tool layer (`src/evm/modules/*/tools.ts`, `src/gnfd/tools/*.ts`).
+## Security Baseline
 
-## Security
-
-- Validate all external input with Zod at the tool boundary.
-- Never log private keys, mnemonics, or signed transactions.
-- Never hardcode secrets or tokens — use environment variables.
-- Never commit `.env`.
+- Validate all external input at the system boundary (Zod schemas at tool layer).
+- Never log private keys, mnemonics, signed transactions, or credentials.
+- Never hardcode secrets — use environment variables.
+- Never commit `.env` or credential files.
 - SSE mode has no built-in auth — deployments must add an auth layer in front.
 
 ---
 
 ## Self-Check Before Every Response
 
-Before generating any response to a code change request, answer these:
+Before responding to a code change request:
 1. Have I output a Plan yet? If no → go to Step 1.
-2. Has the user explicitly approved the Plan in their last message? If no → do not write any code.
+2. Has the user explicitly approved the Plan? If no → do not write any code.
 3. Am I about to call Edit/Write/Bash? If yes and Step 2 hasn't started → STOP.

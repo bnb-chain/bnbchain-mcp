@@ -36,16 +36,11 @@ export function validatePositiveAmount(amount: string, label = "Amount"): void {
  * Utility functions for formatting and parsing values
  */
 export const utils = {
-  // Convert ether to wei
   parseEther,
-
-  // Convert wei to ether
   formatEther,
 
-  // Format a bigint to a string
   formatBigInt: (value: bigint): string => value.toString(),
 
-  // Format an object to JSON with bigint handling
   formatJson: (obj: unknown): string =>
     JSON.stringify(
       obj,
@@ -53,17 +48,14 @@ export const utils = {
       2
     ),
 
-  // Format a number with commas
   formatNumber: (value: number | string): string => {
     return Number(value).toLocaleString()
   },
 
-  // Convert a hex string to a number
   hexToNumber: (hex: string): number => {
     return Number.parseInt(hex, 16)
   },
 
-  // Convert a number to a hex string
   numberToHex: (num: number): string => {
     return `0x${num.toString(16)}`
   }

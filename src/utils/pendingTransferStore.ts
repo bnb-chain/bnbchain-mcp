@@ -1,10 +1,3 @@
-/**
- * In-memory store for pending transfer intents (preview step).
- * Used when confirmation is required: intent is stored under a short-lived token
- * and consumed when the user calls the confirm tool.
- * No private keys are stored.
- */
-
 const TTL_MS = 5 * 60 * 1000 // 5 minutes
 const MAX_PENDING_INTENTS = 10_000 // cap to avoid memory exhaustion from abuse
 

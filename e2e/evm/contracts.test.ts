@@ -15,7 +15,9 @@ describe("EVM Contracts Test", async () => {
     const props = tool?.inputSchema?.properties as Record<string, unknown>
     // OpenAI-compatible validators require array schemas to have an items field
     expect(props?.abi).toHaveProperty("items")
+    expect((props?.abi as Record<string, unknown>)?.items).toBeDefined()
     expect(props?.args).toHaveProperty("items")
+    expect((props?.args as Record<string, unknown>)?.items).toBeDefined()
   })
 
   it("write_contract schema is OpenAI-compatible (abi and args have items)", async () => {
@@ -24,7 +26,9 @@ describe("EVM Contracts Test", async () => {
     expect(tool).toBeDefined()
     const props = tool?.inputSchema?.properties as Record<string, unknown>
     expect(props?.abi).toHaveProperty("items")
+    expect((props?.abi as Record<string, unknown>)?.items).toBeDefined()
     expect(props?.args).toHaveProperty("items")
+    expect((props?.args as Record<string, unknown>)?.items).toBeDefined()
   })
 
   it("check if address is contract", async () => {
