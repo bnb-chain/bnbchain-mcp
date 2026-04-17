@@ -1,6 +1,6 @@
-import readline from "readline/promises"
+import readline from "node:readline/promises"
 import { Anthropic } from "@anthropic-ai/sdk"
-import {
+import type {
   MessageParam,
   Tool
 } from "@anthropic-ai/sdk/resources/messages/messages.mjs"
@@ -73,7 +73,7 @@ export class MCPClient {
     })
 
     const finalText: string[] = []
-    const toolResults: any[] = []
+    const toolResults: unknown[] = []
 
     for (const content of response.content) {
       if (content.type === "text") {
@@ -127,7 +127,7 @@ export class MCPClient {
           break
         }
         const response = await this.processQuery(message)
-        console.log("\n" + response)
+        console.log(`\n${response}`)
       }
     } finally {
       rl.close()

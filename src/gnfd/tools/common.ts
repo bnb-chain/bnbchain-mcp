@@ -30,5 +30,8 @@ export const bucketNameParam = z
 /** Positive decimal string for BNB/token amounts (e.g. '0.1', '100'). */
 export const positiveAmountParam = z
   .string()
-  .regex(/^\d+(\.\d+)?$/, "Amount must be a positive number (e.g. '0.1' or '100')")
+  .regex(
+    /^\d+(\.\d+)?$/,
+    "Amount must be a positive number (e.g. '0.1' or '100')"
+  )
   .refine((v) => Number(v) > 0, "Amount must be greater than zero")

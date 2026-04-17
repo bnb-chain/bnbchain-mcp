@@ -1,4 +1,4 @@
-import { getAddress, type Address } from "viem"
+import { type Address, getAddress } from "viem"
 import { normalize } from "viem/ens"
 
 import { getPublicClient } from "./clients.js"
@@ -45,9 +45,9 @@ export async function resolveAddress(
       }
 
       return address
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(
-        `Failed to resolve ENS name ${addressOrEns}: ${error.message}`
+        `Failed to resolve ENS name ${addressOrEns}: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }

@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { registerNetworkPrompts } from "./prompts.js"
 import { registerNetworkTools } from "./tools.js"

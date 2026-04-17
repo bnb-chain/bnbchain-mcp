@@ -1,13 +1,15 @@
 import {
-  createPublicClient,
-  createWalletClient,
   http,
   type Address,
+  type Chain,
   type Hex,
   type PublicClient,
-  type WalletClient
+  type Transport,
+  type WalletClient,
+  createPublicClient,
+  createWalletClient
 } from "viem"
-import { privateKeyToAccount } from "viem/accounts"
+import { type PrivateKeyAccount, privateKeyToAccount } from "viem/accounts"
 
 import { getChain, getRpcUrl } from "../chains.js"
 
@@ -22,7 +24,7 @@ export function getPublicClient(network = "ethereum"): PublicClient {
 
   // Return cached client if available
   if (clientCache.has(cacheKey)) {
-    return clientCache.get(cacheKey)!
+    return clientCache.get(cacheKey) as PublicClient
   }
 
   // Create a new client
@@ -46,7 +48,7 @@ export function getPublicClient(network = "ethereum"): PublicClient {
 export function getWalletClient(
   privateKey: Hex,
   network = "ethereum"
-): WalletClient {
+): WalletClient<Transport, Chain, PrivateKeyAccount> {
   const chain = getChain(network)
   const rpcUrl = getRpcUrl(network)
   const account = privateKeyToAccount(privateKey)
@@ -55,7 +57,7 @@ export function getWalletClient(
     account,
     chain,
     transport: http(rpcUrl)
-  })
+  }) as WalletClient<Transport, Chain, PrivateKeyAccount>
 }
 
 /**

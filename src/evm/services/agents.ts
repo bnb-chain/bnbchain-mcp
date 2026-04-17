@@ -1,10 +1,10 @@
-import { decodeEventLog, type Hex } from "viem"
+import { type Hex, decodeEventLog } from "viem"
 
-import { resolveChainId } from "../chains.js"
 import { getERC8004Registries } from "../agentsRegistry.js"
+import { resolveChainId } from "../chains.js"
+import { IDENTITY_REGISTRY_ABI } from "./abi/identityRegistry.js"
 import { getPublicClient, getWalletClient } from "./clients.js"
 import { readContract, writeContract } from "./contracts.js"
-import { IDENTITY_REGISTRY_ABI } from "./abi/identityRegistry.js"
 
 function formatPrivateKey(privateKey: string | Hex): Hex {
   return typeof privateKey === "string" && !privateKey.startsWith("0x")
@@ -22,6 +22,7 @@ export async function registerAgent(
   network: string | number = "bsc"
 ): Promise<{ agentId: bigint; txHash: string }> {
   const key = formatPrivateKey(privateKey)
+  const networkStr = String(network)
   const chainId = resolveChainId(network)
   const { identityRegistry } = getERC8004Registries(chainId)
 
@@ -33,10 +34,10 @@ export async function registerAgent(
       functionName: "register",
       args: [agentURI]
     },
-    network
+    networkStr
   )
 
-  const publicClient = getPublicClient(network)
+  const publicClient = getPublicClient(networkStr)
   const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
 
   let agentId: bigint | null = null
@@ -72,6 +73,7 @@ export async function setAgentURI(
   network: string | number = "bsc"
 ): Promise<{ txHash: string }> {
   const key = formatPrivateKey(privateKey)
+  const networkStr = String(network)
   const chainId = resolveChainId(network)
   const { identityRegistry } = getERC8004Registries(chainId)
 
@@ -83,7 +85,7 @@ export async function setAgentURI(
       functionName: "setAgentURI",
       args: [BigInt(agentId), newURI]
     },
-    network
+    networkStr
   )
 
   return { txHash }
@@ -96,6 +98,7 @@ export async function getAgent(
   agentId: bigint | number,
   network: string | number = "bsc"
 ): Promise<{ owner: string; tokenURI: string }> {
+  const networkStr = String(network)
   const chainId = resolveChainId(network)
   const { identityRegistry } = getERC8004Registries(chainId)
 
@@ -107,7 +110,7 @@ export async function getAgent(
         functionName: "ownerOf",
         args: [BigInt(agentId)]
       },
-      network
+      networkStr
     ),
     readContract(
       {
@@ -116,7 +119,7 @@ export async function getAgent(
         functionName: "tokenURI",
         args: [BigInt(agentId)]
       },
-      network
+      networkStr
     )
   ])
 
@@ -130,6 +133,7 @@ export async function getAgentWallet(
   agentId: bigint | number,
   network: string | number = "bsc"
 ): Promise<string> {
+  const networkStr = String(network)
   const chainId = resolveChainId(network)
   const { identityRegistry } = getERC8004Registries(chainId)
 
@@ -140,7 +144,7 @@ export async function getAgentWallet(
       functionName: "getAgentWallet",
       args: [BigInt(agentId)]
     },
-    network
+    networkStr
   )
 
   return wallet as string

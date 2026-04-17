@@ -1,9 +1,9 @@
-import { BaseAccount } from "@bnb-chain/greenfield-cosmos-types/cosmos/auth/v1beta1/auth"
-import { type TxResponse } from "@bnb-chain/greenfield-js-sdk"
+import type { BaseAccount } from "@bnb-chain/greenfield-cosmos-types/cosmos/auth/v1beta1/auth"
+import type { TxResponse } from "@bnb-chain/greenfield-js-sdk"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
-import { response, type ApiResponse } from "../util"
+import { type ApiResponse, response } from "../util"
 
 /**
  * Execute a transaction with proper error handling
@@ -43,12 +43,11 @@ export const executeTransaction = async <T = void>(
       return response.success<T>(`${operationName} successful`, {
         txHash: txRes.transactionHash
       } as T)
-    } else {
-      Logger.error(`${operationName} failed: ${JSON.stringify(txRes)}`)
-      return response.fail(
-        `${operationName} failed: code=${txRes.code}, hash=${txRes.transactionHash}`
-      ) as ApiResponse<T>
     }
+    Logger.error(`${operationName} failed: ${JSON.stringify(txRes)}`)
+    return response.fail(
+      `${operationName} failed: code=${txRes.code}, hash=${txRes.transactionHash}`
+    ) as ApiResponse<T>
   } catch (error) {
     Logger.error(`${operationName} failed: ${error}`)
     return response.fail(`${operationName} failed: ${error}`) as ApiResponse<T>

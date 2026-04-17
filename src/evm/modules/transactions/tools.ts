@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Address, Hash } from "viem"
 import { z } from "zod"
 
@@ -45,7 +45,9 @@ export function registerTransactionTools(server: McpServer) {
     },
     async ({ to, value, data, network }) => {
       try {
-        const params: any = { to: to as Address }
+        const params: { to: Address; value?: bigint; data?: `0x${string}` } = {
+          to: to as Address
+        }
 
         if (value) {
           params.value = services.helpers.parseEther(value)

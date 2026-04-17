@@ -1,8 +1,8 @@
-import {
-  type Address,
-  type EstimateGasParameters,
-  type Hash,
-  type TransactionReceipt
+import type {
+  Address,
+  EstimateGasParameters,
+  Hash,
+  TransactionReceipt
 } from "viem"
 
 import { getPublicClient } from "./clients.js"

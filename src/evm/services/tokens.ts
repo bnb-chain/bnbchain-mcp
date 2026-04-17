@@ -1,4 +1,4 @@
-import { formatUnits, getContract, parseUnits, type Address } from "viem"
+import { type Address, formatUnits, getContract, parseUnits } from "viem"
 
 import Logger from "@/utils/logger.js"
 import { ERC20_ABI, ERC20_BYTECODE } from "./abi/erc20.js"
@@ -12,7 +12,7 @@ import { isContract } from "./contracts.js"
  */
 export async function getERC20TokenInfo(
   tokenAddress: Address,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   name: string
   symbol: string
@@ -54,7 +54,7 @@ export async function getERC20TokenInfo(
 export async function getERC721TokenMetadata(
   tokenAddress: Address,
   tokenId: bigint,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   id: bigint
   name: string
@@ -103,7 +103,7 @@ export async function getERC721TokenMetadata(
 export async function getERC1155TokenMetadata(
   tokenAddress: Address,
   tokenId: bigint,
-  network: string = "ethereum"
+  network = "ethereum"
 ): Promise<{
   id: bigint
   name: string
@@ -165,7 +165,7 @@ export const createERC20Token = async ({
     abi: ERC20_ABI,
     bytecode: ERC20_BYTECODE,
     args: [name, symbol, supply],
-    account: client.account!,
+    account: client.account,
     chain: client.chain
   })
 
@@ -175,6 +175,6 @@ export const createERC20Token = async ({
     name,
     symbol,
     totalSupply: supply,
-    owner: client.account!.address
+    owner: client.account.address
   }
 }

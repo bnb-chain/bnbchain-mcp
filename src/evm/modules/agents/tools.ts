@@ -1,9 +1,13 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { defaultNetworkParam, privateKeyParam, requiredNetworkParam } from "../common/types.js"
+import {
+  defaultNetworkParam,
+  privateKeyParam,
+  requiredNetworkParam
+} from "../common/types.js"
 
 export function registerAgentsTools(server: McpServer) {
   server.tool(
@@ -43,7 +47,9 @@ export function registerAgentsTools(server: McpServer) {
       privateKey: privateKeyParam,
       agentId: z
         .union([z.string(), z.number()])
-        .describe("The ERC-8004 agent ID (token ID from the Identity Registry)"),
+        .describe(
+          "The ERC-8004 agent ID (token ID from the Identity Registry)"
+        ),
       newURI: z
         .string()
         .describe("New URI for the agent metadata (AgentURI format)"),
@@ -51,8 +57,7 @@ export function registerAgentsTools(server: McpServer) {
     },
     async ({ privateKey, agentId, newURI, network }) => {
       try {
-        const id =
-          typeof agentId === "string" ? BigInt(agentId) : BigInt(agentId)
+        const id = BigInt(agentId)
         const result = await services.setAgentURI(
           privateKey,
           id,
@@ -82,8 +87,7 @@ export function registerAgentsTools(server: McpServer) {
     },
     async ({ agentId, network }) => {
       try {
-        const id =
-          typeof agentId === "string" ? BigInt(agentId) : BigInt(agentId)
+        const id = BigInt(agentId)
         const result = await services.getAgent(id, network)
         return mcpToolRes.success({
           agentId: agentId.toString(),
@@ -108,8 +112,7 @@ export function registerAgentsTools(server: McpServer) {
     },
     async ({ agentId, network }) => {
       try {
-        const id =
-          typeof agentId === "string" ? BigInt(agentId) : BigInt(agentId)
+        const id = BigInt(agentId)
         const wallet = await services.getAgentWallet(id, network)
         return mcpToolRes.success({
           agentId: agentId.toString(),

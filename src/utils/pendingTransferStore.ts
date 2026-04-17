@@ -1,10 +1,3 @@
-/**
- * In-memory store for pending transfer intents (preview step).
- * Used when confirmation is required: intent is stored under a short-lived token
- * and consumed when the user calls the confirm tool.
- * No private keys are stored.
- */
-
 const TTL_MS = 5 * 60 * 1000 // 5 minutes
 const MAX_PENDING_INTENTS = 10_000 // cap to avoid memory exhaustion from abuse
 
@@ -18,12 +11,13 @@ export type PendingIntent = {
 const store = new Map<string, PendingIntent>()
 
 function randomToken(): string {
-  const bytes = new Uint8Array(24)
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-    crypto.getRandomValues(bytes)
-  } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256)
+  if (typeof crypto === "undefined" || !crypto.getRandomValues) {
+    throw new Error(
+      "crypto.getRandomValues is not available in this environment"
+    )
   }
+  const bytes = new Uint8Array(24)
+  crypto.getRandomValues(bytes)
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
 }
 
@@ -43,7 +37,9 @@ export type PendingIntentResult = {
  * Store an intent and return a one-time confirm token with its expiry time.
  * Enforces a max number of pending intents to prevent memory exhaustion.
  */
-export function createPendingIntent(intent: Omit<PendingIntent, "createdAt">): PendingIntentResult {
+export function createPendingIntent(
+  intent: Omit<PendingIntent, "createdAt">
+): PendingIntentResult {
   pruneExpired()
   if (store.size >= MAX_PENDING_INTENTS) {
     const oldest = [...store.entries()].sort(

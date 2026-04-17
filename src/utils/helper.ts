@@ -4,7 +4,7 @@
  * @param value The value to process
  * @returns The processed value
  */
-const bigIntReplacer = (_key: string, value: any) => {
+const bigIntReplacer = (_key: string, value: unknown) => {
   // Handle BigInt specifically
   if (typeof value === "bigint") {
     return value.toString()
@@ -19,7 +19,7 @@ const bigIntReplacer = (_key: string, value: any) => {
  * @param space Number of spaces to use for indentation (optional)
  * @returns A JSON string representation of the value
  */
-export const safeStringify = (value: any, space?: number): string => {
+export const safeStringify = (value: unknown, space?: number): string => {
   try {
     return JSON.stringify(value, bigIntReplacer, space)
   } catch (error) {
@@ -34,7 +34,7 @@ export const safeStringify = (value: any, space?: number): string => {
  * @param text The JSON string to parse
  * @returns The parsed value
  */
-export const safeParse = (text: string): any => {
+export const safeParse = (text: string): unknown => {
   try {
     return JSON.parse(text)
   } catch (error) {

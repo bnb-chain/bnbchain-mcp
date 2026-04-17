@@ -4,19 +4,19 @@ import {
   readFileSync,
   statSync,
   writeFileSync
-} from "fs"
-import path from "path"
+} from "node:fs"
+import path from "node:path"
 import {
-  bytesFromBase64,
   Long,
   RedundancyType,
-  VisibilityType
+  VisibilityType,
+  bytesFromBase64
 } from "@bnb-chain/greenfield-js-sdk"
 import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import type { Hex } from "viem"
 
 import Logger from "@/utils/logger"
-import { getMimeType, response, type ApiResponse } from "../util"
+import { type ApiResponse, getMimeType, response } from "../util"
 import { getAccount } from "./account"
 import { createBucket } from "./bucket"
 import { getClient } from "./client"
@@ -82,12 +82,12 @@ export const createFile = async (
       privateKey,
       bucketName
     })
-    if (bucketNameRes.status === "error") {
+    if (bucketNameRes.status === "error" || !bucketNameRes.data) {
       return response.fail(
         bucketNameRes.message || "Unknown bucket creation error"
       )
     }
-    const _bucketName = bucketNameRes.data!.bucketName
+    const _bucketName = bucketNameRes.data.bucketName
 
     Logger.debug(`Using bucket: ${_bucketName}, for object: ${objectName}`)
 
@@ -143,9 +143,8 @@ export const createFile = async (
         bucketName: _bucketName,
         objectName
       })
-    } else {
-      return response.fail(`Create file failed: ${JSON.stringify(uploadRes)}`)
     }
+    return response.fail(`Create file failed: ${JSON.stringify(uploadRes)}`)
   } catch (error) {
     Logger.error(`Create file operation failed: ${error}`)
     return response.fail(`Create file operation failed: ${error}`)
@@ -175,12 +174,12 @@ export const createFolder = async (
       privateKey,
       bucketName
     })
-    if (bucketNameRes.status === "error") {
+    if (bucketNameRes.status === "error" || !bucketNameRes.data) {
       return response.fail(
         bucketNameRes.message || "Unknown bucket creation error"
       )
     }
-    const _bucketName = bucketNameRes.data!.bucketName
+    const _bucketName = bucketNameRes.data.bucketName
 
     // Get client and account
     const client = getClient(network)
@@ -242,7 +241,7 @@ function sanitizeObjectInfo(raw: unknown): Record<string, unknown> {
     if (typeof value === "string") {
       const truncated =
         Buffer.byteLength(value, "utf8") > MAX_METADATA_FIELD_BYTES
-          ? value.slice(0, MAX_METADATA_FIELD_BYTES) + "[truncated]"
+          ? `${value.slice(0, MAX_METADATA_FIELD_BYTES)}[truncated]`
           : value
       out[key] = truncated
     } else if (
@@ -418,7 +417,7 @@ export const downloadObject = async (
         `Target path ${targetPath} does not exist, using current directory`
       )
       // add tmp prefix to avoid file name conflict
-      filePath = path.join(process.cwd(), "tmp-" + objectName)
+      filePath = path.join(process.cwd(), `tmp-${objectName}`)
     } else {
       filePath = path.join(targetPath, objectName)
     }

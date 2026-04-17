@@ -1,4 +1,4 @@
-import { type Block, type Hash } from "viem"
+import type { Block, Hash } from "viem"
 
 import { getPublicClient } from "./clients.js"
 
@@ -96,6 +96,9 @@ function blockToSummary(
   includeHashes: boolean,
   maxHashes: number
 ): BlockSummary {
+  if (block.number === null || block.hash === null) {
+    throw new Error("Pending blocks are not supported")
+  }
   const txList = block.transactions
   const hashes =
     includeHashes && Array.isArray(txList)
@@ -103,8 +106,8 @@ function blockToSummary(
       : undefined
   const count = Array.isArray(txList) ? txList.length : 0
   return {
-    number: block.number!,
-    hash: block.hash!,
+    number: block.number,
+    hash: block.hash,
     timestamp: block.timestamp,
     gasUsed: block.gasUsed,
     gasLimit: block.gasLimit,

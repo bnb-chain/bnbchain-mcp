@@ -1,4 +1,14 @@
-import { formatEther, parseEther } from "viem"
+import { type Hex, formatEther, parseEther } from "viem"
+
+/**
+ * Normalize a private key to a 0x-prefixed hex string expected by viem.
+ * Accepts keys with or without the 0x prefix.
+ */
+export function normalizePrivateKey(privateKey: string | Hex): Hex {
+  return typeof privateKey === "string" && !privateKey.startsWith("0x")
+    ? (`0x${privateKey}` as Hex)
+    : (privateKey as Hex)
+}
 
 /** Matches a positive decimal string (e.g. "0.1", "100"). */
 const POSITIVE_DECIMAL_REGEX = /^\d+(\.\d+)?$/
@@ -7,10 +17,7 @@ const POSITIVE_DECIMAL_REGEX = /^\d+(\.\d+)?$/
  * Validates that a string is a positive decimal amount. Throws with a clear error if not.
  * Use before parseEther/parseUnits to avoid unexpected behavior or stack traces.
  */
-export function validatePositiveAmount(
-  amount: string,
-  label = "Amount"
-): void {
+export function validatePositiveAmount(amount: string, label = "Amount"): void {
   if (typeof amount !== "string" || amount.trim() === "") {
     throw new Error(`${label} must be a non-empty string`)
   }
@@ -29,16 +36,11 @@ export function validatePositiveAmount(
  * Utility functions for formatting and parsing values
  */
 export const utils = {
-  // Convert ether to wei
   parseEther,
-
-  // Convert wei to ether
   formatEther,
 
-  // Format a bigint to a string
   formatBigInt: (value: bigint): string => value.toString(),
 
-  // Format an object to JSON with bigint handling
   formatJson: (obj: unknown): string =>
     JSON.stringify(
       obj,
@@ -46,18 +48,15 @@ export const utils = {
       2
     ),
 
-  // Format a number with commas
   formatNumber: (value: number | string): string => {
     return Number(value).toLocaleString()
   },
 
-  // Convert a hex string to a number
   hexToNumber: (hex: string): number => {
-    return parseInt(hex, 16)
+    return Number.parseInt(hex, 16)
   },
 
-  // Convert a number to a hex string
   numberToHex: (num: number): string => {
-    return "0x" + num.toString(16)
+    return `0x${num.toString(16)}`
   }
 }

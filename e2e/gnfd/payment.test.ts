@@ -39,8 +39,7 @@ const _getPaymentAccountInfo = async (
   data?: { refundable?: boolean }
 }> => {
   const client = await getClient()
-  const address =
-    paymentAddress ?? (await _getPaymentAccountAddress()) ?? ""
+  const address = paymentAddress ?? (await _getPaymentAccountAddress()) ?? ""
   const res = await client.callTool({
     name: "gnfd_get_payment_account_info",
     arguments: {
@@ -79,7 +78,9 @@ describe("Greenfield Payment Test", async () => {
     if (Array.isArray(obj)) {
       expect(obj.length).toBeGreaterThanOrEqual(0)
     } else {
-      expect(["success", "error"]).toContain((obj as { status?: string })?.status ?? "error")
+      expect(["success", "error"]).toContain(
+        (obj as { status?: string })?.status ?? "error"
+      )
     }
   })
 

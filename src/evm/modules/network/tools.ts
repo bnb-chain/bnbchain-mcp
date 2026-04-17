@@ -1,5 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { normalize } from "viem/ens"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
 
 import { getRpcUrl, getSupportedNetworks } from "@/evm/chains.js"
@@ -33,11 +32,12 @@ export function registerNetworkTools(server: McpServer) {
     }
   )
 
-  // Get supported networks
+  // One throwaway field that satisfies isZodRawShape (checked by the SDK before registering
+  // the tool's param schema); z.never().optional() means callers never need to pass it.
   server.tool(
     "get_supported_networks",
     "Get list of supported networks",
-    {},
+    { _: z.never().optional() },
     async () => {
       try {
         const networks = getSupportedNetworks()
@@ -49,28 +49,4 @@ export function registerNetworkTools(server: McpServer) {
       }
     }
   )
-
-  // // Resolve ENS name to address
-  // server.tool(
-  //   "resolve_ens",
-  //   "Resolve an ENS name to an EVM address (not supported on BSC)",
-  //   {
-  //     ensName: z.string().describe("ENS name to resolve (e.g., 'vitalik.eth')"),
-  //     network: defaultNetworkParam.default("eth")
-  //   },
-  //   async ({ ensName, network }) => {
-  //     try {
-  //       const normalizedName = normalize(ensName)
-  //       const address = await services.resolveAddress(normalizedName, network)
-  //       return mcpToolRes.success({
-  //         ensName,
-  //         normalizedName,
-  //         resolvedAddress: address,
-  //         network
-  //       })
-  //     } catch (error) {
-  //       return mcpToolRes.error(error, "resolving ENS name")
-  //     }
-  //   }
-  // )
 }

@@ -1,10 +1,19 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Address, Hex } from "viem"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { Abi, Address, Hex } from "viem"
 import { z } from "zod"
 
-import { defaultNetworkParam, requiredNetworkParam } from "@/evm/modules/common/types.js"
+import {
+  defaultNetworkParam,
+  requiredNetworkParam
+} from "@/evm/modules/common/types.js"
+import type { WriteContractInput } from "@/evm/services/contracts.js"
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
+import { createPendingIntent } from "@/utils/pendingTransferStore.js"
+import {
+  isSkipTransferConfirmation,
+  skipConfirmationParam
+} from "@/utils/transferConfirmation.js"
 
 export function registerContractTools(server: McpServer) {
   // Check if address is contract
@@ -45,13 +54,22 @@ export function registerContractTools(server: McpServer) {
         .string()
         .describe("The address of the smart contract to interact with"),
       abi: z
-        .array(z.any())
+        .array(z.record(z.unknown()))
         .describe("The ABI of the smart contract function, as a JSON array"),
       functionName: z
         .string()
         .describe("The name of the function to call on the contract"),
       args: z
-        .array(z.any())
+        .array(
+          z.union([
+            z.string(),
+            z.number(),
+            z.boolean(),
+            z.null(),
+            z.array(z.unknown()),
+            z.record(z.unknown())
+          ])
+        )
         .optional()
         .describe("The arguments to pass to the function"),
       network: defaultNetworkParam,
@@ -111,25 +129,37 @@ export function registerContractTools(server: McpServer) {
   // Write to contract
   server.tool(
     "write_contract",
-    "Write data to a smart contract by calling a state-changing function",
+    "Write data to a smart contract by calling a state-changing function. By default returns a preview and confirmToken—call confirm_transfer with the token to execute. Set skipConfirmation=true or BNBCHAIN_MCP_SKIP_TRANSFER_CONFIRMATION=true to execute immediately.",
     {
       contractAddress: z
         .string()
         .describe("The address of the smart contract to interact with"),
       abi: z
-        .array(z.any())
+        .array(z.record(z.unknown()))
         .describe("The ABI of the smart contract function, as a JSON array"),
       functionName: z
         .string()
         .describe("The name of the function to call on the contract"),
-      args: z.array(z.any()).describe("The arguments to pass to the function"),
+      args: z
+        .array(
+          z.union([
+            z.string(),
+            z.number(),
+            z.boolean(),
+            z.null(),
+            z.array(z.unknown()),
+            z.record(z.unknown())
+          ])
+        )
+        .describe("The arguments to pass to the function"),
       privateKey: z
         .string()
         .describe(
           "Private key of the sending account. Used only for transaction signing."
         )
         .default(process.env.PRIVATE_KEY as string),
-      network: requiredNetworkParam
+      network: requiredNetworkParam,
+      skipConfirmation: skipConfirmationParam
     },
     async ({
       contractAddress,
@@ -137,31 +167,44 @@ export function registerContractTools(server: McpServer) {
       functionName,
       args,
       privateKey,
-      network
+      network,
+      skipConfirmation
     }) => {
       try {
-        // Parse ABI if it's a string
         const parsedAbi = typeof abi === "string" ? JSON.parse(abi) : abi
 
-        const contractParams: Record<string, any> = {
-          address: contractAddress as Address,
-          abi: parsedAbi,
-          functionName,
-          args
+        if (skipConfirmation || isSkipTransferConfirmation()) {
+          const contractParams: WriteContractInput = {
+            address: contractAddress as Address,
+            abi: parsedAbi as Abi,
+            functionName,
+            args
+          }
+          const txHash = await services.writeContract(
+            privateKey as Hex,
+            contractParams,
+            network
+          )
+          return mcpToolRes.success({
+            contractAddress,
+            functionName,
+            args,
+            transactionHash: txHash,
+            message: "Contract write transaction sent successfully"
+          })
         }
 
-        const txHash = await services.writeContract(
-          privateKey as Hex,
-          contractParams,
+        const { token: confirmToken, expiresAt } = createPendingIntent({
+          type: "write_contract",
+          params: { contractAddress, abi: parsedAbi, functionName, args },
           network
-        )
-
+        })
         return mcpToolRes.success({
-          contractAddress,
-          functionName,
-          args,
-          transactionHash: txHash,
-          message: "Contract write transaction sent successfully"
+          preview: { contractAddress, functionName, args, network },
+          confirmToken,
+          expiresAt,
+          message:
+            "Call confirm_transfer with this confirmToken and your privateKey to execute the contract write."
         })
       } catch (error) {
         return mcpToolRes.error(error, "writing to contract")

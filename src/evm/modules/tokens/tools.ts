@@ -1,11 +1,15 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Address, Hex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { z } from "zod"
 
 import * as services from "@/evm/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
-import { defaultNetworkParam, privateKeyParam, requiredNetworkParam } from "../common/types"
+import {
+  defaultNetworkParam,
+  privateKeyParam,
+  requiredNetworkParam
+} from "../common/types"
 
 export function registerTokenTools(server: McpServer) {
   // Get ERC20 token info

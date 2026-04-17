@@ -1,8 +1,8 @@
 import "reflect-metadata"
 
-import { readFileSync } from "fs"
-import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 import { expect, setDefaultTimeout, test } from "bun:test"
+import { readFileSync } from "node:fs"
+import { NodeAdapterReedSolomon } from "@bnb-chain/reed-solomon/node.adapter"
 
 import { getMimeType } from "../util"
 

@@ -44,8 +44,18 @@ export const IDENTITY_REGISTRY_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "uint256", name: "agentId", type: "uint256" },
-      { indexed: false, internalType: "string", name: "agentURI", type: "string" },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "agentId",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "agentURI",
+        type: "string"
+      },
       { indexed: true, internalType: "address", name: "owner", type: "address" }
     ],
     name: "Registered",

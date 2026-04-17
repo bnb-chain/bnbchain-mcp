@@ -1,12 +1,14 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Hex } from "viem"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { Abi, Address } from "viem"
 import { z } from "zod"
 
+import { privateKeyParam } from "@/evm/modules/common/types.js"
+import type { WriteContractInput } from "@/evm/services/contracts.js"
 import * as evmServices from "@/evm/services/index.js"
+import { normalizePrivateKey } from "@/evm/services/utils.js"
 import * as gnfdServices from "@/gnfd/services/index.js"
 import { mcpToolRes } from "@/utils/helper"
 import { getAndConsumeIntent } from "@/utils/pendingTransferStore.js"
-import { privateKeyParam } from "@/evm/modules/common/types.js"
 
 export function registerConfirmTools(server: McpServer) {
   server.tool(
@@ -25,21 +27,21 @@ export function registerConfirmTools(server: McpServer) {
         const intent = getAndConsumeIntent(confirmToken)
         if (!intent) {
           return mcpToolRes.error(
-            new Error("Invalid or expired confirmation token. Request a new preview."),
+            new Error(
+              "Invalid or expired confirmation token. Request a new preview."
+            ),
             "confirm_transfer"
           )
         }
 
-        const key =
-          typeof privateKey === "string" && !privateKey.startsWith("0x")
-            ? (`0x${privateKey}` as Hex)
-            : (privateKey as Hex)
+        const key = normalizePrivateKey(privateKey)
         const params = intent.params as Record<string, string>
         const network = intent.network
 
         const req = (k: string): string => {
           const v = params[k]
-          if (v === undefined || v === null) throw new Error(`Missing param: ${k}`)
+          if (v === undefined || v === null)
+            throw new Error(`Missing param: ${k}`)
           return String(v)
         }
 
@@ -192,6 +194,39 @@ export function registerConfirmTools(server: McpServer) {
               txHash: (result.data as { txHash?: string })?.txHash,
               message: "Payment account created",
               network: gnfdNetwork
+            })
+          }
+          case "write_contract": {
+            if (!Array.isArray(intent.params.abi)) {
+              throw new Error(
+                "Invalid write_contract intent: abi must be an array"
+              )
+            }
+            if (
+              intent.params.args !== undefined &&
+              !Array.isArray(intent.params.args)
+            ) {
+              throw new Error(
+                "Invalid write_contract intent: args must be an array"
+              )
+            }
+            const contractParams: WriteContractInput = {
+              address: req("contractAddress") as Address,
+              abi: intent.params.abi as Abi,
+              functionName: req("functionName"),
+              args: intent.params.args as readonly unknown[]
+            }
+            const txHash = await evmServices.writeContract(
+              key,
+              contractParams,
+              network
+            )
+            return mcpToolRes.success({
+              success: true,
+              transactionHash: txHash,
+              contractAddress: req("contractAddress"),
+              functionName: req("functionName"),
+              network
             })
           }
           default:
