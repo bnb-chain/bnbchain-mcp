@@ -18,7 +18,9 @@
   "bin": {
     "bnbchain-mcp": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -31,7 +33,7 @@
     "express": "^4.18.2",
     "mime": "^4.0.7",
     "reflect-metadata": "^0.2.2",
-    "viem": "^2.27.2",
+    "viem": "^2.48.11",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -43,5 +45,7 @@
     "typescript": "^5.0.0"
   },
   "license": "MIT",
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
 }
