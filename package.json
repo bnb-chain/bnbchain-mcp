@@ -18,7 +18,9 @@
   "bin": {
     "bnbchain-mcp": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -43,5 +45,15 @@
     "typescript": "^5.0.0"
   },
   "license": "MIT",
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ],
+  "homepage": "https://github.com/bnb-chain/bnbchain-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bnb-chain/bnbchain-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bnb-chain/bnbchain-mcp/issues"
+  }
 }
