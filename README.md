@@ -28,7 +28,7 @@ The project is organized into several core modules:
 
 ## Important Notes
 
-**We do not recommend deploying this MCP Server on the public internet.** (1) The SSE endpoint has **no authentication**—anyone who can reach it can use the server. (2) There is **no centralized service** that custodies private keys or funds; keys and signing are the responsibility of the client. If you still need to deploy it publicly, add an **authentication layer** in front (e.g. API keys, JWT, or a reverse proxy with auth), or deploy a **keyless version** that only exposes read-only or non-sensitive tools.
+**We do not recommend deploying this MCP Server on the public internet.** (1) The SSE endpoint has **no authentication**—anyone who can reach it can use the server. It binds to `127.0.0.1` by default. If you intentionally set `HOST=0.0.0.0` for remote access, add an **authentication layer** in front (e.g. API keys, JWT, or a reverse proxy with auth) and appropriate network controls. (2) There is **no centralized service** that custodies private keys or funds; keys and signing are the responsibility of the client. Alternatively, deploy a **keyless version** that only exposes read-only or non-sensitive tools.
 
 **Credentials:** Prefer setting `PRIVATE_KEY` in the MCP server environment. Do not pass the private key in tool parameters when avoidable, as it may be stored in conversation history, client logs, or request logs and lead to exposure.
 
@@ -164,6 +164,7 @@ Edit `.env` file with your configuration:
 
 - `PRIVATE_KEY`: Your wallet private key (required for transaction operations)
 - `LOG_LEVEL`: Set logging level (DEBUG, INFO, WARN, ERROR)
+- `HOST`: Server bind address (default: 127.0.0.1; only used in SSE mode)
 - `PORT`: Server port number (default: 3001)
 
 3. Install dependencies and start development server:

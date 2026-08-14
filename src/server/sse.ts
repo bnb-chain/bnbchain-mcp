@@ -64,10 +64,11 @@ export const startSSEServer = async () => {
       }
     })
 
-    const PORT = process.env.PORT || 3001
-    app.listen(PORT, () => {
+    const PORT = process.env.PORT ? Number(process.env.PORT) : 3001
+    const HOST = process.env.HOST || "127.0.0.1"
+    app.listen(PORT, HOST, () => {
       Logger.info(
-        `BNBChain MCP SSE Server is running on http://localhost:${PORT}`
+        `BNBChain MCP SSE Server is running on http://${HOST}:${PORT}`
       )
     })
     return server
