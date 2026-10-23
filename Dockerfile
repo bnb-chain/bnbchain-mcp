@@ -21,7 +21,7 @@ RUN mkdir -p /app/prod-deps && cd /app/prod-deps && \
     bun install --frozen-lockfile --production
 
 # Runtime stage using Node.js
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 WORKDIR /app
 
