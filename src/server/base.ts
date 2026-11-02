@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { registerConfirm } from "@/confirm/index.js"
+import { registerDappbay } from "@/dappbay/index.js"
 import { registerEVM } from "@/evm/index.js"
 import { registerGnfd } from "@/gnfd/index.js"
 import Logger from "@/utils/logger.js"
@@ -18,6 +19,7 @@ export const startServer = () => {
     registerEVM(server)
     registerGnfd(server)
     registerConfirm(server)
+    registerDappbay(server)
     return server
   } catch (error) {
     Logger.error("Failed to initialize server:", error)

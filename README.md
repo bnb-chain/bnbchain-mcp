@@ -25,6 +25,7 @@ The project is organized into several core modules:
 - **Greenfield**: Support file management operations on Greenfield network including, uploading, downloading, and managing files and buckets
 - Additional features coming soon (Greenfield, Swap, Bridge, etc.)
 - **Agents (ERC-8004)**: Register and resolve on-chain AI agent identities (ERC-8004 Trustless Agents) on BSC and BSC Testnet
+- **DappBay**: Read-only access to [DappBay](https://dappbay.bnbchain.org), the official BNB Chain dApp registry: check whether a website belongs to a listed dApp, look up official profiles, search and rank dApps
 
 ## Important Notes
 
@@ -286,6 +287,28 @@ Register and resolve AI agents on the [ERC-8004](https://eips.ethereum.org/EIPS/
 | gnfd_get_payment_account_info | Get detailed information about a payment account    |
 | gnfd_create_payment           | Create a new payment account                        |
 | gnfd_get_payment_balance      | Get payment account balance                         |
+
+### DappBay tools
+
+Read-only tools backed by [DappBay](https://dappbay.bnbchain.org), the official dApp registry maintained by BNB Chain. No API key or private key is needed. Every response carries `meta.source` and `meta.coverage`: listed dApps and websites are verified by DappBay, but the registry is not exhaustive, so "not listed" never means "unofficial" or "unsafe". Contract addresses are not exposed.
+
+| Name         | Description                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| resolve_dapp | Check whether a website URL or domain belongs to a listed dApp (`listed`, `red_alarm`, `not_in_listed_records`, `not_listed`) |
+| get_dapp     | Get a dApp's official profile: website, socials, category, chains, Red Alarm status and weekly metrics            |
+| search_dapps | Search listed dApps by name keyword, category or chain                                                           |
+| top_dapps    | Rank dApps by users, TVL or transactions over a daily, weekly or monthly window                                  |
+
+`resolve_dapp` statuses:
+
+- `listed`: the domain matches a listed dApp. A `warning` is added when the dApp is inactive, because its domain may have changed owner.
+- `red_alarm`: the domain matches a dApp flagged by BNB Chain Red Alarm; `red_alarm.reason` explains why.
+- `not_in_listed_records`: the domain is not listed but looks similar to the dApps in `similar_listed`. It may be a phishing site or a domain DappBay has not recorded yet.
+- `not_listed`: no record. This is not a judgment either way.
+
+Freshness fields: `profile_updated_at` is when the dApp listing was last edited; `metrics_as_of` is the date of the users/TVL/transactions statistics.
+
+Set `DAPPBAY_API_BASE` to point the tools at another DappBay API (defaults to `https://dappbay.bnbchain.org/api/v1`).
 
 ## Supported Networks
 
