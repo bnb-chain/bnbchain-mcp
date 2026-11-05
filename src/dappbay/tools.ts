@@ -48,7 +48,7 @@ export function registerDappbayTools(server: McpServer) {
 
   server.tool(
     "resolve_dapp",
-    `Check whether a website URL or domain belongs to a dApp in the DappBay official registry. Use this first whenever the user shares a link and asks if it is official, legit, or safe (for example an airdrop or claim link). Returns one of four statuses: "listed" (the domain matches a listed dApp; if a warning is present the dApp is inactive and the domain may have changed owner), "red_alarm" (the domain matches a dApp flagged by BNB Chain Red Alarm; warn the user and include the reason), "not_in_listed_records" (the domain is not listed but looks similar to the listed dApps in similar_listed; tell the user to compare with the official website and verify through official channels, without claiming it is fake), and "not_listed" (no record; this does not mean the site is unofficial or unsafe). Only website URLs are supported, not contract addresses. ${SOURCE_NOTE}`,
+    `Check whether a website URL or domain belongs to a dApp in the DappBay official registry. Use this first whenever the user shares a link and asks if it is official, legit, or safe (for example an airdrop or claim link). Returns one of four statuses: "listed" (the domain matches a listed dApp; if a warning is present the dApp is inactive and the domain may have changed owner), "red_alarm" (the domain matches a dApp flagged by BNB Chain Red Alarm; warn the user and always report red_alarm.risk_level and red_alarm.reason — the human-readable risk explanation, not a bare type like "risky"), "not_in_listed_records" (the domain is not listed but looks similar to the listed dApps in similar_listed; tell the user to compare with the official website and verify through official channels, without claiming it is fake), and "not_listed" (no record; this does not mean the site is unofficial or unsafe). Only website URLs are supported, not contract addresses. ${SOURCE_NOTE}`,
     {
       url: z
         .string()
@@ -71,7 +71,7 @@ export function registerDappbayTools(server: McpServer) {
 
   server.tool(
     "get_dapp",
-    `Get the official DappBay profile of one BNB Chain dApp: official website, social links, category, chains, Red Alarm status, profile_updated_at (when the listing was last edited) and weekly users/TVL/transactions with metrics_as_of (the date of those metrics). Contract addresses are not provided. ${SOURCE_NOTE}`,
+    `Get the official DappBay profile of one BNB Chain dApp: official website, social links, category, chains, Red Alarm (when present: risk_level + human-readable reason), profile_updated_at (when the listing was last edited) and weekly users/TVL/transactions with metrics_as_of (the date of those metrics). Contract addresses are not provided. ${SOURCE_NOTE}`,
     {
       idOrUniqName: z
         .string()
@@ -97,7 +97,7 @@ export function registerDappbayTools(server: McpServer) {
 
   server.tool(
     "search_dapps",
-    `Search the DappBay official registry for BNB Chain dApps by name keyword, category or chain. Each result includes the official website and Red Alarm status. Use get_dapp with the returned uniq_name for full details. ${SOURCE_NOTE}`,
+    `Search the DappBay official registry for BNB Chain dApps by name keyword, category or chain. Each result includes the official website and Red Alarm (risk_level + reason when flagged). Use get_dapp with the returned uniq_name for full details. ${SOURCE_NOTE}`,
     {
       q: z
         .string()
