@@ -13,10 +13,12 @@ describe("DappBay HTTP contract", () => {
     query: Record<string, string>
     tool?: string
   }[] = []
+  const clientHeaders: (string | undefined)[] = []
   const sockets = new Set<Socket>()
   let mode: "ok" | "429" | "400" | "500" | "slow-body" = "ok"
   const api = createServer((req, res) => {
     const url = new URL(req.url || "/", "http://localhost")
+    clientHeaders.push(req.headers["x-mcp-client"] as string | undefined)
     requests.push({
       path: url.pathname,
       query: Object.fromEntries(url.searchParams),
@@ -91,6 +93,40 @@ describe("DappBay HTTP contract", () => {
       tool: "search_dapps"
     })
     expect(JSON.parse(text(result)).meta.pagination.page).toBe(2)
+    expect(clientHeaders.at(-1)).toBe("contract-test")
+  })
+
+  it.each([
+    ["Unicode", "\u4e2d\u6587\u5ba2\u6237\u7aef"],
+    ["control characters", "client\r\nname\u0000"],
+    ["long", "x".repeat(200)],
+    ["blank", "   "]
+  ])("accepts %s client names without breaking tool calls", async (_, name) => {
+    mode = "ok"
+    const namedServer = new McpServer({ name: "client-name-fixture", version: "1" })
+    const namedClient = new Client({ name, version: "1" })
+    registerDappbayTools(namedServer)
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    try {
+      await namedServer.connect(serverTransport)
+      await namedClient.connect(clientTransport)
+      for (const [tool, args] of [
+        ["resolve_dapp", { url: "example.com" }],
+        ["get_dapp", { idOrUniqName: "example" }],
+        ["search_dapps", {}],
+        ["top_dapps", { metric: "users" }]
+      ] as const) {
+        const count = requests.length
+        const result = await namedClient.callTool({ name: tool, arguments: args })
+        expect(result.isError).not.toBe(true)
+        expect(requests.length).toBe(count + 1)
+        expect(JSON.parse(text(result)).meta.source).toBe("DappBay")
+        expect(clientHeaders.at(-1)).toMatch(/^[\x20-\x7e]{1,64}$/)
+      }
+    } finally {
+      await namedClient.close()
+      await namedServer.close()
+    }
   })
 
   it.each(["resolve_dapp", "get_dapp", "search_dapps", "top_dapps"])(

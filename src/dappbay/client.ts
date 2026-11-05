@@ -52,7 +52,9 @@ export async function dappbayGet<T>(
         Accept: "application/json",
         "User-Agent": USER_AGENT,
         "X-MCP-Tool": meta.tool,
-        "X-MCP-Client": meta.client
+        // Client names are arbitrary MCP strings; this header is only a log label.
+        "X-MCP-Client":
+          meta.client.replace(/[^\x20-\x7e]/g, "").trim().slice(0, 64) || "unknown"
       },
       signal: controller.signal
     })

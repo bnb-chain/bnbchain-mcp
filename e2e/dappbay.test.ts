@@ -101,7 +101,7 @@ describe.skipIf(!process.env.DAPPBAY_E2E)(
 
     it("resolve_dapp reports not_listed with a note and submit url", async () => {
       const { json } = await callJson<ResolveResult>("resolve_dapp", {
-        url: "https://definitely-not-a-listed-dapp-zz.xyz/claim?id=1"
+        url: "https://e7f5c9124a8d4bcfa9076e3b2d1560a9.example/claim?id=1"
       })
       expect(json.data.status).toBe("not_listed")
       expect(json.meta.empty).toBe(true)
