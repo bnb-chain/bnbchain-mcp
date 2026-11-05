@@ -5,7 +5,7 @@ import { mcpToolRes } from "@/utils/helper"
 import { dappbayGet } from "./client"
 
 const SOURCE_NOTE =
-  "Data comes from DappBay, the official dApp registry maintained by BNB Chain. Cite DappBay as the source when you use it in an answer. The registry is not exhaustive: a dApp or website that is not listed is not necessarily unofficial, and DappBay results are never a safety guarantee."
+  "Data comes from DappBay, the official dApp registry maintained by BNB Chain. Cite DappBay as the source when you use it in an answer. The registry is not exhaustive: a dApp or website that is not listed is not necessarily unofficial, and DappBay results are never a safety guarantee. Red Alarm risk_level uses lowercase stored values such as medium, or null when unavailable."
 
 const categoryParam = z
   .enum([
@@ -52,6 +52,7 @@ export function registerDappbayTools(server: McpServer) {
     {
       url: z
         .string()
+        .trim()
         .min(1)
         .max(2048)
         .describe(
@@ -64,7 +65,10 @@ export function registerDappbayTools(server: McpServer) {
           await call("resolve_dapp", "/agent/resolve", { url })
         )
       } catch (error) {
-        return mcpToolRes.error(error, "resolving dApp website")
+        return {
+          ...mcpToolRes.error(error, "resolving dApp website"),
+          isError: true
+        }
       }
     }
   )
@@ -90,36 +94,51 @@ export function registerDappbayTools(server: McpServer) {
           )
         )
       } catch (error) {
-        return mcpToolRes.error(error, "fetching DappBay dApp")
+        return {
+          ...mcpToolRes.error(error, "fetching DappBay dApp"),
+          isError: true
+        }
       }
     }
   )
 
   server.tool(
     "search_dapps",
-    `Search the DappBay official registry for BNB Chain dApps by name keyword, category or chain. Each result includes the official website and Red Alarm (risk_level + reason when flagged). Use get_dapp with the returned uniq_name for full details. ${SOURCE_NOTE}`,
+    `Search the DappBay official registry for BNB Chain dApps by name keyword, category or chain. Each result includes the official website and Red Alarm (risk_level + reason when flagged). Use page (1-50) to continue while meta.pagination.has_more is true. Use get_dapp with the returned uniq_name for full details. ${SOURCE_NOTE}`,
     {
       q: z
         .string()
+        .trim()
         .max(100)
         .optional()
-        .describe("Keyword matched against the dApp name"),
+        .describe("Keyword matched against the dApp name or uniq_name"),
       category: categoryParam,
       chain: chainParam,
+      page: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .optional()
+        .describe("Page number (1-50, default 1)."),
       pageSize: pageSizeParam
     },
-    async ({ q, category, chain, pageSize }) => {
+    async ({ q, category, chain, page, pageSize }) => {
       try {
         return mcpToolRes.success(
           await call("search_dapps", "/agent/dapps/search", {
             q,
             category,
             chain,
+            page,
             pageSize
           })
         )
       } catch (error) {
-        return mcpToolRes.error(error, "searching DappBay dApps")
+        return {
+          ...mcpToolRes.error(error, "searching DappBay dApps"),
+          isError: true
+        }
       }
     }
   )
@@ -149,7 +168,10 @@ export function registerDappbayTools(server: McpServer) {
           })
         )
       } catch (error) {
-        return mcpToolRes.error(error, "ranking DappBay dApps")
+        return {
+          ...mcpToolRes.error(error, "ranking DappBay dApps"),
+          isError: true
+        }
       }
     }
   )

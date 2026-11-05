@@ -46,9 +46,8 @@ export async function dappbayGet<T>(
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-  let res: Response
   try {
-    res = await fetch(url, {
+    const res = await fetch(url, {
       headers: {
         Accept: "application/json",
         "User-Agent": USER_AGENT,
@@ -57,34 +56,34 @@ export async function dappbayGet<T>(
       },
       signal: controller.signal
     })
+    // Keep the deadline active until the entire response body has arrived.
+    const text = await res.text()
+    if (!res.ok) {
+      if (res.status === 429) {
+        throw new Error(
+          "DappBay API rate limit reached. Wait a minute before retrying."
+        )
+      }
+      let message = text
+      try {
+        const body = JSON.parse(text) as { message?: string | string[] }
+        if (body.message) {
+          message = Array.isArray(body.message)
+            ? body.message.join("; ")
+            : body.message
+        }
+      } catch {
+        // keep raw text
+      }
+      throw new Error(`DappBay API returned ${res.status}: ${message}`)
+    }
+    return JSON.parse(text) as T
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
+    if (controller.signal.aborted) {
       throw new Error(`DappBay API timed out after ${TIMEOUT_MS / 1000}s`)
     }
     throw error
   } finally {
     clearTimeout(timer)
   }
-
-  const text = await res.text()
-  if (!res.ok) {
-    if (res.status === 429) {
-      throw new Error(
-        "DappBay API rate limit reached. Wait a minute before retrying."
-      )
-    }
-    let message = text
-    try {
-      const body = JSON.parse(text) as { message?: string | string[] }
-      if (body.message) {
-        message = Array.isArray(body.message)
-          ? body.message.join("; ")
-          : body.message
-      }
-    } catch {
-      // keep raw text
-    }
-    throw new Error(`DappBay API returned ${res.status}: ${message}`)
-  }
-  return JSON.parse(text) as T
 }

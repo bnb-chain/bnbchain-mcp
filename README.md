@@ -290,14 +290,14 @@ Register and resolve AI agents on the [ERC-8004](https://eips.ethereum.org/EIPS/
 
 ### DappBay tools
 
-Read-only tools backed by [DappBay](https://dappbay.bnbchain.org), the official dApp registry maintained by BNB Chain. No API key or private key is needed. Every response carries `meta.source` and `meta.coverage`: listed dApps and websites are verified by DappBay, but the registry is not exhaustive, so "not listed" never means "unofficial" or "unsafe". Contract addresses are not exposed.
+Read-only tools backed by [DappBay](https://dappbay.bnbchain.org), the official dApp registry maintained by BNB Chain. No API key or private key is needed. Every successful response carries `meta.source` and `meta.coverage`: listed dApps and websites are verified by DappBay, but the registry is not exhaustive, so "not listed" never means "unofficial" or "unsafe". Contract addresses are not exposed.
 
-| Name         | Description                                                                                                      |
-| ------------ | ---------------------------------------------------------------------------------------------------------------- |
-| resolve_dapp | Check whether a website URL or domain belongs to a listed dApp (`listed`, `red_alarm`, `not_in_listed_records`, `not_listed`) |
-| get_dapp     | Get a dApp's official profile: website, socials, category, chains, Red Alarm status and weekly metrics            |
-| search_dapps | Search listed dApps by name keyword, category or chain                                                           |
-| top_dapps    | Rank dApps by users, TVL or transactions over a daily, weekly or monthly window                                  |
+| Name | Description |
+| --- | --- |
+| `resolve_dapp` | Check whether a website belongs to a listed dApp (`listed`, `red_alarm`, `not_in_listed_records`, `not_listed`) |
+| `get_dapp` | Get a dApp's official profile: website, socials, category, chains, Red Alarm status and weekly metrics |
+| `search_dapps` | Search listed dApps by name or slug keyword, category or chain |
+| `top_dapps` | Rank dApps by users, TVL or transactions over a daily, weekly or monthly window |
 
 `resolve_dapp` statuses:
 
@@ -306,7 +306,19 @@ Read-only tools backed by [DappBay](https://dappbay.bnbchain.org), the official 
 - `not_in_listed_records`: the domain is not listed but looks similar to the dApps in `similar_listed`. It may be a phishing site or a domain DappBay has not recorded yet.
 - `not_listed`: no record. This is not a judgment either way.
 
+Red Alarm fields: `risk_level` is the lowercase stored level (`no_risk`, `some`, `unknown`, `low`, `medium`, `high`, or `null`); `reason` is the human-readable explanation; `marked_at` is when it was flagged. For example, `RISK_LEVEL_MEDIUM` becomes `medium`. These values preserve the stored enum, not the website display-label mapping.
+
 Freshness fields: `profile_updated_at` is when the dApp listing was last edited; `metrics_as_of` is the date of the users/TVL/transactions statistics.
+
+Inputs and pagination:
+
+- `resolve_dapp`: `url` is required, trimmed, 1-2048 characters. Use HTTP/HTTPS or a bare domain; other schemes and contract addresses are rejected by the API.
+- `get_dapp`: `idOrUniqName` is a required string of 1-255 characters. Numeric strings are IDs; other strings are slugs. A missing record returns `data: null` and `meta.empty: true`.
+- `search_dapps`: optional `q` (trimmed, up to 100 characters; matches name or slug), `category`, `chain`, `page` (1-50, default 1), and `pageSize` (1-20, default 10). `meta.pagination` contains `page`, `page_size`, `total_count`, and `has_more`; continue only while `has_more` is true. Archives are excluded before pagination. An out-of-range result page is distinguished from an unlisted project.
+- `top_dapps`: required `metric` (`users`, `tvl`, `txns`); optional `granularity` (`daily`, `weekly`, `monthly`, default `weekly`), `category`, `chain`, and `pageSize` (1-20, default 10). Values, `metrics.chain`, and `metrics_as_of` come from the same selected statistics row, including when no chain filter is provided; values are not a cross-chain sum.
+- Categories use the same canonical values for inputs and outputs: `DeFi`, `Games`, `NFTs`, `Social`, `AI`, `DePIN`, `Infra-and-Tools`, `RWA`, `Other` (unrecognized stored categories are returned as `null`). Chain filters are `bsc`, `opbnb`, `greenfield`.
+
+Successful results are JSON text containing `{ data, meta }`. Schema validation failures use the MCP `-32602` protocol error; upstream HTTP/network failures return `isError: true` with readable text. The 8-second HTTP deadline covers the response body as well as headers. The response-level `meta.metrics_as_of` is the newest timestamp among returned items; use each item's timestamp for its own metrics.
 
 Set `DAPPBAY_API_BASE` to point the tools at another DappBay API (defaults to `https://dappbay.bnbchain.org/api/v1`).
 
