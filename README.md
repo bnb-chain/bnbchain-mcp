@@ -328,6 +328,12 @@ Supports BSC, opBNB, Greenfield, Ethereum, and other major EVM-compatible networ
 
 **ERC-8004 agent registration** is available on chains where the official registry is deployed: BSC (56), BSC Testnet (97), Ethereum (1), Sepolia (11155111), Base (8453), Base Sepolia (84532), Polygon (137), Polygon Amoy (80002), Arbitrum (42161), Arbitrum Sepolia (421614). Private key is used only to sign the registration or update transaction and is not stored or logged.
 
+## Publishing
+
+Run the **Release and Publish** GitHub Actions workflow manually on `main`. Semantic-release determines the next version from commit messages, then publishes the npm package and GitHub release.
+
+The `@bnb-chain/mcp` package must have an npm trusted publisher configured for GitHub Actions: organization `bnb-chain`, repository `bnbchain-mcp`, workflow filename `release.yml`, no environment name, and direct `npm publish` allowed. The workflow uses OIDC with `id-token: write`; no `NPM_TOKEN` is required. Keep `package.json`'s `repository.url` aligned with this repository. See the [npm trusted publishing documentation](https://docs.npmjs.com/trusted-publishers/).
+
 ## Contributing
 
 We welcome contributions to BNBChain MCP! Here's how you can help:
