@@ -292,15 +292,29 @@ export function registerStorageTools(server: McpServer) {
       targetPath: z
         .string()
         .optional()
-        .describe("The path to save the downloaded object"),
+        .describe(
+          "Directory to save into; must stay inside the download root (GNFD_DOWNLOAD_ROOT or the server working directory)"
+        ),
+      overwrite: z
+        .boolean()
+        .optional()
+        .describe("Replace an existing local file instead of failing"),
       privateKey: privateKeyParam
     },
-    async ({ network, bucketName, objectName, targetPath, privateKey }) => {
+    async ({
+      network,
+      bucketName,
+      objectName,
+      targetPath,
+      overwrite,
+      privateKey
+    }) => {
       try {
         const result = await services.downloadObject(network, {
           bucketName,
           objectName,
           targetPath,
+          overwrite,
           privateKey: privateKey as Hex
         })
         return mcpToolRes.success(result)

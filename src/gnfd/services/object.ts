@@ -1,6 +1,7 @@
 import {
   existsSync,
   fstatSync,
+  mkdirSync,
   readFileSync,
   statSync,
   writeFileSync
@@ -21,6 +22,7 @@ import { getAccount } from "./account"
 import { createBucket } from "./bucket"
 import { getClient } from "./client"
 import { executeTransaction } from "./common"
+import { resolveDownloadDestination } from "./download-path"
 import { selectSp } from "./sp"
 
 // Define file response type
@@ -402,24 +404,33 @@ export const downloadObject = async (
     privateKey,
     bucketName,
     objectName,
-    targetPath
+    targetPath,
+    overwrite
   }: {
     privateKey: Hex
     bucketName: string
     objectName: string
     targetPath?: string
+    overwrite?: boolean
   }
 ): Promise<ApiResponse<{ file: string }>> => {
   try {
-    let filePath = ""
-    if (!targetPath || !existsSync(targetPath)) {
-      Logger.debug(
-        `Target path ${targetPath} does not exist, using current directory`
+    const destination = resolveDownloadDestination(targetPath, objectName)
+    // keep the historical tmp- prefix when no explicit target directory is given
+    const filePath = targetPath
+      ? destination
+      : path.join(
+          path.dirname(destination),
+          `tmp-${path.basename(destination)}`
+        )
+    const dir = path.dirname(filePath)
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+    if (existsSync(filePath) && !overwrite) {
+      return response.fail(
+        `File already exists: ${filePath}. Pass overwrite: true to replace it.`
       )
-      // add tmp prefix to avoid file name conflict
-      filePath = path.join(process.cwd(), `tmp-${objectName}`)
-    } else {
-      filePath = path.join(targetPath, objectName)
     }
 
     const client = getClient(network)
@@ -442,7 +453,11 @@ export const downloadObject = async (
       return response.fail("Object is not a file")
     }
     const buffer = await file.arrayBuffer()
-    writeFileSync(filePath, Buffer.from(buffer))
+    // wx refuses to clobber an existing file even if it appears between the
+    // existence check above and this write
+    writeFileSync(filePath, Buffer.from(buffer), {
+      flag: overwrite ? "w" : "wx"
+    })
 
     return response.success({ file: filePath })
   } catch (error) {
