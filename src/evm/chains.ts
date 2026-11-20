@@ -126,10 +126,13 @@ export function resolveChainId(chainIdentifier: number | string): number {
     return networkNameMap[networkName] as number
   }
 
-  // Try parsing as a number
-  const parsedId = Number.parseInt(networkName)
-  if (!Number.isNaN(parsedId) && networkNameMap[parsedId]) {
-    return parsedId
+  // MCP tool schemas receive chain IDs as strings. Only accept an exact,
+  // supported decimal ID so values such as "56abc" are not partially parsed.
+  if (/^\d+$/.test(networkName)) {
+    const parsedId = Number(networkName)
+    if (Number.isSafeInteger(parsedId) && chainMap[parsedId]) {
+      return parsedId
+    }
   }
 
   throw new Error(
@@ -146,19 +149,8 @@ export function resolveChainId(chainIdentifier: number | string): number {
 export function getChain(
   chainIdentifier: number | string = DEFAULT_CHAIN_ID
 ): Chain {
-  if (typeof chainIdentifier === "string") {
-    const networkName = chainIdentifier.toLowerCase()
-    // Try to get from direct network name mapping first
-    if (networkNameMap[networkName]) {
-      return chainMap[networkNameMap[networkName]] || mainnet
-    }
-
-    // If not found, throw an error
-    throw new Error(`Unsupported network: ${chainIdentifier}`)
-  }
-
-  // If it's a number, return the chain from chainMap
-  return chainMap[chainIdentifier] || mainnet
+  const chainId = resolveChainId(chainIdentifier)
+  return chainMap[chainId] as Chain
 }
 
 /**
@@ -169,12 +161,12 @@ export function getChain(
 export function getRpcUrl(
   chainIdentifier: number | string = DEFAULT_CHAIN_ID
 ): string {
-  const chainId =
-    typeof chainIdentifier === "string"
-      ? resolveChainId(chainIdentifier)
-      : chainIdentifier
-
-  return rpcUrlMap[chainId] || DEFAULT_RPC_URL
+  const chainId = resolveChainId(chainIdentifier)
+  const rpcUrl = rpcUrlMap[chainId]
+  if (!rpcUrl) {
+    throw new Error(`No RPC URL configured for chain ID: ${chainId}`)
+  }
+  return rpcUrl
 }
 
 /**
