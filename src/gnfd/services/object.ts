@@ -22,6 +22,7 @@ import { createBucket } from "./bucket"
 import { getClient } from "./client"
 import { executeTransaction } from "./common"
 import { selectSp } from "./sp"
+import { resolveUploadSource } from "./upload-path"
 
 // Define file response type
 interface FileData {
@@ -33,15 +34,16 @@ interface FileData {
  * Create a file object
  */
 const createFileObject = (filePath: string) => {
-  const stats = statSync(filePath)
+  const resolvedPath = resolveUploadSource(filePath)
+  const stats = statSync(resolvedPath)
   const fileSize = stats.size
-  const fileType = getMimeType(filePath) || "unknown"
+  const fileType = getMimeType(resolvedPath) || "unknown"
 
   return {
-    name: path.basename(filePath),
+    name: path.basename(resolvedPath),
     type: fileType,
     size: fileSize,
-    content: readFileSync(filePath)
+    content: readFileSync(resolvedPath)
   }
 }
 
