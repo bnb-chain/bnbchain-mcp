@@ -40,7 +40,7 @@ export function registerStorageTools(server: McpServer) {
       filePath: z
         .string()
         .describe(
-          "Absolute path to the file to upload. The file must exist on the machine."
+          "Path to the file to upload. Must resolve to an existing regular file inside the upload root (GNFD_UPLOAD_ROOT, default: server working directory)."
         ),
       bucketName: bucketNameParam
     },
